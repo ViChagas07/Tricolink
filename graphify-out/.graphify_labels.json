@@ -1,9 +1,20 @@
 {
-  "0": "Agent Workflow and Graphify",
-  "1": "Rate Limiting and Resilience",
-  "2": "Frontend i18n and Pages",
-  "3": "Security Hardening",
-  "4": "Redirect and Hot Path",
-  "5": "Architecture and Spec Governance",
-  "6": "Data Model and API"
+  "0": "Product Domain and Redirect",
+  "1": "Security and Rate Limits",
+  "2": "Web App and UI Components",
+  "3": "API Core and Health",
+  "4": "Agent Workflow and Graphify",
+  "5": "Compose and P01 Infra",
+  "6": "Alembic Migrations",
+  "7": "Shared Kernel Errors",
+  "8": "Project Phases and Graphify",
+  "9": "Logging Utility",
+  "10": "Clock Utility",
+  "11": "IDs Utility",
+  "12": "ESLint Tooling",
+  "13": "pnpm Release Policy",
+  "14": "PostCSS Tooling",
+  "15": "Web Home Page",
+  "16": "Honesty Rule",
+  "17": "API Package"
 }

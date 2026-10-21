@@ -1,0 +1,115 @@
+name: tricolink
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    user: postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-tricolink}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tricolink}
+      POSTGRES_DB: ${POSTGRES_DB:-tricolink}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-tricolink} -d ${POSTGRES_DB:-tricolink}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    networks:
+      - data
+
+  redis:
+    image: redis:7-alpine
+    user: redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    networks:
+      - data
+
+  api:
+    build:
+      context: ./apps/api
+      target: dev
+    env_file:
+      - .env
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-tricolink}:${POSTGRES_PASSWORD:-tricolink}@postgres:5432/${POSTGRES_DB:-tricolink}
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - ./apps/api/src:/app/src
+      - ./apps/api/tests:/app/tests
+      - ./apps/api/alembic:/app/alembic
+      - ./apps/api/alembic.ini:/app/alembic.ini:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/live', timeout=2)",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    init: true
+    networks:
+      - app
+      - data
+
+  web:
+    build:
+      context: ./apps/web
+      target: dev
+    environment:
+      NODE_ENV: development
+      API_INTERNAL_URL: http://api:8000
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    volumes:
+      - ./apps/web/src:/app/src
+      - ./apps/web/public:/app/public
+      - ./apps/web/messages:/app/messages
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    init: true
+    networks:
+      - app
+
+volumes:
+  postgres_data:
+
+networks:
+  app:
+  data:

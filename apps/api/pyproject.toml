@@ -1,0 +1,67 @@
+[tool.poetry]
+name = "tricolink-api"
+version = "0.1.0"
+description = "Tricolink URL shortener API"
+authors = ["Tricolink"]
+packages = [{ include = "tricolink", from = "src" }]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.12"
+fastapi = "*"
+uvicorn = { version = "*", extras = ["standard"] }
+gunicorn = "*"
+sqlalchemy = { version = "*", extras = ["asyncio"] }
+asyncpg = "*"
+alembic = "*"
+pydantic = "*"
+email-validator = "*"
+redis = "*"
+argon2-cffi = "*"
+pyjwt = "*"
+authlib = "*"
+httpx = "*"
+itsdangerous = "*"
+prometheus-client = "*"
+structlog = "*"
+sentry-sdk = "*"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "*"
+pytest-asyncio = "*"
+pytest-cov = "*"
+ruff = "*"
+mypy = "*"
+pip-audit = "*"
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["B008"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.11"
+mypy_path = "src"
+strict = true
+warn_unreachable = true
+
+[tool.coverage.run]
+branch = true
+source = ["tricolink"]
+
+[tool.coverage.report]
+show_missing = true

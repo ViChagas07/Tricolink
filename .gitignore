@@ -12,6 +12,9 @@ __pycache__/
 coverage/
 htmlcov/
 dist/
+.coverage
+*.tsbuildinfo
+.pnpm-store/
 .DS_Store
 *.log
 # graphify-out/ é versionado de propósito (assistentes leem o grafo ao clonar)

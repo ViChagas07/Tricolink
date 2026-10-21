@@ -1,0 +1,8 @@
+# Graphify: exclude empty package markers and tool configs whose keys are not domain concepts.
+**/__init__.py
+**/next-env.d.ts
+.kilo/kilo.json
+apps/web/components.json
+apps/web/package.json
+apps/web/tsconfig.json
+apps/web/.prettierrc.json
