@@ -13,6 +13,7 @@ from tricolink.core.deps import (
     settings_dependency,
 )
 from tricolink.infra.ratelimit import client_ip, rate_limit
+from tricolink.modules.identity.presentation.security import csrf_protect
 from tricolink.modules.links.application import (
     UNSET,
     CreateLink,
@@ -59,7 +60,12 @@ _GONE_HTML = b"""<!doctype html>
 """
 
 
-@router.post("/links", response_model=LinkResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/links",
+    response_model=LinkResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(csrf_protect)],
+)
 async def create_link(
     payload: CreateLinkRequest,
     request: Request,
@@ -115,7 +121,11 @@ async def get_link(
     return _link_response(link, settings)
 
 
-@router.patch("/links/{code}", response_model=LinkResponse)
+@router.patch(
+    "/links/{code}",
+    response_model=LinkResponse,
+    dependencies=[Depends(csrf_protect)],
+)
 async def update_link(
     code: str,
     payload: UpdateLinkRequest,
@@ -137,7 +147,11 @@ async def update_link(
     return _link_response(link, settings)
 
 
-@router.delete("/links/{code}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/links/{code}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(csrf_protect)],
+)
 async def delete_link(
     code: str,
     current_user: CurrentUser = Depends(get_current_user),

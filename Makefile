@@ -1,7 +1,11 @@
-.PHONY: up down logs test-api test-web lint migrate format
+.PHONY: up down logs test-api test-web lint migrate format db-role
 
-up:
+up: db-role
 	docker compose up -d --build --wait --wait-timeout 180
+
+db-role:
+	docker compose up -d --wait postgres
+	docker compose exec -T postgres sh -c 'psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -f /docker-entrypoint-initdb.d/01-app-role.sql'
 
 down:
 	docker compose down --remove-orphans

@@ -5,7 +5,7 @@
 - [x] P01 Monorepo, Docker e tooling
 - [x] P02 Backend: fundação + núcleo de segurança (token bucket, circuit breaker, bulkhead, middlewares)
 - [x] P03 Links: encurtar, redirecionar, cache anti-stampede, cliques
-- [ ] P04 Identity: cadastro/login, Google OIDC, sessões, anti brute force
+- [x] P04 Identity: cadastro/login, Google OIDC, sessões, anti brute force
 - [ ] P05 Frontend: fundação, next-intl (11 idiomas), navbar, API client, CSP
 - [ ] P06 Landing page (hero, demo, recursos, FAQ, SEO/AEO/GEO)
 - [ ] P07 Login, Account e Links (lista com código gerado)
@@ -46,6 +46,18 @@
 - P03: repositório usa somente ORM/Core com parâmetros ligados, keyset pagination por `(created_at, id)`, busca `ILIKE` com `%`/`_` escapados, cursor base64 estrito e filtro de dono no SQL (não-dono → 404). Não há relationships/selects extras (sem N+1).
 - P03: `Database.read()` aplica bulkhead `db_read` + circuit breaker; `unit_of_work()` aplica `db_write` + breaker. O publicador, cache, quota e flusher usam o breaker Redis; `CacheClient` genérico também passou a aceitar breaker/timeout.
 - P03: redirect responde 302 com `Cache-Control: no-store` e `X-Robots-Tag: noindex, nofollow`; 404/410 usam HTML estático sem interpolação; rotas de gestão exigem usuário e as de listagem/detalhe usam o balde `stats_list` por usuário.
+- P04: `identity` também segue domain/application/adapters/presentation. O domínio tem `Email` (NFKC + lowercase + email-validator), `PasswordPolicy` (10–128, lista de senhas comuns, sem controles), `User`, `TokenFamily`/`RefreshTokenRecord` e validação pura de claims Google.
+- P04: registro responde **202 genérico** (`{"status":"registered"}`) e nunca cria sessão; e-mail duplicado executa o mesmo hash e devolve a mesma resposta, reduzindo enumeração. O login responde sempre `invalid_credentials` para e-mail inexistente/senha errada/inativo.
+- P04: Argon2id com parâmetros OWASP (time 3, 64 MiB, parallelismo 4) executado em threadpool sob o bulkhead `hashing`. O hash dummy é pré-aquecido no lifespan para equalizar o primeiro login inexistente.
+- P04: access JWT HS256 com apenas `sub`, `jti`, `iat`, `exp`; refresh token opaco com 48 bytes aleatórios e somente SHA-256 no banco. Rotação usa `SELECT ... FOR UPDATE`; token revogado reutilizado revoga a família inteira.
+- P04: cookies `httpOnly` para access/refresh, `SameSite=Lax`, `Secure` quando `COOKIE_SECURE`; `__Host-` em access/CSRF/OAuth e `__Secure-` no refresh (path `/api/v1/auth`). Tokens não aparecem no corpo das respostas.
+- P04: CSRF double-submit e checagem de `Origin` (frontend/API) ou `Sec-Fetch-Site` em mutações autenticadas; login/registro validam Origin quando presente. `GET /auth/csrf` define/retorna o token.
+- P04: Google OIDC via Authlib com endpoints explícitos (sem discovery no authorize), `state` + `nonce` + PKCE S256, validação explícita de `iss`, `aud`, `exp`, `nonce` e `email_verified`, vínculo por `google_sub`/e-mail verificado e redirect para `FRONTEND_ORIGIN` com `next` estritamente interno.
+- P04: anti brute force combina token buckets `auth` por IP e e-mail normalizado (chaves hash) com contadores de falha/lockout no Redis e fallback em memória; mensagens não revelam existência de conta. `AUTH_LOCKOUT_THRESHOLD` e `AUTH_LOCKOUT_SECONDS` controlam o lockout.
+- P04: RLS com `FORCE` em `links` e `refresh_tokens`. Contexto por transação via `set_config(..., true)` (equivalente a `SET LOCAL`, mas parametrizável): `app.current_user_id`, `app.current_link_code`, `app.refresh_token_hash`, `app.refresh_family_id`, `app.click_flusher`. A leitura pública só enxerga o código exato solicitado; leituras de dono listam apenas o próprio usuário; o flusher vê/atualiza click_count. O INSERT anônimo é permitido e o RETURNING usa o contexto do código.
+- P04: o Compose agora usa `tricolink_app` (não-superuser, sem BYPASSRLS) em `DATABASE_URL`; migrations usam `MIGRATION_DATABASE_URL`. O role é criado pelo init do Postgres e pelo alvo idempotente `make db-role`, que também cobre volumes antigos.
+- P04: `get_current_user_optional` foi substituído pela implementação real (JWT em cookie + consulta do usuário); `get_current_user` continua obrigatório. As rotas de links agora aplicam CSRF quando há cookies de sessão, dono e cotas de usuário logado.
+
 
 
 ## Validação P00
@@ -85,6 +97,17 @@
 - Redis fora no publicador: redirect continuou 302 e `clicks_dropped_total` incrementou; publisher bloqueante não impediu a resposta.
 - Rate limits: redirect acima da capacidade → 429 com `Retry-After` e `RateLimit-Limit`; baldes de create cobrem IP e usuário.
 
+## Validação P04
+- `make test-api`: **325 testes passando** (identidade, Google mockado, cookies/CSRF, IDOR, RLS e regressões P02/P03).
+- Cobertura de `modules/identity/domain` + `modules/identity/application`: **96%** (550 stmts, 17 miss; 108 branches, 12 partial).
+- `ruff check`, `ruff format --check` e `mypy src` limpos.
+- Migrations do zero em banco descartável: `0001` → `0002`, `downgrade base` e `upgrade head` novamente. O banco descartável também validou o init do role + default privileges + app role não-superuser inserindo/anonimamente lendo link com RLS.
+- RLS testado com role de runtime `tricolink_app` (`rolsuper=false`, `rolbypassrls=false`): sem contexto não lê links/tokens; contexto do usuário A enxerga só A; contexto de código enxerga só aquele código; mutação cruzada retorna 0 linhas. O teste remove deliberadamente o filtro de aplicação.
+- Fluxo manual ao vivo (Docker, porta 8001): register `202` → login `200` → `/auth/me` `200` → criar link logado `201` → listar `200` → refresh `200` → logout `204` → `/auth/me` `401`.
+- Reuso de refresh revoga a família; somente SHA-256 do refresh fica no banco; 20 tentativas de login produzem 429; lockout progressivo com threshold baixo também produz 429; cookie access/refresh é `HttpOnly` e CSRF não é.
+- Google com IdP mockado: URL contém `state`, `nonce`, `code_challenge` e `code_challenge_method=S256`; `state` inválido e nonce errado são rejeitados; `next=//evil.com` e `next=https://evil.com` retornam 400; callback válido cria/víncula usuário e redireciona para o frontend.
+- `make up` saudável com o novo role; `make migrate` e `alembic check` sem operações pendentes.
+
 ## Bloqueios
 (nenhum)
 
@@ -96,14 +119,21 @@
 - O teste da API emite um aviso de depreciação do Starlette sobre `httpx` no `TestClient`; o teste passa e o aviso não quebra o build.
 - Prometheus usa o registry padrão por processo: com os 2 workers do gunicorn em produção, cada scrape vê as métricas do worker que respondeu. Não foi implementado modo multiprocess do `prometheus_client`; fica para P10 (deploy/observabilidade).
 - O pool Redis padrão é 50 conexões por worker. O teste de 100 chamadas concorrentes usou pool de 120; com o pool padrão, excesso de concorrência cai no fallback em memória (seguro, mas os contadores ficam por processo).
-- RLS em `links`/`refresh_tokens` (SECURITY §3) não foi criada em P02; fica para as fases de identidade/hardening.
-- Não foram executados k6/carga, `pip-audit`, deploy real em Render/Vercel nem teste em Linux/macOS.
-- No Compose o usuário do Postgres é superuser do container. Não foi validado em Postgres gerenciado se o usuário de migração tem permissão para `CREATE EXTENSION citext`; o plano é rodar migrations com um usuário/procedimento privilegiado separado do runtime.
+- RLS foi criada em P04 (`links`/`refresh_tokens`), mas a validação foi local. Em Postgres gerenciado é preciso confirmar que o role de runtime não é superuser nem tem `BYPASSRLS`; o role de migração também precisa poder criar `citext` e rodar futuras migrações de dados com contexto RLS.
+- Não foram executados k6/carga, `pip-audit` nem teste em Linux/macOS; o deploy real em Render/Vercel também não foi executado.
 - Cliques são at-least-once: se o processo cair entre o commit do lote e o `XACK`, os eventos pendentes podem ser reprocessados e duplicar linhas em `click_events` (não há chave de idempotência). O `click_count` também pode duplicar nesse cenário.
 - O flusher usa consumer name derivado do hostname; entradas pendentes de um consumer morto com hostname diferente não são reclamadas automaticamente (não foi implementado `XAUTOCLAIM`).
 - Existe uma janela de corrida entre um refresh SWR em andamento e um PATCH/DELETE: o refresh pode repopular o cache com dados lidos antes da alteração. A invalidação sequencial é coberta por teste; a corrida concorrente fica para o hardening (P09).
 - A política de URL resolve DNS no momento da criação, mas não fixa/pinna os IPs depois; como o servidor nunca busca a URL, o risco de SSRF em runtime é nulo, mas a checagem não protege contra mudanças posteriores de DNS.
-- Não foram executados k6/carga, `pip-audit`, deploy real em Render/Vercel nem teste em Linux/macOS.
+- Google OIDC **não foi validado contra o IdP real**: os testes usam Authlib para URL/estado/PKCE e um IdP mockado para o callback. As credenciais recebidas foram gravadas em `.env.render` (ignorado pelo Git, nunca commitado); o console Google precisa ter exatamente `https://tricolink-0gzp.onrender.com/api/v1/auth/google/callback` como redirect URI. Não houve navegador/fluxo real.
+- As credenciais Render (Postgres/Redis) foram guardadas apenas em `.env.render`; não foram usadas nos testes para não tocar no ambiente de produção. SSL/TLS, permissões do role `trcl` e a extensão `citext` no Render não foram verificados.
+- Em produção, o role de runtime deve ser não-superuser e sem `BYPASSRLS`; se `trcl` for owner/superuser, o `FORCE` não protege contra bypass. O status do role no Render não foi consultado.
+- No Compose o container da API recebe `MIGRATION_DATABASE_URL` para o alvo `make migrate`. Em produção, o job de migração deve ser separado e o processo da API não deve receber essa URL privilegiada.
+- Não há verificação de posse do e-mail no cadastro local. O vínculo automático de uma conta de senha existente a um e-mail verificado do Google (conforme pedido) pode permitir pré-hijacking se alguém registrar o e-mail de outra pessoa antes; uma fase futura deve adicionar verificação de e-mail ou exigir login antes de vincular.
+- O access JWT não é revogado no logout; ele continua válido até `exp` (15 min). O refresh é revogado imediatamente.
+- CSRF depende de o proxy do frontend encaminhar `Origin` ou `Sec-Fetch-Site`; se remover ambos, mutações autenticadas serão rejeitadas com 403. O frontend deve usar `/api/v1/auth/csrf` e os nomes `__Host-`/`__Secure-` em produção.
+- O frontend ainda não consome os endpoints de identidade; P05/P07 precisa ler o cookie CSRF (ou chamar `/auth/csrf`) e renovar a sessão via `/auth/refresh`.
+- Avisos de depreciação do `httpx` no `TestClient` e do Authlib para `httpx` permanecem; não quebram os testes.
 
 ## Revisão humana pendente
 - Traduções geradas por IA (todos os idiomas exceto pt-BR e en)

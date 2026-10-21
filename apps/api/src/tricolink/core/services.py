@@ -19,6 +19,26 @@ from tricolink.infra.ratelimit.daily_quota import RedisDailyQuota
 from tricolink.infra.resilience import CircuitBreaker, build_bulkheads
 from tricolink.infra.resilience.bulkhead import BulkheadRegistry
 from tricolink.modules.analytics.adapters import ClickFlusher, RedisClickPublisher
+from tricolink.modules.identity.adapters import (
+    Argon2PasswordHasher,
+    GoogleOIDCClient,
+    PyJwtAccessTokens,
+    RedisAuthThrottle,
+    SqlAlchemySessionRepository,
+    SqlAlchemyUserRepository,
+)
+from tricolink.modules.identity.application import (
+    AuthenticateAccess,
+    GetMe,
+    Login,
+    LoginWithGoogle,
+    Logout,
+    RefreshSession,
+    Register,
+    SessionIssuer,
+    UpdateMe,
+)
+from tricolink.modules.identity.domain import PasswordPolicy
 from tricolink.modules.links.adapters import RedisLinkCache, SqlAlchemyLinkRepository
 from tricolink.modules.links.application import (
     CreateLink,
@@ -56,6 +76,25 @@ class LinkServices:
 
 
 @dataclass(slots=True)
+class IdentityServices:
+    users: SqlAlchemyUserRepository
+    sessions: SqlAlchemySessionRepository
+    hasher: Argon2PasswordHasher
+    access_tokens: PyJwtAccessTokens
+    throttle: RedisAuthThrottle
+    google_oidc: GoogleOIDCClient
+    clock: SystemClock
+    register: Register
+    login: Login
+    refresh_session: RefreshSession
+    logout: Logout
+    get_me: GetMe
+    update_me: UpdateMe
+    google_login: LoginWithGoogle
+    authenticate_access: AuthenticateAccess
+
+
+@dataclass(slots=True)
 class Services:
     settings: Settings
     redis: Redis
@@ -66,6 +105,7 @@ class Services:
     database_breaker: CircuitBreaker
     bulkheads: BulkheadRegistry
     links: LinkServices
+    identity: IdentityServices
     analytics: AnalyticsServices
     record_click: RecordClick
 
@@ -77,6 +117,7 @@ class Services:
             )
 
     async def start(self) -> None:
+        await self.identity.hasher.warm_up()
         if self.settings.click_flusher_enabled:
             await self.analytics.flusher.start()
 
@@ -146,6 +187,72 @@ def build_services(settings: Settings) -> Services:
     record_click = RecordClick(clock=clock, publisher=publisher)
     code_generator = CodeGenerator()
 
+    users = SqlAlchemyUserRepository(database)
+    sessions = SqlAlchemySessionRepository(database)
+    hasher = Argon2PasswordHasher(
+        bulkhead=bulkheads.get("hashing"),
+        time_cost=settings.argon2_time_cost,
+        memory_kib=settings.argon2_memory_kib,
+        parallelism=settings.argon2_parallelism,
+        hash_len=settings.argon2_hash_len,
+        salt_len=settings.argon2_salt_len,
+    )
+    access_tokens = PyJwtAccessTokens(settings)
+    throttle = RedisAuthThrottle(
+        redis,
+        limiter=limiter,
+        breaker=redis_breaker,
+        settings=settings,
+    )
+    google_oidc = GoogleOIDCClient(settings)
+    session_issuer = SessionIssuer(
+        access_tokens=access_tokens,
+        sessions=sessions,
+        clock=clock,
+        refresh_ttl_days=settings.refresh_token_ttl_days,
+    )
+    identity = IdentityServices(
+        users=users,
+        sessions=sessions,
+        hasher=hasher,
+        access_tokens=access_tokens,
+        throttle=throttle,
+        google_oidc=google_oidc,
+        clock=clock,
+        register=Register(
+            users=users,
+            password_policy=PasswordPolicy(),
+            hasher=hasher,
+            throttle=throttle,
+            clock=clock,
+        ),
+        login=Login(
+            users=users,
+            hasher=hasher,
+            throttle=throttle,
+            session_issuer=session_issuer,
+        ),
+        refresh_session=RefreshSession(
+            users=users,
+            sessions=sessions,
+            access_tokens=access_tokens,
+            clock=clock,
+            refresh_ttl_days=settings.refresh_token_ttl_days,
+        ),
+        logout=Logout(sessions=sessions, clock=clock),
+        get_me=GetMe(users=users),
+        update_me=UpdateMe(users=users),
+        google_login=LoginWithGoogle(
+            users=users,
+            session_issuer=session_issuer,
+            clock=clock,
+        ),
+        authenticate_access=AuthenticateAccess(
+            access_tokens=access_tokens,
+            users=users,
+        ),
+    )
+
     links = LinkServices(
         repository=repository,
         cache=link_cache,
@@ -190,6 +297,7 @@ def build_services(settings: Settings) -> Services:
         database_breaker=database_breaker,
         bulkheads=bulkheads,
         links=links,
+        identity=identity,
         analytics=AnalyticsServices(publisher=publisher, flusher=flusher),
         record_click=record_click,
     )

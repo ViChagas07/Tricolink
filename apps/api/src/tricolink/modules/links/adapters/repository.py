@@ -7,6 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from tricolink.infra.db import Database
 from tricolink.infra.db.models import Link as LinkRow
+from tricolink.infra.db.rls import set_rls_context
 from tricolink.modules.links.application.ports import PageCursor
 from tricolink.modules.links.domain.entities import Link
 from tricolink.modules.links.domain.errors import DuplicateCodeError
@@ -34,6 +35,11 @@ class SqlAlchemyLinkRepository:
         )
         try:
             async with self._database.unit_of_work() as session:
+                await set_rls_context(
+                    session,
+                    user_id=link.user_id,
+                    link_code=link.code.value,
+                )
                 session.add(row)
                 await session.flush()
         except IntegrityError as exc:
@@ -44,11 +50,13 @@ class SqlAlchemyLinkRepository:
 
     async def get_by_code(self, code: ShortCode) -> Link | None:
         async with self._database.read() as session:
+            await set_rls_context(session, link_code=code.value)
             row = await session.scalar(select(LinkRow).where(LinkRow.code == code.value))
         return _to_domain(row) if row is not None else None
 
     async def get_for_user(self, code: ShortCode, user_id: UUID) -> Link | None:
         async with self._database.read() as session:
+            await set_rls_context(session, user_id=user_id)
             row = await session.scalar(
                 select(LinkRow).where(
                     LinkRow.code == code.value,
@@ -87,11 +95,13 @@ class SqlAlchemyLinkRepository:
         statement = statement.order_by(LinkRow.created_at.desc(), LinkRow.id.desc()).limit(limit)
 
         async with self._database.read() as session:
+            await set_rls_context(session, user_id=user_id)
             rows = (await session.scalars(statement)).all()
         return [_to_domain(row) for row in rows]
 
     async def update(self, link: Link, user_id: UUID) -> Link | None:
         async with self._database.unit_of_work() as session:
+            await set_rls_context(session, user_id=user_id)
             row = await session.scalar(
                 select(LinkRow)
                 .where(LinkRow.code == link.code.value, LinkRow.user_id == user_id)
@@ -110,6 +120,7 @@ class SqlAlchemyLinkRepository:
 
     async def delete(self, code: ShortCode, user_id: UUID) -> bool:
         async with self._database.unit_of_work() as session:
+            await set_rls_context(session, user_id=user_id)
             deleted_id = await session.scalar(
                 delete(LinkRow)
                 .where(LinkRow.code == code.value, LinkRow.user_id == user_id)

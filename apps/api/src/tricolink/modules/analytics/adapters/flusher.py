@@ -17,6 +17,7 @@ from tricolink.core.config import Settings
 from tricolink.infra.db import Database
 from tricolink.infra.db.models import ClickEvent as ClickEventRow
 from tricolink.infra.db.models import Link as LinkRow
+from tricolink.infra.db.rls import set_rls_context
 from tricolink.infra.observability.metrics import record_clicks_flushed
 from tricolink.infra.resilience import CircuitBreaker, CircuitOpenError
 from tricolink.modules.analytics.domain.click import ClickEvent, normalize_country
@@ -141,6 +142,7 @@ class ClickFlusher:
 
     async def _persist(self, events: list[ClickEvent]) -> None:
         async with self._database.unit_of_work() as session:
+            await set_rls_context(session, click_flusher=True)
             link_ids = {event.link_id for event in events}
             existing = set(
                 (await session.scalars(select(LinkRow.id).where(LinkRow.id.in_(link_ids)))).all()

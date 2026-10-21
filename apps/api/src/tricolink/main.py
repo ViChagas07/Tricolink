@@ -4,6 +4,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from starlette.middleware.sessions import SessionMiddleware
 
 from tricolink.core.config import Settings, get_settings
 from tricolink.core.error_handlers import install_error_handlers
@@ -19,6 +20,7 @@ from tricolink.core.middleware import (
 )
 from tricolink.core.services import Services, build_services
 from tricolink.infra.observability.http import router as ops_router
+from tricolink.modules.identity.presentation import router as identity_router
 from tricolink.modules.links.presentation import router as links_router
 
 
@@ -54,7 +56,17 @@ def create_app(
     install_error_handlers(application)
     application.include_router(ops_router)
     application.include_router(links_router)
+    application.include_router(identity_router)
 
+    application.add_middleware(
+        SessionMiddleware,
+        secret_key=current.session_secret,
+        session_cookie=current.oauth_session_cookie_name,
+        max_age=current.oauth_session_ttl_seconds,
+        same_site="lax",
+        https_only=current.cookie_secure,
+        path="/",
+    )
     application.add_middleware(
         BodyLimitMiddleware,
         max_body_bytes=current.max_body_bytes,

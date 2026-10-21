@@ -15,6 +15,7 @@ from tricolink.core.config import Settings
 from tricolink.infra.db import Database
 from tricolink.infra.db.models import ClickEvent as ClickEventRow
 from tricolink.infra.db.models import Link as LinkRow
+from tricolink.infra.db.rls import set_rls_context
 from tricolink.modules.analytics.adapters import ClickFlusher, RedisClickPublisher
 from tricolink.modules.analytics.domain.click import ClickEvent
 from tricolink.modules.links.adapters.repository import SqlAlchemyLinkRepository
@@ -34,6 +35,13 @@ def pipeline_settings() -> Settings:
         click_flush_batch_size=10,
         click_flush_block_ms=10,
         click_publish_timeout_seconds=1.0,
+    )
+
+
+def admin_settings(settings: Settings) -> Settings:
+    return replace(
+        settings,
+        database_url=settings.migration_database_url or settings.database_url,
     )
 
 
@@ -147,6 +155,7 @@ async def test_flusher_persists_batch_and_increments_click_count(
         assert processed == 3
 
         async with database.read() as session:
+            await set_rls_context(session, click_flusher=True)
             events = (
                 await session.scalars(select(ClickEventRow).where(ClickEventRow.link_id == link.id))
             ).all()
@@ -159,11 +168,15 @@ async def test_flusher_persists_batch_and_increments_click_count(
         assert {event.device for event in events} == {"mobile", "desktop"}
         assert await redis_client.xlen(settings.click_stream_key) == 0
     finally:
-        async with database.unit_of_work() as session:
-            await session.execute(
-                delete(ClickEventRow).where(ClickEventRow.link_id == (link.id or -1))
-            )
-            await session.execute(delete(LinkRow).where(LinkRow.code == code))
+        admin = Database(admin_settings(settings))
+        try:
+            async with admin.unit_of_work() as session:
+                await session.execute(
+                    delete(ClickEventRow).where(ClickEventRow.link_id == (link.id or -1))
+                )
+                await session.execute(delete(LinkRow).where(LinkRow.code == code))
+        finally:
+            await admin.dispose()
         await redis_client.delete(settings.click_stream_key)
         await database.dispose()
 
@@ -204,10 +217,14 @@ async def test_flusher_retries_pending_entries(redis_client: Redis) -> None:
             )
         assert count == 1
     finally:
-        async with database.unit_of_work() as session:
-            await session.execute(
-                delete(ClickEventRow).where(ClickEventRow.link_id == (link.id or -1))
-            )
-            await session.execute(delete(LinkRow).where(LinkRow.code == code))
+        admin = Database(admin_settings(settings))
+        try:
+            async with admin.unit_of_work() as session:
+                await session.execute(
+                    delete(ClickEventRow).where(ClickEventRow.link_id == (link.id or -1))
+                )
+                await session.execute(delete(LinkRow).where(LinkRow.code == code))
+        finally:
+            await admin.dispose()
         await redis_client.delete(settings.click_stream_key)
         await database.dispose()

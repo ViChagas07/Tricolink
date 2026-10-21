@@ -81,6 +81,7 @@ class Settings:
     log_level: str = "INFO"
 
     database_url: str = DEFAULT_DATABASE_URL
+    migration_database_url: str | None = None
     redis_url: str = DEFAULT_REDIS_URL
 
     frontend_origin: str = "http://localhost:3000"
@@ -98,6 +99,17 @@ class Settings:
     google_client_id: str | None = None
     google_client_secret: str | None = None
     google_redirect_uri: str | None = None
+
+    argon2_time_cost: int = 2
+    argon2_memory_kib: int = 19_456
+    argon2_parallelism: int = 1
+    argon2_hash_len: int = 32
+    argon2_salt_len: int = 16
+
+    auth_failure_window_seconds: int = 900
+    auth_lockout_threshold: int = 10
+    auth_lockout_seconds: int = 900
+    oauth_session_ttl_seconds: int = 600
 
     trusted_proxy_count: int = 1
 
@@ -173,6 +185,10 @@ class Settings:
             raise SettingsError("MAX_BODY_BYTES must be positive")
         if self.request_timeout_seconds <= 0:
             raise SettingsError("REQUEST_TIMEOUT_SECONDS must be positive")
+        if self.jwt_algorithm not in {"HS256", "HS384", "HS512"}:
+            raise SettingsError("JWT_ALGORITHM must be HS256, HS384 or HS512")
+        if self.argon2_memory_kib < 8 * self.argon2_parallelism:
+            raise SettingsError("ARGON2_MEMORY_KIB must be at least 8x ARGON2_PARALLELISM")
 
         positive_integers = {
             "CACHE_HARD_TTL_SECONDS": self.cache_hard_ttl_seconds,
@@ -196,6 +212,15 @@ class Settings:
             "CLICK_STREAM_MAXLEN": self.click_stream_maxlen,
             "CLICK_FLUSH_BATCH_SIZE": self.click_flush_batch_size,
             "CLICK_FLUSH_BLOCK_MS": self.click_flush_block_ms,
+            "ARGON2_TIME_COST": self.argon2_time_cost,
+            "ARGON2_MEMORY_KIB": self.argon2_memory_kib,
+            "ARGON2_PARALLELISM": self.argon2_parallelism,
+            "ARGON2_HASH_LEN": self.argon2_hash_len,
+            "ARGON2_SALT_LEN": self.argon2_salt_len,
+            "AUTH_FAILURE_WINDOW_SECONDS": self.auth_failure_window_seconds,
+            "AUTH_LOCKOUT_THRESHOLD": self.auth_lockout_threshold,
+            "AUTH_LOCKOUT_SECONDS": self.auth_lockout_seconds,
+            "OAUTH_SESSION_TTL_SECONDS": self.oauth_session_ttl_seconds,
         }
         for name, value in positive_integers.items():
             if value < 1:
@@ -237,9 +262,48 @@ class Settings:
             raise SettingsError("ANON_LINK_TTL_DAYS must be at least 1")
         if self.cache_soft_ttl_seconds > self.cache_hard_ttl_seconds:
             raise SettingsError("CACHE_SOFT_TTL_SECONDS cannot exceed CACHE_HARD_TTL_SECONDS")
+        if self.argon2_parallelism < 1:
+            raise SettingsError("ARGON2_PARALLELISM must be at least 1")
+        if self.argon2_hash_len < 16 or self.argon2_salt_len < 8:
+            raise SettingsError("Argon2 hash and salt lengths are too small")
+        if self.oauth_session_ttl_seconds < 60:
+            raise SettingsError("OAUTH_SESSION_TTL_SECONDS must be at least 60")
 
         if self.app_env == "production":
             self._validate_production()
+
+    @property
+    def cookie_prefix(self) -> str:
+        if self.cookie_secure and not self.cookie_domain:
+            return "__Host-"
+        return ""
+
+    @property
+    def access_cookie_name(self) -> str:
+        return f"{self.cookie_prefix}tl_access"
+
+    @property
+    def refresh_cookie_name(self) -> str:
+        # __Host- requires Path=/, but the refresh cookie is scoped to /api/v1/auth.
+        if self.cookie_secure and not self.cookie_domain:
+            return "__Secure-tl_refresh"
+        return "tl_refresh"
+
+    @property
+    def csrf_cookie_name(self) -> str:
+        return f"{self.cookie_prefix}tl_csrf"
+
+    @property
+    def oauth_session_cookie_name(self) -> str:
+        return f"{self.cookie_prefix}tl_oauth"
+
+    @property
+    def refresh_cookie_path(self) -> str:
+        return "/api/v1/auth"
+
+    @property
+    def csrf_cookie_ttl_seconds(self) -> int:
+        return max(3_600, self.refresh_token_ttl_days * 86_400)
 
     @property
     def docs_enabled(self) -> bool:
@@ -272,6 +336,7 @@ class Settings:
             app_env=_text("APP_ENV", "development") or "development",
             log_level=_text("LOG_LEVEL", "INFO") or "INFO",
             database_url=_text("DATABASE_URL", DEFAULT_DATABASE_URL) or DEFAULT_DATABASE_URL,
+            migration_database_url=_text("MIGRATION_DATABASE_URL"),
             redis_url=_text("REDIS_URL", DEFAULT_REDIS_URL) or DEFAULT_REDIS_URL,
             frontend_origin=_text("FRONTEND_ORIGIN", "http://localhost:3000")
             or "http://localhost:3000",
@@ -290,6 +355,15 @@ class Settings:
             google_client_id=_text("GOOGLE_CLIENT_ID"),
             google_client_secret=_text("GOOGLE_CLIENT_SECRET"),
             google_redirect_uri=_text("GOOGLE_REDIRECT_URI"),
+            argon2_time_cost=_integer("ARGON2_TIME_COST", 2),
+            argon2_memory_kib=_integer("ARGON2_MEMORY_KIB", 19_456),
+            argon2_parallelism=_integer("ARGON2_PARALLELISM", 1),
+            argon2_hash_len=_integer("ARGON2_HASH_LEN", 32),
+            argon2_salt_len=_integer("ARGON2_SALT_LEN", 16),
+            auth_failure_window_seconds=_integer("AUTH_FAILURE_WINDOW_SECONDS", 900),
+            auth_lockout_threshold=_integer("AUTH_LOCKOUT_THRESHOLD", 10),
+            auth_lockout_seconds=_integer("AUTH_LOCKOUT_SECONDS", 900),
+            oauth_session_ttl_seconds=_integer("OAUTH_SESSION_TTL_SECONDS", 600),
             trusted_proxy_count=_integer("TRUSTED_PROXY_COUNT", 1),
             cache_hard_ttl_seconds=_integer("CACHE_HARD_TTL_SECONDS", 86_400),
             cache_soft_ttl_seconds=_integer("CACHE_SOFT_TTL_SECONDS", 600),
@@ -348,3 +422,11 @@ class Settings:
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
     return Settings.from_env()
+
+
+def get_migration_database_url() -> str:
+    return (
+        _text("MIGRATION_DATABASE_URL")
+        or _text("DATABASE_URL", DEFAULT_DATABASE_URL)
+        or DEFAULT_DATABASE_URL
+    )

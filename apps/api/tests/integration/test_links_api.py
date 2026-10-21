@@ -87,8 +87,13 @@ def cleanup(
     codes: list[str],
     user_ids: list[UUID],
 ) -> None:
+    admin_settings = replace(
+        settings,
+        database_url=settings.migration_database_url or settings.database_url,
+    )
+
     async def run() -> None:
-        database = Database(settings)
+        database = Database(admin_settings)
         try:
             async with database.unit_of_work() as session:
                 if codes:
@@ -341,13 +346,17 @@ def test_sqli_payloads_do_not_change_queries() -> None:
         cleanup(settings, codes=[code], user_ids=[user])
 
 
+def unique_forwarded_ip() -> str:
+    return f"2001:db8::{uuid4().hex[:4]}:{uuid4().hex[:4]}:{uuid4().hex[:4]}:{uuid4().hex[:4]}"
+
+
 def test_create_rate_limit_returns_429() -> None:
     settings = api_settings(
         rl_create_capacity=1,
         rl_create_refill_per_sec=0.0,
     )
     code: str | None = None
-    forwarded_for = f"10.9.{uuid4().int % 200}.{uuid4().int % 200 + 1}"
+    forwarded_for = unique_forwarded_ip()
     headers = {"x-forwarded-for": forwarded_for}
     try:
         with TestClient(create_app(settings)) as client:
@@ -378,7 +387,7 @@ def test_redirect_rate_limit_returns_429() -> None:
     )
     code = "limit01"
     seed_links(settings, [direct_link(code)])
-    forwarded_for = f"10.8.{uuid4().int % 200}.{uuid4().int % 200 + 1}"
+    forwarded_for = unique_forwarded_ip()
     headers = {"x-forwarded-for": forwarded_for}
     try:
         with TestClient(create_app(settings)) as client:

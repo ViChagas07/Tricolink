@@ -10,6 +10,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-tricolink}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test:
         [
@@ -43,7 +44,8 @@ services:
       - .env
     environment:
       APP_ENV: ${APP_ENV:-development}
-      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-tricolink}:${POSTGRES_PASSWORD:-tricolink}@postgres:5432/${POSTGRES_DB:-tricolink}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_APP_USER:-tricolink_app}:${POSTGRES_APP_PASSWORD:-tricolink_app}@postgres:5432/${POSTGRES_DB:-tricolink}
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-tricolink}:${POSTGRES_PASSWORD:-tricolink}@postgres:5432/${POSTGRES_DB:-tricolink}
       REDIS_URL: redis://redis:6379/0
     ports:
       - "${API_PORT:-8000}:8000"

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, datetime
 from uuid import uuid4
 
@@ -102,8 +103,17 @@ async def test_real_integrity_error_triggers_code_retry() -> None:
         assert await repository.get_by_code(ShortCode(existing_code)) is not None
         assert await repository.get_by_code(ShortCode(retry_code)) is not None
     finally:
-        async with database.unit_of_work() as session:
-            await session.execute(
-                delete(LinkRow).where(LinkRow.code.in_([existing_code, retry_code]))
+        admin = Database(
+            replace(
+                settings,
+                database_url=settings.migration_database_url or settings.database_url,
             )
+        )
+        try:
+            async with admin.unit_of_work() as session:
+                await session.execute(
+                    delete(LinkRow).where(LinkRow.code.in_([existing_code, retry_code]))
+                )
+        finally:
+            await admin.dispose()
         await database.dispose()

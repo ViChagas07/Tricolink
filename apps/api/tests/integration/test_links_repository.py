@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
@@ -54,16 +55,28 @@ async def seed_user(database: Database) -> UUID:
     return user_id
 
 
-async def cleanup(database: Database, codes: list[str], user_id: UUID | None) -> None:
-    async with database.unit_of_work() as session:
-        await session.execute(delete(LinkRow).where(LinkRow.code.in_(codes)))
-        if user_id is not None:
-            await session.execute(delete(UserRow).where(UserRow.id == user_id))
+def admin_settings(settings: Settings) -> Settings:
+    return replace(
+        settings,
+        database_url=settings.migration_database_url or settings.database_url,
+    )
+
+
+async def cleanup(settings: Settings, codes: list[str], user_id: UUID | None) -> None:
+    database = Database(admin_settings(settings))
+    try:
+        async with database.unit_of_work() as session:
+            await session.execute(delete(LinkRow).where(LinkRow.code.in_(codes)))
+            if user_id is not None:
+                await session.execute(delete(UserRow).where(UserRow.id == user_id))
+    finally:
+        await database.dispose()
 
 
 @pytest.mark.asyncio
 async def test_repository_crud_list_search_and_owner_filter() -> None:
-    database = Database(Settings.from_env())
+    settings = Settings.from_env()
+    database = Database(settings)
     repository = SqlAlchemyLinkRepository(database)
     user_id = await seed_user(database)
     other_id = await seed_user(database)
@@ -96,7 +109,10 @@ async def test_repository_crud_list_search_and_owner_filter() -> None:
         assert [item.code.value for item in page] == ["repo001", "repo002"]
         second = await repository.list_for_user(
             user_id,
-            cursor=PageCursor(created_at=page[-1].created_at, link_id=page[-1].id or 0),
+            cursor=PageCursor(
+                created_at=page[-1].created_at,
+                link_id=page[-1].id or 0,
+            ),
             limit=2,
             query=None,
         )
@@ -146,14 +162,15 @@ async def test_repository_crud_list_search_and_owner_filter() -> None:
         assert await repository.delete(ShortCode(codes[2]), user_id) is True
         assert await repository.get_by_code(ShortCode(codes[2])) is None
     finally:
-        await cleanup(database, codes, user_id)
-        await cleanup(database, [], other_id)
+        await cleanup(settings, codes, user_id)
+        await cleanup(settings, [], other_id)
         await database.dispose()
 
 
 @pytest.mark.asyncio
 async def test_repository_returns_none_for_non_owned_management_reads() -> None:
-    database = Database(Settings.from_env())
+    settings = Settings.from_env()
+    database = Database(settings)
     repository = SqlAlchemyLinkRepository(database)
     owner = await seed_user(database)
     other = await seed_user(database)
@@ -162,6 +179,6 @@ async def test_repository_returns_none_for_non_owned_management_reads() -> None:
         await repository.create(build_link(code, user_id=owner, created_at=datetime.now(UTC)))
         assert await repository.get_for_user(ShortCode(code), other) is None
     finally:
-        await cleanup(database, [code], owner)
-        await cleanup(database, [], other)
+        await cleanup(settings, [code], owner)
+        await cleanup(settings, [], other)
         await database.dispose()

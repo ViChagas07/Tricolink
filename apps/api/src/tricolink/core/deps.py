@@ -19,6 +19,8 @@ from tricolink.shared_kernel.security_errors import AuthenticationError
 class CurrentUser:
     id: UUID
     email: str | None = None
+    display_name: str | None = None
+    locale: str | None = None
 
 
 def settings_dependency(request: Request) -> Settings:
@@ -38,10 +40,19 @@ def get_rate_limiter(request: Request) -> RateLimiter:
 
 
 async def get_current_user_optional(request: Request) -> CurrentUser | None:
-    """P04 extension point: resolve the authenticated user from cookies/JWT."""
-
-    del request
-    return None
+    services = get_services(request)
+    token = request.cookies.get(services.settings.access_cookie_name)
+    if not token:
+        return None
+    user = await services.identity.authenticate_access.execute(token)
+    if user is None:
+        return None
+    return CurrentUser(
+        id=user.id,
+        email=user.email.value,
+        display_name=user.display_name,
+        locale=user.locale,
+    )
 
 
 async def get_current_user(
