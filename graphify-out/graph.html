@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>graphify - graphify-out/graph.html</title>
+<script src="https://unpkg.com/vis-network@9.1.6/standalone/umd/vis-network.min.js"
+        integrity="sha384-Ux6phic9PEHJ38YtrijhkzyJ8yQlH8i/+buBR8s3mAZOJrP1gwyvAcIYl3GWtpX1"
+        crossorigin="anonymous"></script>
+<style>
+  :root {
+    --bg: #0f0f1a; --panel: #1a1a2e; --border: #2a2a4e; --input-border: #3a3a5e;
+    --text: #e0e0e0; --text-2: #aaa; --text-3: #ccc; --muted: #555; --count: #666;
+    --neighbor-border: #333; --node-label: #ffffff;
+  }
+  [data-theme="light"] {
+    --bg: #ffffff; --panel: #f8f9fa; --border: #d9dee5; --input-border: #c3cad4;
+    --text: #222222; --text-2: #666666; --text-3: #333333; --muted: #888888; --count: #777777;
+    --neighbor-border: #ccc; --node-label: #222222;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: flex; height: 100vh; overflow: hidden; }
+  #graph { flex: 1; }
+  #sidebar { width: 280px; background: var(--panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+  #search-wrap { padding: 12px; border-bottom: 1px solid var(--border); }
+  #search { width: 100%; background: var(--bg); border: 1px solid var(--input-border); color: var(--text); padding: 7px 10px; border-radius: 6px; font-size: 13px; outline: none; }
+  #search:focus { border-color: #4E79A7; }
+  #search-results { max-height: 140px; overflow-y: auto; padding: 4px 12px; border-bottom: 1px solid var(--border); display: none; }
+  .search-item { padding: 4px 6px; cursor: pointer; border-radius: 4px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .search-item:hover { background: var(--border); }
+  #info-panel { padding: 14px; border-bottom: 1px solid var(--border); min-height: 140px; }
+  #info-panel h3 { font-size: 13px; color: var(--text-2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+  #info-content { font-size: 13px; color: var(--text-3); line-height: 1.6; }
+  #info-content .field { margin-bottom: 5px; }
+  #info-content .field b { color: var(--text); }
+  #info-content .empty { color: var(--muted); font-style: italic; }
+  .neighbor-link { display: block; padding: 2px 6px; margin: 2px 0; border-radius: 3px; cursor: pointer; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-left: 3px solid var(--neighbor-border); }
+  .neighbor-link:hover { background: var(--border); }
+  #neighbors-list { max-height: 160px; overflow-y: auto; margin-top: 4px; }
+  #legend-wrap { flex: 1; overflow-y: auto; padding: 12px; }
+  #legend-wrap h3 { font-size: 13px; color: var(--text-2); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .legend-item { display: flex; align-items: center; gap: 8px; padding: 4px 0; cursor: pointer; border-radius: 4px; font-size: 12px; }
+  .legend-item:hover { background: var(--border); padding-left: 4px; }
+  .legend-item.dimmed { opacity: 0.35; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .legend-label { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .legend-count { color: var(--count); font-size: 11px; }
+  #stats { padding: 10px 14px; border-top: 1px solid var(--border); font-size: 11px; color: var(--muted); }
+  #legend-controls { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; padding: 4px 0; }
+  #legend-controls label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 12px; color: var(--text-2); user-select: none; }
+  #legend-controls label:hover { color: var(--text); }
+  .legend-cb, #select-all-cb { appearance: none; -webkit-appearance: none; width: 14px; height: 14px; border: 1.5px solid var(--input-border); border-radius: 3px; background: var(--bg); cursor: pointer; position: relative; flex-shrink: 0; }
+  .legend-cb:checked, #select-all-cb:checked { background: #4E79A7; border-color: #4E79A7; }
+  .legend-cb:checked::after, #select-all-cb:checked::after { content: ''; position: absolute; left: 3.5px; top: 1px; width: 4px; height: 7px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  #select-all-cb:indeterminate { background: #4E79A7; border-color: #4E79A7; }
+  #select-all-cb:indeterminate::after { content: ''; position: absolute; left: 2px; top: 5px; width: 8px; height: 2px; background: #fff; border: none; transform: none; }
+  #theme-wrap { display: flex; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  #theme-wrap button { flex: 1; background: var(--bg); color: var(--text-2); border: 1px solid var(--input-border); border-radius: 4px; padding: 3px 0; font-size: 11px; cursor: pointer; }
+  #theme-wrap button:hover { color: var(--text); }
+  #theme-wrap button[aria-pressed="true"] { background: #4E79A7; border-color: #4E79A7; color: #fff; }
+</style>
+<script id="graphify-theme-init">
+// Apply the saved theme before first paint (#3894). No saved choice keeps the
+// historical dark look; "system" follows prefers-color-scheme.
+(function () {
+  var pref = null;
+  try { pref = localStorage.getItem('graphify-theme'); } catch (e) {}
+  var t = pref === 'light' ? 'light'
+    : pref === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light'
+    : 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+</head>
+<body>
+<div id="graph"></div>
+<div id="sidebar">
+  <div id="theme-wrap" role="group" aria-label="Theme">
+    <button type="button" data-theme-choice="light">Light</button>
+    <button type="button" data-theme-choice="dark">Dark</button>
+    <button type="button" data-theme-choice="system">System</button>
+  </div>
+  <div id="search-wrap">
+    <input id="search" type="text" placeholder="Search nodes..." autocomplete="off">
+    <div id="search-results"></div>
+  </div>
+  <div id="info-panel">
+    <h3>Node Info</h3>
+    <div id="info-content"><span class="empty">Click a node to inspect it</span></div>
+  </div>
+  <div id="legend-wrap">
+    <h3>Communities</h3>
+    <div id="legend-controls">
+      <label><input type="checkbox" id="select-all-cb" checked onchange="toggleAllCommunities(!this.checked)">Select All</label>
+    </div>
+    <div id="legend"></div>
+  </div>
+  <div id="stats">73 nodes &middot; 121 edges &middot; 7 communities</div>
+</div>
+<script>
+const RAW_NODES = [{"id": "agents_graphify_command", "label": "graphify Slash Command", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 11.8, "font": {"size": 0, "color": "#ffffff"}, "title": "graphify Slash Command", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "AGENTS.md", "file_type": "concept", "degree": 1}, {"id": "agents_mandatory_reading_order", "label": "Mandatory Session Reading Order", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 22.4, "font": {"size": 12, "color": "#ffffff"}, "title": "Mandatory Session Reading Order", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "AGENTS.md", "file_type": "concept", "degree": 7}, {"id": "docs_agent_graphify_context_engineering", "label": "Graphify Context Engineering", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 22.4, "font": {"size": 12, "color": "#ffffff"}, "title": "Graphify Context Engineering", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "docs/agent/GRAPHIFY.md", "file_type": "concept", "degree": 7}, {"id": "docs_agent_graphify_install", "label": "Graphify Installation Commands", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "Graphify Installation Commands", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "docs/agent/GRAPHIFY.md", "file_type": "concept", "degree": 3}, {"id": "docs_agent_graphify_phase_routine", "label": "Per-Phase Graphify Routine", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 17.1, "font": {"size": 12, "color": "#ffffff"}, "title": "Per-Phase Graphify Routine", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "docs/agent/GRAPHIFY.md", "file_type": "concept", "degree": 4}, {"id": "docs_agent_graphify_query_workflow", "label": "graphify query/path/explain Workflow", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 17.1, "font": {"size": 12, "color": "#ffffff"}, "title": "graphify query/path/explain Workflow", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "docs/agent/GRAPHIFY.md", "file_type": "concept", "degree": 4}, {"id": "docs_agent_progress_decisions", "label": "Decisions Log", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Decisions Log", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "docs/agent/PROGRESS.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_progress_p00_bootstrap", "label": "P00 Bootstrap SDD + Graphify", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 17.1, "font": {"size": 12, "color": "#ffffff"}, "title": "P00 Bootstrap SDD + Graphify", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "docs/agent/PROGRESS.md", "file_type": "concept", "degree": 4}, {"id": "docs_agent_progress_phase_plan", "label": "Phase Plan P00-P11", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 17.1, "font": {"size": 12, "color": "#ffffff"}, "title": "Phase Plan P00-P11", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "docs/agent/PROGRESS.md", "file_type": "concept", "degree": 4}, {"id": "readme_tricolink_stub", "label": "Tricolink README Stub (P11)", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "Tricolink README Stub (P11)", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "README.md", "file_type": "document", "degree": 3}, {"id": "agents_graphify_protocol", "label": "Graphify Query-First Protocol", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Graphify Query-First Protocol", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "AGENTS.md", "file_type": "rationale", "degree": 2}, {"id": "docs_agent_rules_tdd", "label": "TDD Discipline", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "TDD Discipline", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "docs/agent/RULES.md", "file_type": "rationale", "degree": 2}, {"id": "docs_agent_rules_workflow", "label": "Agent Workflow Rules", "color": {"background": "#4E79A7", "border": "#4E79A7", "highlight": {"background": "#ffffff", "border": "#4E79A7"}}, "size": 17.1, "font": {"size": 12, "color": "#ffffff"}, "title": "Agent Workflow Rules", "community": 0, "community_name": "Agent Workflow and Graphify", "source_file": "docs/agent/RULES.md", "file_type": "rationale", "degree": 4}, {"id": "docs_agent_context_link_quotas", "label": "Daily Link Quotas", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Daily Link Quotas", "community": 1, "community_name": "Rate Limiting and Resilience", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_context_negative_cache", "label": "Negative Cache for Unknown Codes", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Negative Cache for Unknown Codes", "community": 1, "community_name": "Rate Limiting and Resilience", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_context_single_flight", "label": "Single-Flight Lock", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "Single-Flight Lock", "community": 1, "community_name": "Rate Limiting and Resilience", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 3}, {"id": "docs_agent_context_stale_while_revalidate", "label": "Stale-While-Revalidate Caching", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 11.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Stale-While-Revalidate Caching", "community": 1, "community_name": "Rate Limiting and Resilience", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 1}, {"id": "docs_agent_progress_non_validated", "label": "Not Validated Log", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 17.1, "font": {"size": 12, "color": "#ffffff"}, "title": "Not Validated Log", "community": 1, "community_name": "Rate Limiting and Resilience", "source_file": "docs/agent/PROGRESS.md", "file_type": "concept", "degree": 4}, {"id": "docs_agent_security_brute_force", "label": "Brute Force Protection", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 18.8, "font": {"size": 12, "color": "#ffffff"}, "title": "Brute Force Protection", "community": 1, "community_name": "Rate Limiting and Resilience", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 5}, {"id": "docs_agent_security_bulkhead", "label": "Bulkhead Semaphores", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 17.1, "font": {"size": 12, "color": "#ffffff"}, "title": "Bulkhead Semaphores", "community": 1, "community_name": "Rate Limiting and Resilience", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 4}, {"id": "docs_agent_security_circuit_breaker", "label": "Circuit Breaker", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "Circuit Breaker", "community": 1, "community_name": "Rate Limiting and Resilience", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 3}, {"id": "docs_agent_security_rate_limit_buckets", "label": "Rate Limit Buckets", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Rate Limit Buckets", "community": 1, "community_name": "Rate Limiting and Resilience", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_security_token_bucket", "label": "Token Bucket Rate Limiting", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 20.6, "font": {"size": 12, "color": "#ffffff"}, "title": "Token Bucket Rate Limiting", "community": 1, "community_name": "Rate Limiting and Resilience", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 6}, {"id": "docs_agent_context_anti_cache_stampede", "label": "Anti Cache Stampede Three Layers", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 17.1, "font": {"size": 12, "color": "#ffffff"}, "title": "Anti Cache Stampede Three Layers", "community": 1, "community_name": "Rate Limiting and Resilience", "source_file": "docs/agent/CONTEXT.md", "file_type": "rationale", "degree": 4}, {"id": "docs_agent_rules_honesty", "label": "Honesty in Reporting", "color": {"background": "#F28E2B", "border": "#F28E2B", "highlight": {"background": "#ffffff", "border": "#F28E2B"}}, "size": 11.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Honesty in Reporting", "community": 1, "community_name": "Rate Limiting and Resilience", "source_file": "docs/agent/RULES.md", "file_type": "rationale", "degree": 1}, {"id": "docs_agent_context_frontend_routing", "label": "Next.js Locale Routing and Rewrites", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 17.1, "font": {"size": 12, "color": "#ffffff"}, "title": "Next.js Locale Routing and Rewrites", "community": 2, "community_name": "Frontend i18n and Pages", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 4}, {"id": "docs_agent_context_i18n", "label": "11-Language i18n", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 18.8, "font": {"size": 12, "color": "#ffffff"}, "title": "11-Language i18n", "community": 2, "community_name": "Frontend i18n and Pages", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 5}, {"id": "docs_agent_context_ui_summary", "label": "UI/UX Summary", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "UI/UX Summary", "community": 2, "community_name": "Frontend i18n and Pages", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 3}, {"id": "docs_agent_progress_human_review", "label": "Pending Human Review", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 11.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Pending Human Review", "community": 2, "community_name": "Frontend i18n and Pages", "source_file": "docs/agent/PROGRESS.md", "file_type": "concept", "degree": 1}, {"id": "docs_agent_security_csrf", "label": "CSRF Double-Submit Protection", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "CSRF Double-Submit Protection", "community": 2, "community_name": "Frontend i18n and Pages", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 3}, {"id": "docs_agent_ui_spec_account", "label": "Account Page", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Account Page", "community": 2, "community_name": "Frontend i18n and Pages", "source_file": "docs/agent/UI_SPEC.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_ui_spec_landing", "label": "Landing Page", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "Landing Page", "community": 2, "community_name": "Frontend i18n and Pages", "source_file": "docs/agent/UI_SPEC.md", "file_type": "concept", "degree": 3}, {"id": "docs_agent_ui_spec_link_detail", "label": "Link Detail Page", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 17.1, "font": {"size": 12, "color": "#ffffff"}, "title": "Link Detail Page", "community": 2, "community_name": "Frontend i18n and Pages", "source_file": "docs/agent/UI_SPEC.md", "file_type": "concept", "degree": 4}, {"id": "docs_agent_ui_spec_links_page", "label": "Links List Page", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "Links List Page", "community": 2, "community_name": "Frontend i18n and Pages", "source_file": "docs/agent/UI_SPEC.md", "file_type": "concept", "degree": 3}, {"id": "docs_agent_ui_spec_login", "label": "Login Page", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "Login Page", "community": 2, "community_name": "Frontend i18n and Pages", "source_file": "docs/agent/UI_SPEC.md", "file_type": "concept", "degree": 3}, {"id": "docs_agent_ui_spec_navbar", "label": "Navbar", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 17.1, "font": {"size": 12, "color": "#ffffff"}, "title": "Navbar", "community": 2, "community_name": "Frontend i18n and Pages", "source_file": "docs/agent/UI_SPEC.md", "file_type": "concept", "degree": 4}, {"id": "docs_agent_ui_spec_interface", "label": "UI_SPEC.md Tricolink Interface", "color": {"background": "#E15759", "border": "#E15759", "highlight": {"background": "#ffffff", "border": "#E15759"}}, "size": 27.6, "font": {"size": 12, "color": "#ffffff"}, "title": "UI_SPEC.md Tricolink Interface", "community": 2, "community_name": "Frontend i18n and Pages", "source_file": "docs/agent/UI_SPEC.md", "file_type": "document", "degree": 10}, {"id": "docs_agent_rules_secrets", "label": "Secrets via core/config.py", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Secrets via core/config.py", "community": 3, "community_name": "Security Hardening", "source_file": "docs/agent/RULES.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_security_auth_sessions", "label": "JWT and Rotating Refresh Sessions", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 18.8, "font": {"size": 12, "color": "#ffffff"}, "title": "JWT and Rotating Refresh Sessions", "community": 3, "community_name": "Security Hardening", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 5}, {"id": "docs_agent_security_credentials", "label": "Credential Hygiene", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Credential Hygiene", "community": 3, "community_name": "Security Hardening", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_security_google_oidc", "label": "Google OIDC", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Google OIDC", "community": 3, "community_name": "Security Hardening", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_security_limits", "label": "Logical Buffer Overflow Limits", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 11.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Logical Buffer Overflow Limits", "community": 3, "community_name": "Security Hardening", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 1}, {"id": "docs_agent_security_rls", "label": "Row Level Security", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Row Level Security", "community": 3, "community_name": "Security Hardening", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_security_sql_injection", "label": "Anti SQL Injection", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "Anti SQL Injection", "community": 3, "community_name": "Security Hardening", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 3}, {"id": "docs_agent_security_supply_chain", "label": "Supply Chain Security", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 11.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Supply Chain Security", "community": 3, "community_name": "Security Hardening", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 1}, {"id": "docs_agent_security_xss_csp", "label": "Anti XSS and CSP Nonce", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Anti XSS and CSP Nonce", "community": 3, "community_name": "Security Hardening", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_ui_spec_quality", "label": "States and Quality Targets", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "States and Quality Targets", "community": 3, "community_name": "Security Hardening", "source_file": "docs/agent/UI_SPEC.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_security_requirements", "label": "SECURITY.md Security Requirements", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 40.0, "font": {"size": 12, "color": "#ffffff"}, "title": "SECURITY.md Security Requirements", "community": 3, "community_name": "Security Hardening", "source_file": "docs/agent/SECURITY.md", "file_type": "document", "degree": 17}, {"id": "docs_agent_rules_code_standards", "label": "Code Standards", "color": {"background": "#76B7B2", "border": "#76B7B2", "highlight": {"background": "#ffffff", "border": "#76B7B2"}}, "size": 20.6, "font": {"size": 12, "color": "#ffffff"}, "title": "Code Standards", "community": 3, "community_name": "Security Hardening", "source_file": "docs/agent/RULES.md", "file_type": "rationale", "degree": 6}, {"id": "docs_agent_context_click_events_table", "label": "click_events Table", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 17.1, "font": {"size": 12, "color": "#ffffff"}, "title": "click_events Table", "community": 4, "community_name": "Redirect and Hot Path", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 4}, {"id": "docs_agent_context_click_stream", "label": "Redis Stream Click Buffer", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Redis Stream Click Buffer", "community": 4, "community_name": "Redirect and Hot Path", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_context_non_goals", "label": "Non-Goals", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 11.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Non-Goals", "community": 4, "community_name": "Redirect and Hot Path", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 1}, {"id": "docs_agent_context_product", "label": "Tricolink URL Shortener Product", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 20.6, "font": {"size": 12, "color": "#ffffff"}, "title": "Tricolink URL Shortener Product", "community": 4, "community_name": "Redirect and Hot Path", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 6}, {"id": "docs_agent_context_redirect_cache", "label": "Redirect and Cache Hot Path", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 18.8, "font": {"size": 12, "color": "#ffffff"}, "title": "Redirect and Cache Hot Path", "community": 4, "community_name": "Redirect and Hot Path", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 5}, {"id": "docs_agent_context_url_policy", "label": "URL Anti-Abuse Policy", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "URL Anti-Abuse Policy", "community": 4, "community_name": "Redirect and Hot Path", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_security_ssrf", "label": "SSRF Prevention", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "SSRF Prevention", "community": 4, "community_name": "Redirect and Hot Path", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_ui_spec_design_tokens", "label": "Design Tokens", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Design Tokens", "community": 4, "community_name": "Redirect and Hot Path", "source_file": "docs/agent/UI_SPEC.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_context_302_redirect", "label": "302 Redirect Decision", "color": {"background": "#59A14F", "border": "#59A14F", "highlight": {"background": "#ffffff", "border": "#59A14F"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "302 Redirect Decision", "community": 4, "community_name": "Redirect and Hot Path", "source_file": "docs/agent/CONTEXT.md", "file_type": "rationale", "degree": 2}, {"id": "docs_agent_context_modular_monolith", "label": "Modular Monolith with Clean Architecture", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "Modular Monolith with Clean Architecture", "community": 5, "community_name": "Architecture and Spec Governance", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 3}, {"id": "docs_agent_context_monorepo_structure", "label": "Monorepo Structure", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Monorepo Structure", "community": 5, "community_name": "Architecture and Spec Governance", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_progress_blockers_log", "label": "PROGRESS Bloqueios Section", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "PROGRESS Bloqueios Section", "community": 5, "community_name": "Architecture and Spec Governance", "source_file": "docs/agent/PROGRESS.md", "file_type": "concept", "degree": 3}, {"id": "docs_agent_context_single_source_of_truth", "label": "CONTEXT.md Single Source of Truth", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 22.4, "font": {"size": 12, "color": "#ffffff"}, "title": "CONTEXT.md Single Source of Truth", "community": 5, "community_name": "Architecture and Spec Governance", "source_file": "docs/agent/CONTEXT.md", "file_type": "document", "degree": 7}, {"id": "agents_context_md_supremacy", "label": "CONTEXT.md Supremacy Rule", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "CONTEXT.md Supremacy Rule", "community": 5, "community_name": "Architecture and Spec Governance", "source_file": "AGENTS.md", "file_type": "rationale", "degree": 2}, {"id": "docs_agent_context_stack", "label": "Decided Technology Stack", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Decided Technology Stack", "community": 5, "community_name": "Architecture and Spec Governance", "source_file": "docs/agent/CONTEXT.md", "file_type": "rationale", "degree": 2}, {"id": "docs_agent_graphify_spec_authority", "label": "Spec Outranks Graph Rule", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "Spec Outranks Graph Rule", "community": 5, "community_name": "Architecture and Spec Governance", "source_file": "docs/agent/GRAPHIFY.md", "file_type": "rationale", "degree": 2}, {"id": "docs_agent_rules_prohibitions", "label": "Prohibited Actions", "color": {"background": "#EDC948", "border": "#EDC948", "highlight": {"background": "#ffffff", "border": "#EDC948"}}, "size": 11.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Prohibited Actions", "community": 5, "community_name": "Architecture and Spec Governance", "source_file": "docs/agent/RULES.md", "file_type": "rationale", "degree": 1}, {"id": "docs_agent_context_base62_codes", "label": "7-Char Base62 Code Generation", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 11.8, "font": {"size": 0, "color": "#ffffff"}, "title": "7-Char Base62 Code Generation", "community": 6, "community_name": "Data Model and API", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 1}, {"id": "docs_agent_context_links_table", "label": "links Table", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 18.8, "font": {"size": 12, "color": "#ffffff"}, "title": "links Table", "community": 6, "community_name": "Data Model and API", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 5}, {"id": "docs_agent_context_refresh_tokens_table", "label": "refresh_tokens Table", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 15.3, "font": {"size": 12, "color": "#ffffff"}, "title": "refresh_tokens Table", "community": 6, "community_name": "Data Model and API", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 3}, {"id": "docs_agent_context_reserved_aliases", "label": "Reserved Alias List", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 11.8, "font": {"size": 0, "color": "#ffffff"}, "title": "Reserved Alias List", "community": 6, "community_name": "Data Model and API", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 1}, {"id": "docs_agent_context_rest_api", "label": "REST API /api/v1 Contract", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 20.6, "font": {"size": 12, "color": "#ffffff"}, "title": "REST API /api/v1 Contract", "community": 6, "community_name": "Data Model and API", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 6}, {"id": "docs_agent_context_users_table", "label": "users Table", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "users Table", "community": 6, "community_name": "Data Model and API", "source_file": "docs/agent/CONTEXT.md", "file_type": "concept", "degree": 2}, {"id": "docs_agent_security_seo_indexing", "label": "SEO Indexation Control", "color": {"background": "#B07AA1", "border": "#B07AA1", "highlight": {"background": "#ffffff", "border": "#B07AA1"}}, "size": 13.5, "font": {"size": 0, "color": "#ffffff"}, "title": "SEO Indexation Control", "community": 6, "community_name": "Data Model and API", "source_file": "docs/agent/SECURITY.md", "file_type": "concept", "degree": 2}];
+const RAW_EDGES = [{"from": "agents_graphify_command", "to": "docs_agent_graphify_context_engineering", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "agents_mandatory_reading_order", "to": "docs_agent_context_single_source_of_truth", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "agents_mandatory_reading_order", "to": "docs_agent_graphify_context_engineering", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "agents_mandatory_reading_order", "to": "docs_agent_progress_phase_plan", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "agents_mandatory_reading_order", "to": "docs_agent_rules_workflow", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "agents_mandatory_reading_order", "to": "docs_agent_security_requirements", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "agents_mandatory_reading_order", "to": "docs_agent_ui_spec_interface", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_tricolink_stub", "to": "agents_mandatory_reading_order", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_progress_non_validated", "to": "docs_agent_graphify_context_engineering", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_graphify_context_engineering", "to": "docs_agent_graphify_install", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_graphify_context_engineering", "to": "docs_agent_graphify_phase_routine", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_graphify_context_engineering", "to": "docs_agent_graphify_query_workflow", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_progress_p00_bootstrap", "to": "docs_agent_graphify_context_engineering", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_progress_decisions", "to": "docs_agent_graphify_install", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_progress_p00_bootstrap", "to": "docs_agent_graphify_install", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_graphify_phase_routine", "to": "docs_agent_graphify_query_workflow", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_graphify_phase_routine", "to": "docs_agent_progress_blockers_log", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_rules_workflow", "to": "docs_agent_graphify_phase_routine", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "agents_graphify_protocol", "to": "docs_agent_graphify_query_workflow", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_progress_p00_bootstrap", "to": "docs_agent_graphify_query_workflow", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_progress_decisions", "to": "agents_graphify_protocol", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_progress_phase_plan", "to": "docs_agent_progress_p00_bootstrap", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_rules_workflow", "to": "docs_agent_progress_phase_plan", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "readme_tricolink_stub", "to": "docs_agent_progress_phase_plan", "label": "references", "title": "references [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "readme_tricolink_stub", "to": "docs_agent_context_single_source_of_truth", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_rules_workflow", "to": "docs_agent_rules_tdd", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_rules_tdd", "to": "docs_agent_security_requirements", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_context_link_quotas", "to": "docs_agent_security_token_bucket", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_link_quotas", "to": "docs_agent_security_rate_limit_buckets", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_context_anti_cache_stampede", "to": "docs_agent_context_negative_cache", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_negative_cache", "to": "docs_agent_security_brute_force", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_progress_non_validated", "to": "docs_agent_context_single_flight", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_anti_cache_stampede", "to": "docs_agent_context_single_flight", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_single_flight", "to": "docs_agent_security_bulkhead", "label": "semantically_similar_to", "title": "semantically_similar_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_context_anti_cache_stampede", "to": "docs_agent_context_stale_while_revalidate", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_progress_non_validated", "to": "docs_agent_security_bulkhead", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_rules_honesty", "to": "docs_agent_progress_non_validated", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_auth_sessions", "to": "docs_agent_security_brute_force", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_brute_force", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_token_bucket", "to": "docs_agent_security_brute_force", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_login", "to": "docs_agent_security_brute_force", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_security_circuit_breaker", "to": "docs_agent_security_bulkhead", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_bulkhead", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_circuit_breaker", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_token_bucket", "to": "docs_agent_security_circuit_breaker", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_token_bucket", "to": "docs_agent_security_rate_limit_buckets", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_rules_code_standards", "to": "docs_agent_security_token_bucket", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_token_bucket", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_redirect_cache", "to": "docs_agent_context_anti_cache_stampede", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_frontend_routing", "to": "docs_agent_context_i18n", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_frontend_routing", "to": "docs_agent_context_rest_api", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_links_page", "to": "docs_agent_context_frontend_routing", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_csrf", "to": "docs_agent_context_frontend_routing", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_context_stack", "to": "docs_agent_context_i18n", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_progress_human_review", "to": "docs_agent_context_i18n", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_navbar", "to": "docs_agent_context_i18n", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_account", "to": "docs_agent_context_i18n", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_context_product", "to": "docs_agent_context_ui_summary", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_ui_summary", "to": "docs_agent_ui_spec_interface", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_ui_summary", "to": "docs_agent_ui_spec_navbar", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_auth_sessions", "to": "docs_agent_security_csrf", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_csrf", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_interface", "to": "docs_agent_ui_spec_account", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_landing", "to": "docs_agent_ui_spec_link_detail", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_interface", "to": "docs_agent_ui_spec_landing", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_landing", "to": "docs_agent_context_rest_api", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_ui_spec_link_detail", "to": "docs_agent_context_click_events_table", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_interface", "to": "docs_agent_ui_spec_link_detail", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_links_page", "to": "docs_agent_ui_spec_link_detail", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_interface", "to": "docs_agent_ui_spec_links_page", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_interface", "to": "docs_agent_ui_spec_login", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_navbar", "to": "docs_agent_ui_spec_login", "label": "references", "title": "references [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_ui_spec_interface", "to": "docs_agent_ui_spec_navbar", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_interface", "to": "docs_agent_ui_spec_design_tokens", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_interface", "to": "docs_agent_ui_spec_quality", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_rules_code_standards", "to": "docs_agent_rules_secrets", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_rules_secrets", "to": "docs_agent_security_credentials", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_security_auth_sessions", "to": "docs_agent_security_google_oidc", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_auth_sessions", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_auth_sessions", "to": "docs_agent_context_refresh_tokens_table", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_credentials", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_google_oidc", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_limits", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_sql_injection", "to": "docs_agent_security_rls", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_rls", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_sql_injection", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_rules_code_standards", "to": "docs_agent_security_sql_injection", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_supply_chain", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_xss_csp", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_rules_code_standards", "to": "docs_agent_security_xss_csp", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_ui_spec_quality", "to": "docs_agent_rules_code_standards", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_seo_indexing", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_requirements", "to": "docs_agent_security_ssrf", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_rules_code_standards", "to": "docs_agent_context_modular_monolith", "label": "implements", "title": "implements [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_product", "to": "docs_agent_context_click_events_table", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_click_stream", "to": "docs_agent_context_click_events_table", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_links_table", "to": "docs_agent_context_click_events_table", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_redirect_cache", "to": "docs_agent_context_click_stream", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_product", "to": "docs_agent_context_non_goals", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_product", "to": "docs_agent_context_302_redirect", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_single_source_of_truth", "to": "docs_agent_context_product", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_ui_spec_design_tokens", "to": "docs_agent_context_product", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_context_redirect_cache", "to": "docs_agent_context_302_redirect", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_redirect_cache", "to": "docs_agent_context_url_policy", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_rest_api", "to": "docs_agent_context_redirect_cache", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_security_ssrf", "to": "docs_agent_context_url_policy", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_modular_monolith", "to": "docs_agent_context_monorepo_structure", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_stack", "to": "docs_agent_context_modular_monolith", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_monorepo_structure", "to": "docs_agent_context_single_source_of_truth", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "agents_context_md_supremacy", "to": "docs_agent_progress_blockers_log", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_graphify_spec_authority", "to": "docs_agent_progress_blockers_log", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "agents_context_md_supremacy", "to": "docs_agent_context_single_source_of_truth", "label": "rationale_for", "title": "rationale_for [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_graphify_spec_authority", "to": "docs_agent_context_single_source_of_truth", "label": "rationale_for", "title": "rationale_for [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_rules_prohibitions", "to": "docs_agent_context_single_source_of_truth", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_links_table", "to": "docs_agent_context_base62_codes", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_links_table", "to": "docs_agent_context_reserved_aliases", "label": "conceptually_related_to", "title": "conceptually_related_to [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_rest_api", "to": "docs_agent_context_links_table", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_users_table", "to": "docs_agent_context_links_table", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_users_table", "to": "docs_agent_context_refresh_tokens_table", "label": "shares_data_with", "title": "shares_data_with [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}, {"from": "docs_agent_context_rest_api", "to": "docs_agent_context_refresh_tokens_table", "label": "conceptually_related_to", "title": "conceptually_related_to [INFERRED]", "dashes": true, "width": 1, "color": {"opacity": 0.35}, "confidence": "INFERRED"}, {"from": "docs_agent_security_seo_indexing", "to": "docs_agent_context_rest_api", "label": "references", "title": "references [EXTRACTED]", "dashes": false, "width": 2, "color": {"opacity": 0.7}, "confidence": "EXTRACTED"}];
+const LEGEND = [{"cid": 0, "color": "#4E79A7", "label": "Agent Workflow and Graphify", "count": 13}, {"cid": 1, "color": "#F28E2B", "label": "Rate Limiting and Resilience", "count": 12}, {"cid": 2, "color": "#E15759", "label": "Frontend i18n and Pages", "count": 12}, {"cid": 3, "color": "#76B7B2", "label": "Security Hardening", "count": 12}, {"cid": 4, "color": "#59A14F", "label": "Redirect and Hot Path", "count": 9}, {"cid": 5, "color": "#EDC948", "label": "Architecture and Spec Governance", "count": 8}, {"cid": 6, "color": "#B07AA1", "label": "Data Model and API", "count": 7}];
+
+// HTML-escape helper — prevents XSS when injecting graph data into innerHTML
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// Build vis datasets
+const nodesDS = new vis.DataSet(RAW_NODES.map((n, i) => ({
+  id: n.id, label: n.label, color: n.color, size: n.size,
+  font: n.font, title: n.title,
+  // Fermat/golden-angle spiral seed positions (#3699): spreading nodes out
+  // before physics runs keeps avoidOverlap from computing near-zero-distance
+  // repulsion that blows the BarnesHut recursion into a stack overflow on large
+  // graphs. `i` is the map index — physics still settles small graphs identically.
+  x: 30 * Math.sqrt(i) * Math.cos(i * 2.4),
+  y: 30 * Math.sqrt(i) * Math.sin(i * 2.4),
+  community: n.community, community_name: n.community_name,
+  source_file: n.source_file, file_type: n.file_type, degree: n.degree,
+  member_count: n.member_count,
+})));
+
+const edgesDS = new vis.DataSet(RAW_EDGES.map((e, i) => ({
+  id: i, from: e.from, to: e.to,
+  label: '',
+  title: e.title,
+  dashes: e.dashes,
+  width: e.width,
+  color: e.color,
+  arrows: { to: { enabled: true, scaleFactor: 0.5 } },
+})));
+
+const container = document.getElementById('graph');
+const network = new vis.Network(container, { nodes: nodesDS, edges: edgesDS }, {
+  physics: {
+    enabled: true,
+    solver: 'forceAtlas2Based',
+    forceAtlas2Based: {
+      gravitationalConstant: -60,
+      centralGravity: 0.005,
+      springLength: 120,
+      springConstant: 0.08,
+      damping: 0.4,
+      avoidOverlap: 0.8,
+    },
+    stabilization: { iterations: 200, fit: true },
+  },
+  interaction: {
+    hover: true,
+    tooltipDelay: 100,
+    hideEdgesOnDrag: true,
+    navigationButtons: false,
+    keyboard: false,
+  },
+  nodes: { shape: 'dot', borderWidth: 1.5 },
+  edges: { smooth: { type: 'continuous', roundness: 0.2 }, selectionWidth: 3 },
+});
+
+// Theme toggle (#3894): Light / Dark / System, persisted in localStorage.
+const THEME_KEY = 'graphify-theme';
+const themeMQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+let themeLabelColor = '#ffffff';  // matches the per-node font color set in Python
+function themePref() {
+  let p = null;
+  try { p = localStorage.getItem(THEME_KEY); } catch (e) {}
+  return (p === 'light' || p === 'dark' || p === 'system') ? p : null;
+}
+function applyTheme(pref) {
+  const t = pref === 'light' ? 'light' : (pref === 'system' && themeMQ && themeMQ.matches) ? 'light' : 'dark';
+  const root = document.documentElement;
+  if (!root) return;
+  root.setAttribute('data-theme', t);
+  document.querySelectorAll('[data-theme-choice]').forEach(b => {
+    b.setAttribute('aria-pressed', String(b.dataset.themeChoice === (pref || 'dark')));
+  });
+  const labelColor = getComputedStyle(root).getPropertyValue('--node-label').trim();
+  if (labelColor && labelColor !== themeLabelColor) {
+    themeLabelColor = labelColor;
+    nodesDS.update(nodesDS.get().map(n => ({ id: n.id, font: Object.assign({}, n.font, { color: labelColor }) })));
+  }
+}
+document.querySelectorAll('[data-theme-choice]').forEach(b => {
+  b.addEventListener('click', () => {
+    const pref = b.dataset.themeChoice;
+    try { localStorage.setItem(THEME_KEY, pref); } catch (e) {}
+    applyTheme(pref);
+  });
+});
+if (themeMQ) {
+  const onSchemeChange = () => { if (themePref() === 'system') applyTheme('system'); };
+  if (themeMQ.addEventListener) themeMQ.addEventListener('change', onSchemeChange);
+  else if (themeMQ.addListener) themeMQ.addListener(onSchemeChange);
+}
+applyTheme(themePref());
+
+network.once('stabilizationIterationsDone', () => {
+  network.setOptions({ physics: { enabled: false } });
+});
+
+function showInfo(nodeId) {
+  const n = nodesDS.get(nodeId);
+  if (!n) return;
+  const neighborIds = network.getConnectedNodes(nodeId);
+  const neighborItems = neighborIds.map(nid => {
+    const nb = nodesDS.get(nid);
+    const color = nb ? nb.color.background : '#555';
+    return `<span class="neighbor-link" style="border-left-color:${esc(color)}" data-nid="${esc(nid)}">${esc(nb ? nb.label : nid)}</span>`;
+  }).join('');
+  const isMetaNode = !n.file_type && !n.source_file;
+  let html = `<div class="field"><b>${esc(n.label)}</b></div>`;
+  if (!isMetaNode) {
+    html += `<div class="field">Type: ${esc(n.file_type || 'unknown')}</div>`;
+  }
+  html += `<div class="field">Community: ${esc(n.community_name || '')}</div>`;
+  if (!isMetaNode) {
+    html += `<div class="field">Source: ${esc(n.source_file || '-')}</div>`;
+  } else if (n.member_count !== undefined && n.member_count !== null) {
+    html += `<div class="field">Members: ${esc(n.member_count)}</div>`;
+  }
+  html += `<div class="field">Degree: ${n.degree}</div>`;
+  if (neighborIds.length) {
+    html += `<div class="field" style="margin-top:8px;color:var(--text-2);font-size:11px">Neighbors (${neighborIds.length})</div><div id="neighbors-list">${neighborItems}</div>`;
+  }
+  document.getElementById('info-content').innerHTML = html;
+}
+
+function focusNode(nodeId) {
+  network.focus(nodeId, { scale: 1.4, animation: true });
+  network.selectNodes([nodeId]);
+  showInfo(nodeId);
+}
+
+// Neighbor links use a data attribute + one delegated listener rather than an
+// inline onclick. A node id/label sourced from a document or a scraped URL
+// (graphify add) can contain a double-quote; dropping the stringified id
+// unescaped into a quoted onclick both broke every link and allowed a hostile
+// source to inject an event handler into the local report (stored XSS, #1838).
+// esc() on data-nid keeps the value inside the attribute; the listener reads it
+// back verbatim. Bound to document so it survives the innerHTML rebuild that
+// recreates #neighbors-list on each showInfo().
+document.addEventListener('click', e => {
+  const el = e.target.closest('.neighbor-link');
+  if (el && el.dataset.nid !== undefined) focusNode(el.dataset.nid);
+});
+
+// Sidebar tooltips reuse vis-network's .vis-tooltip style and 100ms tooltipDelay.
+// Names get one only when CSS ellipsis truncates them (the full text is still in
+// the DOM); counts always get one, to say what the number is. Text is set with
+// textContent only (labels are untrusted). Delegated on document so rows rebuilt
+// later (search results, showInfo()) are covered.
+const sidebarTip = document.createElement('div');
+sidebarTip.className = 'vis-tooltip';
+sidebarTip.style.cssText = 'white-space: normal; max-width: 360px; overflow-wrap: break-word;';
+document.body.appendChild(sidebarTip);
+let sidebarTipTimer = null;
+let sidebarTipEl = null;    // element whose text the tooltip shows
+let sidebarTipZone = null;  // element the pointer must leave to hide it
+function hideSidebarTip() {
+  clearTimeout(sidebarTipTimer);
+  sidebarTip.style.visibility = 'hidden';
+  sidebarTip.textContent = '';
+  sidebarTipEl = sidebarTipZone = null;
+}
+document.addEventListener('mouseover', e => {
+  const zone = e.target.closest && e.target.closest('.legend-count, .legend-item, .search-item, .neighbor-link');
+  // Anywhere on a legend row except its count (dot, checkbox, gaps, padding)
+  // stands for the row's name, so moving within the row never re-triggers it.
+  const el = zone && zone.classList.contains('legend-item') ? zone.querySelector('.legend-label') : zone;
+  if (!el || el === sidebarTipEl) return;
+  hideSidebarTip();
+  const isCount = el.classList.contains('legend-count');
+  if (!isCount && el.scrollWidth <= el.clientWidth) return;
+  const text = isCount ? `${el.textContent} ${el.textContent === '1' ? 'node' : 'nodes'}` : el.textContent;
+  sidebarTipEl = el;
+  sidebarTipZone = zone;
+  const x = e.clientX, y = e.clientY;
+  sidebarTipTimer = setTimeout(() => {
+    sidebarTip.textContent = text;
+    sidebarTip.style.left = sidebarTip.style.top = '0px';  // measure at full max-width
+    sidebarTip.style.visibility = 'visible';
+    const w = sidebarTip.offsetWidth, h = sidebarTip.offsetHeight;
+    sidebarTip.style.left = Math.max(4, Math.min(x + 12, window.innerWidth - w - 4)) + 'px';
+    sidebarTip.style.top = (y + 16 + h > window.innerHeight ? Math.max(4, y - h - 8) : y + 16) + 'px';
+  }, 100);
+});
+document.addEventListener('mouseout', e => {
+  if (sidebarTipZone && !sidebarTipZone.contains(e.relatedTarget)) hideSidebarTip();
+});
+// A click rebuilds or hides the row (showInfo(), search pick) without a mouseout.
+document.addEventListener('mousedown', hideSidebarTip);
+
+// Track hovered node — hover detection is more reliable than click params
+let hoveredNodeId = null;
+network.on('hoverNode', params => {
+  hoveredNodeId = params.node;
+  container.style.cursor = 'pointer';
+});
+network.on('blurNode', () => {
+  hoveredNodeId = null;
+  container.style.cursor = 'default';
+});
+container.addEventListener('click', () => {
+  if (hoveredNodeId !== null) {
+    showInfo(hoveredNodeId);
+    network.selectNodes([hoveredNodeId]);
+  }
+});
+network.on('click', params => {
+  if (params.nodes.length > 0) {
+    showInfo(params.nodes[0]);
+  } else if (hoveredNodeId === null) {
+    document.getElementById('info-content').innerHTML = '<span class="empty">Click a node to inspect it</span>';
+  }
+});
+
+const searchInput = document.getElementById('search');
+const searchResults = document.getElementById('search-results');
+searchInput.addEventListener('input', () => {
+  const q = searchInput.value.toLowerCase().trim();
+  searchResults.innerHTML = '';
+  if (!q) { searchResults.style.display = 'none'; return; }
+  const matches = RAW_NODES.filter(n => n.label.toLowerCase().includes(q)).slice(0, 20);
+  if (!matches.length) { searchResults.style.display = 'none'; return; }
+  searchResults.style.display = 'block';
+  matches.forEach(n => {
+    const el = document.createElement('div');
+    el.className = 'search-item';
+    el.textContent = n.label;
+    el.style.borderLeft = `3px solid ${n.color.background}`;
+    el.style.paddingLeft = '8px';
+    el.onclick = () => {
+      network.focus(n.id, { scale: 1.5, animation: true });
+      network.selectNodes([n.id]);
+      showInfo(n.id);
+      searchResults.style.display = 'none';
+      searchInput.value = '';
+    };
+    searchResults.appendChild(el);
+  });
+});
+document.addEventListener('click', e => {
+  if (!searchResults.contains(e.target) && e.target !== searchInput)
+    searchResults.style.display = 'none';
+});
+
+const hiddenCommunities = new Set();
+
+const selectAllCb = document.getElementById('select-all-cb');
+
+function updateSelectAllState() {
+  const total = LEGEND.length;
+  const hidden = hiddenCommunities.size;
+  selectAllCb.checked = hidden === 0;
+  selectAllCb.indeterminate = hidden > 0 && hidden < total;
+}
+
+function toggleAllCommunities(hide) {
+  document.querySelectorAll('.legend-item').forEach(item => {
+    hide ? item.classList.add('dimmed') : item.classList.remove('dimmed');
+  });
+  document.querySelectorAll('.legend-cb').forEach(cb => {
+    cb.checked = !hide;
+  });
+  LEGEND.forEach(c => {
+    if (hide) hiddenCommunities.add(c.cid); else hiddenCommunities.delete(c.cid);
+  });
+  const updates = RAW_NODES.map(n => ({ id: n.id, hidden: hide }));
+  nodesDS.update(updates);
+  updateSelectAllState();
+}
+
+const legendEl = document.getElementById('legend');
+LEGEND.forEach(c => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox';
+  cb.className = 'legend-cb';
+  cb.checked = true;
+  cb.addEventListener('change', (e) => {
+    e.stopPropagation();
+    if (cb.checked) {
+      hiddenCommunities.delete(c.cid);
+      item.classList.remove('dimmed');
+    } else {
+      hiddenCommunities.add(c.cid);
+      item.classList.add('dimmed');
+    }
+    const updates = RAW_NODES
+      .filter(n => n.community === c.cid)
+      .map(n => ({ id: n.id, hidden: !cb.checked }));
+    nodesDS.update(updates);
+    updateSelectAllState();
+  });
+  item.innerHTML = `<div class="legend-dot" style="background:${c.color}"></div>
+    <span class="legend-label">${c.label}</span>
+    <span class="legend-count">${c.count}</span>`;
+  item.prepend(cb);
+  item.onclick = (e) => {
+    if (e.target === cb) return;
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('change'));
+  };
+  legendEl.appendChild(item);
+});
+</script>
+<script>
+// Render hyperedges as shaded regions
+const hyperedges = [{"id": "anti_cache_stampede_layers", "label": "Anti Cache Stampede Layer Set", "nodes": ["docs_agent_context_anti_cache_stampede", "docs_agent_context_stale_while_revalidate", "docs_agent_context_single_flight", "docs_agent_context_negative_cache", "docs_agent_security_bulkhead"], "relation": "form", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/agent/CONTEXT.md"}, {"id": "redirect_hot_path", "label": "Redirect Hot Path Flow", "nodes": ["docs_agent_context_redirect_cache", "docs_agent_context_302_redirect", "docs_agent_context_click_stream", "docs_agent_context_click_events_table", "docs_agent_context_links_table"], "relation": "participate_in", "confidence": "EXTRACTED", "confidence_score": 1.0, "source_file": "docs/agent/CONTEXT.md"}, {"id": "security_defense_in_depth", "label": "Defense in Depth Controls", "nodes": ["docs_agent_security_token_bucket", "docs_agent_security_circuit_breaker", "docs_agent_security_bulkhead", "docs_agent_security_rls", "docs_agent_context_url_policy"], "relation": "implement", "confidence": "INFERRED", "confidence_score": 0.85, "source_file": "docs/agent/SECURITY.md"}];
+// afterDrawing passes ctx already transformed to network coordinate space.
+// Draw node positions raw — no manual pan/zoom/DPR math needed.
+
+// Andrew's monotone chain. Returns the hull in counter-clockwise order, which
+// is what the perimeter must be traced in. Collinear and duplicate points
+// collapse to the extremes, so degenerate member sets render as a segment
+// rather than a zero-area crossed path.
+function convexHull(pts) {
+    const p = pts.slice().sort((a, b) => (a.x - b.x) || (a.y - b.y));
+    if (p.length < 3) return p;
+    const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+    const build = seq => {
+        const out = [];
+        for (const q of seq) {
+            while (out.length >= 2 && cross(out[out.length - 2], out[out.length - 1], q) <= 0) out.pop();
+            out.push(q);
+        }
+        out.pop();
+        return out;
+    };
+    const hull = build(p).concat(build(p.slice().reverse()));
+    return hull.length >= 3 ? hull : p;
+}
+network.on('afterDrawing', function(ctx) {
+    hyperedges.forEach(h => {
+        const positions = h.nodes
+            .map(nid => network.getPositions([nid])[nid])
+            .filter(p => p !== undefined);
+        if (positions.length < 2) return;
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle = '#6366f1';
+        ctx.strokeStyle = '#6366f1';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        // Centroid and expanded hull in network coordinates.
+        // The perimeter must follow hull order, not h.nodes order: tracing the
+        // raw member order self-intersects whenever the layout does not happen
+        // to place members in angular order, filling as crossed wedges.
+        const cx = positions.reduce((s, p) => s + p.x, 0) / positions.length;
+        const cy = positions.reduce((s, p) => s + p.y, 0) / positions.length;
+        const hull = convexHull(positions);
+        const expanded = hull.map(p => ({
+            x: cx + (p.x - cx) * 1.15,
+            y: cy + (p.y - cy) * 1.15
+        }));
+        ctx.moveTo(expanded[0].x, expanded[0].y);
+        expanded.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+        ctx.closePath();
+        ctx.fill();
+        ctx.globalAlpha = 0.4;
+        ctx.stroke();
+        // Label
+        ctx.globalAlpha = 0.8;
+        ctx.fillStyle = '#4f46e5';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(h.label, cx, cy - 5);
+        ctx.restore();
+    });
+});
+</script>
+</body>
+</html>

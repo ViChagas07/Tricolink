@@ -1,0 +1,56 @@
+{
+  ".kilo/kilo.json": {
+    "mtime": 1792552167.0818408,
+    "seen": 1792552559.025373,
+    "ast_hash": "2deaa82b1e8900801fd3e44c8efbbfa4",
+    "semantic_hash": "2deaa82b1e8900801fd3e44c8efbbfa4"
+  },
+  "AGENTS.md": {
+    "mtime": 1792552167.064223,
+    "seen": 1792552559.0253778,
+    "ast_hash": "6f27004b18a897c49bec3f0cf62ce2d1",
+    "semantic_hash": "6f27004b18a897c49bec3f0cf62ce2d1"
+  },
+  "README.md": {
+    "mtime": 1792190194.378892,
+    "seen": 1792552559.0253801,
+    "ast_hash": "1e3c1ba8a9fd094bfd7e09dd8e675c58",
+    "semantic_hash": "1e3c1ba8a9fd094bfd7e09dd8e675c58"
+  },
+  "docs/agent/CONTEXT.md": {
+    "mtime": 1792190194.4470696,
+    "seen": 1792552559.0253813,
+    "ast_hash": "0bdb5690cd04048cce7c4872b910590d",
+    "semantic_hash": "0bdb5690cd04048cce7c4872b910590d"
+  },
+  "docs/agent/GRAPHIFY.md": {
+    "mtime": 1792190194.4425287,
+    "seen": 1792552559.025383,
+    "ast_hash": "aa05b3b82c1a22e91f8cec76cf9be242",
+    "semantic_hash": "aa05b3b82c1a22e91f8cec76cf9be242"
+  },
+  "docs/agent/PROGRESS.md": {
+    "mtime": 1792552780.5529838,
+    "seen": 1792553341.1219857,
+    "ast_hash": "d08aabbe89a5f50777d841e840b282ba",
+    "semantic_hash": "d08aabbe89a5f50777d841e840b282ba"
+  },
+  "docs/agent/RULES.md": {
+    "mtime": 1792190194.4279358,
+    "seen": 1792552559.0253851,
+    "ast_hash": "dc374e7dd5254f5c1fb64adf039bffce",
+    "semantic_hash": "dc374e7dd5254f5c1fb64adf039bffce"
+  },
+  "docs/agent/SECURITY.md": {
+    "mtime": 1792190194.4229355,
+    "seen": 1792552559.0253863,
+    "ast_hash": "dc0fc8ea437b1b1980f7d4b9e99fe6e3",
+    "semantic_hash": "dc0fc8ea437b1b1980f7d4b9e99fe6e3"
+  },
+  "docs/agent/UI_SPEC.md": {
+    "mtime": 1792190194.4334977,
+    "seen": 1792552559.0253875,
+    "ast_hash": "0af068c02b9c3bc562c5db1620bbd869",
+    "semantic_hash": "0af068c02b9c3bc562c5db1620bbd869"
+  }
+}
