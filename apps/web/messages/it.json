@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "title": "Tricolink — Link brevi, con chiarezza",
+    "description": "Trasforma URL lunghe in link brevi e misurabili. Gratis, veloce e rispettoso della privacy.",
+    "homeTitle": "Tricolink — Link brevi, con chiarezza",
+    "homeDescription": "Trasforma URL lunghe in link brevi e misurabili in pochi secondi. Gratis, veloce e rispettoso della privacy."
+  },
+  "nav": {
+    "main": "Navigazione principale",
+    "skipToContent": "Vai al contenuto",
+    "home": "Pagina iniziale di Tricolink",
+    "links": "Link",
+    "login": "Accedi",
+    "account": "Account",
+    "logout": "Esci",
+    "openMenu": "Apri menu",
+    "closeMenu": "Chiudi menu",
+    "menuTitle": "Menu",
+    "language": "Lingua",
+    "selectLanguage": "Seleziona lingua",
+    "theme": "Cambia tema",
+    "themeToLight": "Passa al tema chiaro",
+    "themeToDark": "Passa al tema scuro"
+  },
+  "hero": {
+    "title": "Link brevi, con chiarezza.",
+    "subtitle": "Trasforma URL lunghe in link brevi e misurabili in pochi secondi.",
+    "cta": "Crea il tuo account gratuito"
+  },
+  "demo": {
+    "label": "Esempio illustrativo",
+    "title": "I tuoi link a colpo d'occhio",
+    "description": "Segui clic, paesi, origini e dispositivi in un unico posto.",
+    "clicks": "Clic",
+    "countries": "Paesi",
+    "referrers": "Origini",
+    "devices": "Dispositivi",
+    "created": "Creato"
+  },
+  "features": {
+    "title": "Tutto ciò che serve",
+    "shortTitle": "Link brevi e veloci",
+    "shortBody": "Accorcia una URL in un passaggio, senza account.",
+    "statsTitle": "Statistiche chiare",
+    "statsBody": "Segui clic, paesi, origini e dispositivi nel tempo.",
+    "controlTitle": "Hai il controllo",
+    "controlBody": "Modifica la destinazione, sospendi il link o imposta una scadenza."
+  },
+  "faq": {
+    "title": "Domande frequenti",
+    "q1": "Cos'è Tricolink e come funziona?",
+    "a1": "Tricolink trasforma una URL lunga in un link breve. Quando qualcuno apre il link breve, lo reindirizziamo all'indirizzo originale e conteggiamo il clic.",
+    "q2": "È gratis?",
+    "a2": "Sì. Puoi accorciare link gratuitamente; creare un account aggiunge cronologia e strumenti di gestione.",
+    "q3": "Perché accorciare una URL?",
+    "a3": "I link brevi sono più facili da condividere, sono più ordinati e mostrano quante persone hanno fatto clic.",
+    "q4": "È sicuro?",
+    "a4": "Reindirizziamo solo verso indirizzi http e https, non memorizziamo mai gli indirizzi IP e contrassegniamo i reindirizzamenti come noindex.",
+    "q5": "Come accorcio un link?",
+    "a5": "Incolla la URL nel campo della pagina iniziale e seleziona Accorcia. Il link breve appare subito.",
+    "q6": "Posso personalizzare il codice?",
+    "a6": "Gli utenti autenticati possono scegliere un alias personalizzato quando il codice è disponibile.",
+    "q7": "I link scadono?",
+    "a7": "I link anonimi scadono automaticamente. Gli utenti autenticati possono impostare o rimuovere una scadenza per ogni link.",
+    "q8": "Conservate il mio indirizzo IP?",
+    "a8": "No. Le statistiche dei clic conservano solo il paese fornito dalla rete perimetrale, oltre a dispositivo, browser e host di provenienza."
+  },
+  "auth": {
+    "loginTitle": "Bentornato",
+    "loginSubtitle": "Accedi per gestire i tuoi link.",
+    "registerTitle": "Crea il tuo account",
+    "email": "E-mail",
+    "password": "Password",
+    "displayName": "Nome visualizzato",
+    "login": "Accedi",
+    "register": "Crea account",
+    "google": "Continua con Google",
+    "showPassword": "Mostra password",
+    "hidePassword": "Nascondi password",
+    "backHome": "Torna alla home",
+    "noAccount": "Non hai un account?",
+    "hasAccount": "Hai già un account?"
+  },
+  "links": {
+    "title": "I tuoi link",
+    "emptyTitle": "Nessun link",
+    "emptyBody": "Accorcia la tua prima URL per vederla qui.",
+    "create": "Accorcia una URL",
+    "search": "Cerca link",
+    "totalClicks": "Clic negli ultimi 30 giorni"
+  },
+  "account": {
+    "title": "Account",
+    "profile": "Profilo",
+    "preferences": "Preferenze",
+    "displayName": "Nome visualizzato",
+    "email": "E-mail",
+    "language": "Lingua preferita",
+    "theme": "Tema",
+    "save": "Salva modifiche",
+    "saved": "Modifiche salvate.",
+    "logout": "Esci"
+  },
+  "errors": {
+    "generic": "Qualcosa è andato storto. Riprova.",
+    "network": "Impossibile raggiungere il server. Controlla la connessione.",
+    "unauthorized": "La sessione è scaduta. Accedi di nuovo.",
+    "forbidden": "Non hai il permesso di farlo.",
+    "notFound": "Non abbiamo trovato questa pagina.",
+    "rateLimited": "Troppe richieste. Riprova tra {seconds} secondi.",
+    "invalidUrl": "Inserisci una URL http o https valida."
+  },
+  "footer": {
+    "tagline": "Link brevi con statistiche chiare.",
+    "product": "Prodotto",
+    "account": "Account",
+    "language": "Lingua",
+    "copyright": "© {year} Tricolink. Tutti i diritti riservati."
+  }
+}

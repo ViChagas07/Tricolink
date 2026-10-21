@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "title": "Tricolink — 짧은 링크를 명확하게",
+    "description": "긴 URL을 짧고 측정 가능한 링크로 바꾸세요. 무료이고 빠르며 개인정보를 존중합니다.",
+    "homeTitle": "Tricolink — 짧은 링크를 명확하게",
+    "homeDescription": "긴 URL을 몇 초 만에 짧고 측정 가능한 링크로 바꾸세요. 무료이고 빠르며 개인정보를 존중합니다."
+  },
+  "nav": {
+    "main": "주요 탐색",
+    "skipToContent": "본문으로 건너뛰기",
+    "home": "Tricolink 홈",
+    "links": "링크",
+    "login": "로그인",
+    "account": "계정",
+    "logout": "로그아웃",
+    "openMenu": "메뉴 열기",
+    "closeMenu": "메뉴 닫기",
+    "menuTitle": "메뉴",
+    "language": "언어",
+    "selectLanguage": "언어 선택",
+    "theme": "테마 전환",
+    "themeToLight": "라이트 테마로 전환",
+    "themeToDark": "다크 테마로 전환"
+  },
+  "hero": {
+    "title": "짧은 링크를 명확하게.",
+    "subtitle": "긴 URL을 몇 초 만에 짧고 측정 가능한 링크로 바꾸세요.",
+    "cta": "무료 계정 만들기"
+  },
+  "demo": {
+    "label": "예시 화면",
+    "title": "한눈에 보는 링크",
+    "description": "클릭, 국가, 유입 경로, 기기를 한곳에서 확인하세요.",
+    "clicks": "클릭",
+    "countries": "국가",
+    "referrers": "유입 경로",
+    "devices": "기기",
+    "created": "생성일"
+  },
+  "features": {
+    "title": "필요한 모든 기능",
+    "shortTitle": "빠른 짧은 링크",
+    "shortBody": "계정 없이 한 단계로 URL을 줄이세요.",
+    "statsTitle": "명확한 통계",
+    "statsBody": "클릭, 국가, 유입 경로, 기기를 시간별로 추적하세요.",
+    "controlTitle": "직접 관리하세요",
+    "controlBody": "목적지를 수정하고, 링크를 일시 중지하거나 만료일을 설정하세요."
+  },
+  "faq": {
+    "title": "자주 묻는 질문",
+    "q1": "Tricolink는 무엇이며 어떻게 작동하나요?",
+    "a1": "Tricolink는 긴 URL을 짧은 링크로 바꿉니다. 누군가 짧은 링크를 열면 원래 주소로 리디렉션하고 클릭을 집계합니다.",
+    "q2": "무료인가요?",
+    "a2": "네. 링크를 무료로 줄일 수 있으며, 계정을 만들면 기록과 관리 도구가 추가됩니다.",
+    "q3": "왜 URL을 줄여야 하나요?",
+    "a3": "짧은 링크는 공유하기 쉽고 깔끔하며 몇 명이 클릭했는지 확인할 수 있습니다.",
+    "q4": "안전한가요?",
+    "a4": "http와 https 주소로만 리디렉션하고 IP 주소는 저장하지 않으며 리디렉션에 noindex를 설정합니다.",
+    "q5": "링크를 어떻게 줄이나요?",
+    "a5": "홈페이지 입력란에 URL을 붙여넣고 줄이기를 선택하세요. 짧은 링크가 바로 표시됩니다.",
+    "q6": "코드를 사용자 지정할 수 있나요?",
+    "a6": "로그인한 사용자는 코드가 사용 가능할 때 사용자 지정 별칭을 선택할 수 있습니다.",
+    "q7": "링크가 만료되나요?",
+    "a7": "익명 링크는 자동으로 만료됩니다. 로그인한 사용자는 각 링크의 만료일을 설정하거나 제거할 수 있습니다.",
+    "q8": "제 IP 주소를 저장하나요?",
+    "a8": "아니요. 클릭 통계에는 엣지 네트워크가 제공하는 국가와 기기, 브라우저, 참조 호스트만 저장합니다."
+  },
+  "auth": {
+    "loginTitle": "다시 오신 것을 환영합니다",
+    "loginSubtitle": "로그인하여 링크를 관리하세요.",
+    "registerTitle": "계정 만들기",
+    "email": "이메일",
+    "password": "비밀번호",
+    "displayName": "표시 이름",
+    "login": "로그인",
+    "register": "계정 만들기",
+    "google": "Google로 계속",
+    "showPassword": "비밀번호 표시",
+    "hidePassword": "비밀번호 숨기기",
+    "backHome": "홈으로 돌아가기",
+    "noAccount": "계정이 없으신가요?",
+    "hasAccount": "이미 계정이 있으신가요?"
+  },
+  "links": {
+    "title": "내 링크",
+    "emptyTitle": "아직 링크가 없습니다",
+    "emptyBody": "첫 URL을 줄이면 여기에 표시됩니다.",
+    "create": "URL 줄이기",
+    "search": "링크 검색",
+    "totalClicks": "지난 30일 클릭"
+  },
+  "account": {
+    "title": "계정",
+    "profile": "프로필",
+    "preferences": "환경설정",
+    "displayName": "표시 이름",
+    "email": "이메일",
+    "language": "선호 언어",
+    "theme": "테마",
+    "save": "변경 사항 저장",
+    "saved": "변경 사항이 저장되었습니다.",
+    "logout": "로그아웃"
+  },
+  "errors": {
+    "generic": "문제가 발생했습니다. 다시 시도해 주세요.",
+    "network": "서버에 연결할 수 없습니다. 연결을 확인하세요.",
+    "unauthorized": "세션이 만료되었습니다. 다시 로그인해 주세요.",
+    "forbidden": "권한이 없습니다.",
+    "notFound": "페이지를 찾을 수 없습니다.",
+    "rateLimited": "요청이 너무 많습니다. {seconds}초 후에 다시 시도하세요.",
+    "invalidUrl": "유효한 http 또는 https URL을 입력하세요."
+  },
+  "footer": {
+    "tagline": "명확한 통계가 있는 짧은 링크.",
+    "product": "제품",
+    "account": "계정",
+    "language": "언어",
+    "copyright": "© {year} Tricolink. All rights reserved."
+  }
+}

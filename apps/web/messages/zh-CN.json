@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "title": "Tricolink — 清晰的短链接",
+    "description": "将长网址变成可追踪的短链接。免费、快速并尊重隐私。",
+    "homeTitle": "Tricolink — 清晰的短链接",
+    "homeDescription": "几秒钟内将长网址变成可追踪的短链接。免费、快速并尊重隐私。"
+  },
+  "nav": {
+    "main": "主导航",
+    "skipToContent": "跳到主要内容",
+    "home": "Tricolink 首页",
+    "links": "链接",
+    "login": "登录",
+    "account": "账户",
+    "logout": "退出登录",
+    "openMenu": "打开菜单",
+    "closeMenu": "关闭菜单",
+    "menuTitle": "菜单",
+    "language": "语言",
+    "selectLanguage": "选择语言",
+    "theme": "切换主题",
+    "themeToLight": "切换到浅色主题",
+    "themeToDark": "切换到深色主题"
+  },
+  "hero": {
+    "title": "清晰的短链接。",
+    "subtitle": "几秒钟内将长网址变成可追踪的短链接。",
+    "cta": "创建免费账户"
+  },
+  "demo": {
+    "label": "示例展示",
+    "title": "一目了然地查看链接",
+    "description": "在一个地方查看点击、国家、来源和设备。",
+    "clicks": "点击",
+    "countries": "国家",
+    "referrers": "来源",
+    "devices": "设备",
+    "created": "创建于"
+  },
+  "features": {
+    "title": "你需要的一切",
+    "shortTitle": "快速短链接",
+    "shortBody": "无需账户，一步缩短网址。",
+    "statsTitle": "清晰的统计",
+    "statsBody": "长期跟踪点击、国家、来源和设备。",
+    "controlTitle": "由你掌控",
+    "controlBody": "编辑目标地址、暂停链接或设置到期时间。"
+  },
+  "faq": {
+    "title": "常见问题",
+    "q1": "Tricolink 是什么？它如何工作？",
+    "a1": "Tricolink 将长网址变成短链接。当有人打开短链接时，我们会跳转到原地址并记录点击。",
+    "q2": "免费吗？",
+    "a2": "是的。你可以免费缩短链接，创建账户后还能获得历史记录和管理工具。",
+    "q3": "为什么要缩短网址？",
+    "a3": "短链接更易于分享、外观更整洁，还能让你了解有多少人点击。",
+    "q4": "安全吗？",
+    "a4": "我们只跳转到 http 和 https 地址，绝不存储 IP 地址，并将短链接跳转标记为 noindex。",
+    "q5": "如何缩短链接？",
+    "a5": "将网址粘贴到首页输入框并选择缩短。短链接会立即显示。",
+    "q6": "可以自定义代码吗？",
+    "a6": "登录用户可以在代码可用时选择自定义别名。",
+    "q7": "链接会过期吗？",
+    "a7": "匿名链接会自动过期。登录用户可以为每个链接设置或移除到期时间。",
+    "q8": "你们会存储我的 IP 地址吗？",
+    "a8": "不会。点击统计只保留边缘网络提供的国家，以及设备、浏览器和来源主机。"
+  },
+  "auth": {
+    "loginTitle": "欢迎回来",
+    "loginSubtitle": "登录以管理你的链接。",
+    "registerTitle": "创建账户",
+    "email": "电子邮件",
+    "password": "密码",
+    "displayName": "显示名称",
+    "login": "登录",
+    "register": "创建账户",
+    "google": "使用 Google 继续",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
+    "backHome": "返回首页",
+    "noAccount": "还没有账户？",
+    "hasAccount": "已经有账户？"
+  },
+  "links": {
+    "title": "你的链接",
+    "emptyTitle": "还没有链接",
+    "emptyBody": "缩短第一个网址后会显示在这里。",
+    "create": "缩短网址",
+    "search": "搜索链接",
+    "totalClicks": "过去 30 天的点击"
+  },
+  "account": {
+    "title": "账户",
+    "profile": "个人资料",
+    "preferences": "偏好设置",
+    "displayName": "显示名称",
+    "email": "电子邮件",
+    "language": "首选语言",
+    "theme": "主题",
+    "save": "保存更改",
+    "saved": "更改已保存。",
+    "logout": "退出登录"
+  },
+  "errors": {
+    "generic": "出了点问题。请重试。",
+    "network": "无法连接服务器。请检查你的网络。",
+    "unauthorized": "会话已过期。请重新登录。",
+    "forbidden": "你没有权限执行此操作。",
+    "notFound": "找不到该页面。",
+    "rateLimited": "请求过多。请在 {seconds} 秒后重试。",
+    "invalidUrl": "请输入有效的 http 或 https 网址。"
+  },
+  "footer": {
+    "tagline": "带清晰统计的短链接。",
+    "product": "产品",
+    "account": "账户",
+    "language": "语言",
+    "copyright": "© {year} Tricolink. 保留所有权利。"
+  }
+}

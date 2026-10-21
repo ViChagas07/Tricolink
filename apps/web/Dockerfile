@@ -31,7 +31,12 @@ CMD ["pnpm", "dev", "--hostname", "0.0.0.0"]
 
 FROM base AS builder
 
-ENV NODE_ENV=production
+ARG API_INTERNAL_URL=http://api:8000
+ARG NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+ENV NODE_ENV=production \
+    API_INTERNAL_URL=${API_INTERNAL_URL} \
+    NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL}
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

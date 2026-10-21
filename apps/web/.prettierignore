@@ -3,3 +3,7 @@ node_modules
 out
 coverage
 pnpm-lock.yaml
+
+test-results
+playwright-report
+.vscode

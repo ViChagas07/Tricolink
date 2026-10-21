@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "title": "Tricolink — Short links, clearly",
+    "description": "Turn long URLs into short, trackable links. Free, fast and privacy-friendly.",
+    "homeTitle": "Tricolink — Short links, clearly",
+    "homeDescription": "Turn long URLs into short, trackable links in seconds. Free, fast and privacy-friendly."
+  },
+  "nav": {
+    "main": "Main navigation",
+    "skipToContent": "Skip to content",
+    "home": "Tricolink home",
+    "links": "Links",
+    "login": "Sign in",
+    "account": "Account",
+    "logout": "Sign out",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "menuTitle": "Menu",
+    "language": "Language",
+    "selectLanguage": "Select language",
+    "theme": "Toggle theme",
+    "themeToLight": "Switch to light theme",
+    "themeToDark": "Switch to dark theme"
+  },
+  "hero": {
+    "title": "Short links, clearly.",
+    "subtitle": "Turn long URLs into short, trackable links in seconds.",
+    "cta": "Create your free account"
+  },
+  "demo": {
+    "label": "Illustrative example",
+    "title": "Your links at a glance",
+    "description": "See clicks, countries, sources and devices in one place.",
+    "clicks": "Clicks",
+    "countries": "Countries",
+    "referrers": "Sources",
+    "devices": "Devices",
+    "created": "Created"
+  },
+  "features": {
+    "title": "Everything you need",
+    "shortTitle": "Fast short links",
+    "shortBody": "Shorten a URL in one step, with no account required.",
+    "statsTitle": "Clear statistics",
+    "statsBody": "Follow clicks, countries, sources and devices over time.",
+    "controlTitle": "You stay in control",
+    "controlBody": "Edit the destination, pause the link or set an expiry date."
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "q1": "What is Tricolink and how does it work?",
+    "a1": "Tricolink turns a long URL into a short link. When someone opens the short link, we redirect them to the original address and count the click.",
+    "q2": "Is it free?",
+    "a2": "Yes. You can shorten links for free, and creating an account adds history and management tools.",
+    "q3": "Why should I shorten a URL?",
+    "a3": "Short links are easier to share, look cleaner and let you follow how many people clicked.",
+    "q4": "Is it safe?",
+    "a4": "We only redirect to http and https addresses, never store IP addresses and mark short-link redirects as noindex.",
+    "q5": "How do I shorten a link?",
+    "a5": "Paste the URL into the field on the home page and select Shorten. The short link appears right away.",
+    "q6": "Can I customize the code?",
+    "a6": "Signed-in users can choose a custom alias when the code is available.",
+    "q7": "Do links expire?",
+    "a7": "Anonymous links expire automatically. Signed-in users can set or remove an expiry date for each link.",
+    "q8": "Do you store my IP address?",
+    "a8": "No. Click statistics keep only the country provided by the edge network, plus device, browser and referring host."
+  },
+  "auth": {
+    "loginTitle": "Welcome back",
+    "loginSubtitle": "Sign in to manage your links.",
+    "registerTitle": "Create your account",
+    "email": "Email",
+    "password": "Password",
+    "displayName": "Display name",
+    "login": "Sign in",
+    "register": "Create account",
+    "google": "Continue with Google",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "backHome": "Back to home",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?"
+  },
+  "links": {
+    "title": "Your links",
+    "emptyTitle": "No links yet",
+    "emptyBody": "Shorten your first URL to see it here.",
+    "create": "Shorten a URL",
+    "search": "Search links",
+    "totalClicks": "Clicks in the last 30 days"
+  },
+  "account": {
+    "title": "Account",
+    "profile": "Profile",
+    "preferences": "Preferences",
+    "displayName": "Display name",
+    "email": "Email",
+    "language": "Preferred language",
+    "theme": "Theme",
+    "save": "Save changes",
+    "saved": "Changes saved.",
+    "logout": "Sign out"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "We couldn't reach the server. Check your connection.",
+    "unauthorized": "Your session expired. Please sign in again.",
+    "forbidden": "You don't have permission to do that.",
+    "notFound": "We couldn't find that page.",
+    "rateLimited": "Too many requests. Try again in {seconds} seconds.",
+    "invalidUrl": "Enter a valid http or https URL."
+  },
+  "footer": {
+    "tagline": "Short links with clear statistics.",
+    "product": "Product",
+    "account": "Account",
+    "language": "Language",
+    "copyright": "© {year} Tricolink. All rights reserved."
+  }
+}

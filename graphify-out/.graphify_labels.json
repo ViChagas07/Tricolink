@@ -1,11 +1,9 @@
 {
-  "2": "Web App and UI Components",
   "4": "Agent Workflow and Graphify",
   "5": "Compose and P01 Infra",
   "12": "ESLint Tooling",
   "13": "pnpm Release Policy",
   "14": "PostCSS Tooling",
-  "15": "Web Home Page",
   "16": "Honesty Rule",
   "17": "API Package"
 }

@@ -6,7 +6,7 @@
 - [x] P02 Backend: fundação + núcleo de segurança (token bucket, circuit breaker, bulkhead, middlewares)
 - [x] P03 Links: encurtar, redirecionar, cache anti-stampede, cliques
 - [x] P04 Identity: cadastro/login, Google OIDC, sessões, anti brute force
-- [ ] P05 Frontend: fundação, next-intl (11 idiomas), navbar, API client, CSP
+- [x] P05 Frontend: fundação, next-intl (11 idiomas), navbar, API client, CSP
 - [ ] P06 Landing page (hero, demo, recursos, FAQ, SEO/AEO/GEO)
 - [ ] P07 Login, Account e Links (lista com código gerado)
 - [ ] P08 Estatísticas (backend + página de detalhe)
@@ -57,8 +57,14 @@
 - P04: RLS com `FORCE` em `links` e `refresh_tokens`. Contexto por transação via `set_config(..., true)` (equivalente a `SET LOCAL`, mas parametrizável): `app.current_user_id`, `app.current_link_code`, `app.refresh_token_hash`, `app.refresh_family_id`, `app.click_flusher`. A leitura pública só enxerga o código exato solicitado; leituras de dono listam apenas o próprio usuário; o flusher vê/atualiza click_count. O INSERT anônimo é permitido e o RETURNING usa o contexto do código.
 - P04: o Compose agora usa `tricolink_app` (não-superuser, sem BYPASSRLS) em `DATABASE_URL`; migrations usam `MIGRATION_DATABASE_URL`. O role é criado pelo init do Postgres e pelo alvo idempotente `make db-role`, que também cobre volumes antigos.
 - P04: `get_current_user_optional` foi substituído pela implementação real (JWT em cookie + consulta do usuário); `get_current_user` continua obrigatório. As rotas de links agora aplicam CSRF quando há cookies de sessão, dono e cotas de usuário logado.
-
-
+- P05: no Next 16 o arquivo `middleware` foi renomeado para `proxy`; a composição next-intl + CSP vive em `src/proxy.ts`. O `matcher` está limitado a `/` e `/(pt-BR|en|es|fr|de|it|ja|ko|zh-CN|ru|ar)/:path*`, como pedido.
+- P05: o rewrite de `/:code` exigido no CONTEXT §7 também está em `rewrites().fallback`, mas um rewrite `afterFiles` com o mesmo destino foi adicionado para códigos válidos: a rota dinâmica `app/[locale]` captura qualquer segmento único (inclusive `/abc1234`) antes do `fallback`, então sem esse rewrite os links curtos nunca chegariam à API. O `afterFiles` exclui locales e rotas reservadas; o `fallback` permanece como defesa extra.
+- P05: CSP é gerada por requisição no proxy com nonce em `script-src`/`style-src` e `strict-dynamic`; o tema inicial é aplicado por um script inline com o mesmo nonce, evitando flash. `next.config` aplica os demais headers (HSTS só em produção, nosniff, Referrer-Policy, COOP, XFO, Permissions-Policy).
+- P05: `src/lib/api.ts` usa caminhos same-origin (`/api/v1`), `credentials: "include"`, CSRF double-submit lido dos cookies `__Host-tl_csrf`/`tl_csrf` (ou `/auth/csrf` quando ausente), erro padronizado `{error:{code,message}}`, `Retry-After` em 429 e **um** refresh em 401. Tokens nunca são expostos ao JS nem guardados em storage.
+- P05: `useAuthStore` carrega o usuário por `GET /auth/me` uma única vez por sessão e mapeia o DTO para camelCase; logout limpa o estado mesmo se a API falhar. Nenhum token no store.
+- P05: `rewrites` do Next são resolvidos no build. O Dockerfile do web agora recebe `API_INTERNAL_URL`/`NEXT_PUBLIC_SITE_URL` como `ARG` no builder; deploy precisa definir esses valores no build (Vercel/Render) ou reconstruir a imagem.
+- P05: foram adicionadas dependências de teste (`@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, `jsdom`, `@playwright/test`). O `i18n:check` importa `src/i18n/locales.ts` via type stripping do Node 22; por isso o script usa `--disable-warning=MODULE_TYPELESS_PACKAGE_JSON`.
+- P05: o seletor de idiomas usa um listbox próprio (teclado, foco, `aria-selected`, nomes nativos) e preserva o pathname via `createNavigation`. O menu mobile usa `<dialog>` nativo com `showModal`, bloqueio de scroll do body e as mesmas ações do desktop.
 
 ## Validação P00
 - Consultas de fumaça executadas no grafo final: fluxo de redirect; baldes de rate limit (`redirect`, `create`, `auth`, `global`, `stats/list`); rotas do frontend. Os nós e trechos retornados batem com `CONTEXT.md` e `SECURITY.md`.
@@ -108,6 +114,17 @@
 - Google com IdP mockado: URL contém `state`, `nonce`, `code_challenge` e `code_challenge_method=S256`; `state` inválido e nonce errado são rejeitados; `next=//evil.com` e `next=https://evil.com` retornam 400; callback válido cria/víncula usuário e redireciona para o frontend.
 - `make up` saudável com o novo role; `make migrate` e `alembic check` sem operações pendentes.
 
+## Validação P05
+- `pnpm build` (Next 16.4.2, Turbopack) concluiu com sucesso; rotas geradas: `/[locale]` dinâmica, `/icon.svg`, `/robots.txt` e `/sitemap.xml`.
+- `pnpm lint` (ESLint 9) e `pnpm typecheck` (`next typegen && tsc --noEmit`) limpos.
+- `pnpm test`: **36 testes Vitest passando** em 9 arquivos (navbar en/ar RTL, troca de locale preservando rota, API client com CSRF/401/429, auth store, CSP, rewrites, URLs externas e `i18n:check`).
+- `pnpm i18n:check`: **11 locales, 96 chaves**, sem chave faltando/sobrando, valores vazios ou placeholders divergentes.
+- `pnpm test:e2e`: **6 testes Playwright passando** contra build de produção: `/` detecta `pt-BR`/fallback `en`, troca pelos 11 idiomas, `/zzzzzz9` não entra no fluxo i18n, `/ar` com `dir="rtl"` + CSP sem violações no console, e menu mobile.
+- Inspeção HTTP do build: `/` → `307 /pt-BR`; `/en` e `/ar` → `200` com CSP nonce, HSTS, nosniff, Referrer-Policy, COOP, XFO e Permissions-Policy; scripts do Next e o script de tema receberam o nonce.
+- Lighthouse (produção, `/en`, mobile): **Accessibility 100** (era 96 antes dos ajustes de contraste do vermelho no tema escuro e do nome acessível do seletor de idiomas).
+- `GET /robots.txt` bloqueia `/account`, `/links`, `/login`, `/api/` e os equivalentes por locale; `GET /sitemap.xml` lista os 11 idiomas.
+- Rewrites exercitados ao vivo: `/api/v1/auth/me` foi encaminhado ao servidor configurado em `API_INTERNAL_URL` e `/zzzzzz9` foi encaminhado a `/api/v1/r/zzzzzz9` (404 da API, sem redirect de locale).
+
 ## Bloqueios
 (nenhum)
 
@@ -132,8 +149,11 @@
 - Não há verificação de posse do e-mail no cadastro local. O vínculo automático de uma conta de senha existente a um e-mail verificado do Google (conforme pedido) pode permitir pré-hijacking se alguém registrar o e-mail de outra pessoa antes; uma fase futura deve adicionar verificação de e-mail ou exigir login antes de vincular.
 - O access JWT não é revogado no logout; ele continua válido até `exp` (15 min). O refresh é revogado imediatamente.
 - CSRF depende de o proxy do frontend encaminhar `Origin` ou `Sec-Fetch-Site`; se remover ambos, mutações autenticadas serão rejeitadas com 403. O frontend deve usar `/api/v1/auth/csrf` e os nomes `__Host-`/`__Secure-` em produção.
-- O frontend ainda não consome os endpoints de identidade; P05/P07 precisa ler o cookie CSRF (ou chamar `/auth/csrf`) e renovar a sessão via `/auth/refresh`.
+- P05 consumiu `/auth/me` no client (cookie + CSRF/refresh), mas o fluxo autenticado ponta a ponta **não foi validado contra a API real**: o build usado no Playwright resolveu `API_INTERNAL_URL` para o default `http://localhost:8000`, onde não estava a API do Tricolink, e `/api/v1/auth/me` respondeu 404. Os testes do client usam `fetch` mockado.
+- O build de produção do web foi validado com `next build` + `next start` local. A imagem Docker `runner` (standalone) não foi reconstruída/revalidada em P05; o Playwright emite o aviso de que `next start` não é o modo standalone.
+- Lighthouse de acessibilidade foi executado apenas em `/en`; não foi rodado nos 11 idiomas nem em desktop/mobile separadamente (o preset padrão do Lighthouse é mobile).
+- O menu mobile e a troca de idioma foram validados em Chromium; não foram executados em Firefox/WebKit.
 - Avisos de depreciação do `httpx` no `TestClient` e do Authlib para `httpx` permanecem; não quebram os testes.
 
 ## Revisão humana pendente
-- Traduções geradas por IA (todos os idiomas exceto pt-BR e en)
+- Traduções geradas por IA: `es`, `fr`, `de`, `it`, `ja`, `ko`, `zh-CN`, `ru` e `ar` (pt-BR e en são as referências).
