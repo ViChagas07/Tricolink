@@ -35,6 +35,7 @@ export type ApiRequestOptions = Omit<RequestInit, "body" | "credentials" | "meth
   method?: string;
   body?: unknown;
   skipAuthRefresh?: boolean;
+  csrf?: "auto" | "skip";
 };
 
 export class ApiError extends Error {
@@ -175,8 +176,9 @@ async function perform<T>(
   options: ApiRequestOptions,
   csrfToken?: string,
 ): Promise<T> {
-  const { body, skipAuthRefresh, ...init } = options;
+  const { body, skipAuthRefresh, csrf, ...init } = options;
   void skipAuthRefresh;
+  void csrf;
   const method = (init.method ?? "GET").toUpperCase();
   const headers = new Headers(init.headers);
   headers.set("Accept", "application/json");
@@ -247,7 +249,7 @@ export async function request<T>(path: string, options: ApiRequestOptions = {}):
   const mutation = !SAFE_METHODS.has(method);
 
   try {
-    const csrfToken = mutation ? await ensureCsrfToken() : undefined;
+    const csrfToken = mutation && options.csrf !== "skip" ? await ensureCsrfToken() : undefined;
     return await perform<T>(path, options, csrfToken);
   } catch (error) {
     if (
@@ -258,7 +260,7 @@ export async function request<T>(path: string, options: ApiRequestOptions = {}):
     ) {
       const refreshed = await refreshSession();
       if (refreshed) {
-        const csrfToken = mutation ? await ensureCsrfToken() : undefined;
+        const csrfToken = mutation && options.csrf !== "skip" ? await ensureCsrfToken() : undefined;
         return perform<T>(path, options, csrfToken);
       }
     }

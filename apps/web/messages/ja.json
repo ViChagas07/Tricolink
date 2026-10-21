@@ -3,7 +3,8 @@
     "title": "Tricolink — 短いリンクを、わかりやすく",
     "description": "長いURLを短く、計測できるリンクに。無料で高速、プライバシーに配慮しています。",
     "homeTitle": "Tricolink — 短いリンクを、わかりやすく",
-    "homeDescription": "長いURLを数秒で短く、計測できるリンクに変えます。無料で高速、プライバシーに配慮しています。"
+    "homeDescription": "長いURLを数秒で短く、計測できるリンクに変えます。無料で高速、プライバシーに配慮しています。",
+    "ogAlt": "Tricolink — 明確な統計付きの短いリンク"
   },
   "nav": {
     "main": "メインナビゲーション",
@@ -25,7 +26,23 @@
   "hero": {
     "title": "短いリンクを、わかりやすく。",
     "subtitle": "長いURLを数秒で短く、計測できるリンクに変えます。",
-    "cta": "無料アカウントを作成"
+    "cta": "無料アカウントを作成",
+    "eyebrow": "無料のURL短縮サービス",
+    "inputLabel": "長いURL",
+    "placeholder": "長いURLをここに貼り付けてください",
+    "submit": "短縮する",
+    "submitting": "短縮中…",
+    "resultTitle": "短いリンクができました",
+    "copy": "コピー",
+    "copied": "コピーしました",
+    "copyFailed": "リンクをコピーできませんでした。選択して手動でコピーしてください。",
+    "stats": "統計を見る",
+    "anonymousNote": "アカウントは不要です。匿名リンクは自動的に期限切れになります。",
+    "secureNote": "http と https のリンクのみ対応しています。IPアドレスは保存しません。",
+    "limitTitle": "1日の上限に達しました",
+    "limitBody": "{seconds}秒後にもう一度お試しいただくか、無料アカウントを作成すると上限が上がります。",
+    "limitReady": "もう一度お試しいただくか、無料アカウントを作成すると上限が上がります。",
+    "limitCta": "無料アカウントを作成"
   },
   "demo": {
     "label": "イメージ例",
@@ -35,7 +52,26 @@
     "countries": "国",
     "referrers": "参照元",
     "devices": "デバイス",
-    "created": "作成日"
+    "created": "作成日",
+    "shortLink": "短いリンク",
+    "destination": "リンク先",
+    "active": "有効",
+    "chartTitle": "過去30日間のクリック",
+    "chartCaption": "イラスト用のサンプルデータです。",
+    "period": "過去30日間",
+    "totalClicks": "合計クリック数",
+    "countryColumn": "国",
+    "sourceColumn": "参照元",
+    "deviceColumn": "デバイス",
+    "clicksColumn": "クリック",
+    "shareColumn": "割合",
+    "sourceDirect": "直接",
+    "other": "その他",
+    "deviceDesktop": "デスクトップ",
+    "deviceMobile": "モバイル",
+    "deviceTablet": "タブレット",
+    "linkTitle": "Tricolink ローンチ週間",
+    "dateColumn": "日付"
   },
   "features": {
     "title": "必要な機能がすべて",
@@ -44,7 +80,13 @@
     "statsTitle": "わかりやすい統計",
     "statsBody": "クリック、国、参照元、デバイスを時系列で追えます。",
     "controlTitle": "自分でコントロール",
-    "controlBody": "リンク先の編集、一時停止、有効期限の設定ができます。"
+    "controlBody": "リンク先の編集、一時停止、有効期限の設定ができます。",
+    "subtitle": "作成から最後のクリックまで、リンクの一生を支える一つのツール。",
+    "shortMockTitle": "あなたの短いリンク",
+    "statsMockTitle": "過去7日間",
+    "controlMockTitle": "リンク設定",
+    "controlMockExpiry": "有効期限",
+    "controlMockState": "有効"
   },
   "faq": {
     "title": "よくある質問",
@@ -63,7 +105,8 @@
     "q7": "リンクは期限切れになりますか？",
     "a7": "匿名のリンクは自動的に期限切れになります。ログインしているユーザーはリンクごとに有効期限を設定・解除できます。",
     "q8": "IPアドレスは保存されますか？",
-    "a8": "いいえ。クリック統計にはエッジネットワークが提供する国、デバイス、ブラウザ、参照元ホストのみを保存します。"
+    "a8": "いいえ。クリック統計にはエッジネットワークが提供する国、デバイス、ブラウザ、参照元ホストのみを保存します。",
+    "subtitle": "リンク、プライバシー、アカウントについての簡潔な回答。"
   },
   "auth": {
     "loginTitle": "おかえりなさい",
@@ -108,13 +151,25 @@
     "forbidden": "その操作を行う権限がありません。",
     "notFound": "ページが見つかりませんでした。",
     "rateLimited": "リクエストが多すぎます。{seconds}秒後にもう一度お試しください。",
-    "invalidUrl": "有効なhttpまたはhttpsのURLを入力してください。"
+    "invalidUrl": "有効なhttpまたはhttpsのURLを入力してください。",
+    "urlRequired": "短縮するURLを入力してください。",
+    "urlTooLong": "URLは2048文字以内にしてください。"
   },
   "footer": {
     "tagline": "わかりやすい統計付きの短いリンク。",
     "product": "製品",
     "account": "アカウント",
     "language": "言語",
-    "copyright": "© {year} Tricolink. All rights reserved."
+    "copyright": "© {year} Tricolink. All rights reserved.",
+    "resources": "リソース",
+    "faq": "よくある質問",
+    "llms": "AIアシスタント向け llms.txt",
+    "privacyNote": "プライバシー重視：IPアドレスを保存せず、広告トラッカーも使いません。"
+  },
+  "finalCta": {
+    "title": "リンクを短くする準備はできましたか？",
+    "body": "無料アカウントを作成すると、履歴の保存、有効期限の設定、すべてのクリックの追跡ができます。",
+    "button": "無料アカウントを作成",
+    "secondary": "今すぐリンクを短縮"
   }
 }

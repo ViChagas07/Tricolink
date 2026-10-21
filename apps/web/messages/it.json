@@ -3,7 +3,8 @@
     "title": "Tricolink — Link brevi, con chiarezza",
     "description": "Trasforma URL lunghe in link brevi e misurabili. Gratis, veloce e rispettoso della privacy.",
     "homeTitle": "Tricolink — Link brevi, con chiarezza",
-    "homeDescription": "Trasforma URL lunghe in link brevi e misurabili in pochi secondi. Gratis, veloce e rispettoso della privacy."
+    "homeDescription": "Trasforma URL lunghe in link brevi e misurabili in pochi secondi. Gratis, veloce e rispettoso della privacy.",
+    "ogAlt": "Tricolink — link brevi con statistiche chiare"
   },
   "nav": {
     "main": "Navigazione principale",
@@ -25,7 +26,23 @@
   "hero": {
     "title": "Link brevi, con chiarezza.",
     "subtitle": "Trasforma URL lunghe in link brevi e misurabili in pochi secondi.",
-    "cta": "Crea il tuo account gratuito"
+    "cta": "Crea il tuo account gratuito",
+    "eyebrow": "Accorciatore di URL gratuito",
+    "inputLabel": "URL lunga",
+    "placeholder": "Incolla qui la tua URL lunga",
+    "submit": "Accorcia",
+    "submitting": "Accorciamento…",
+    "resultTitle": "Il tuo link breve è pronto",
+    "copy": "Copia",
+    "copied": "Copiato!",
+    "copyFailed": "Impossibile copiare il link. Selezionalo e copialo manualmente.",
+    "stats": "Vedi statistiche",
+    "anonymousNote": "Nessun account necessario. I link anonimi scadono automaticamente.",
+    "secureNote": "Solo link http e https. Non memorizziamo mai indirizzi IP.",
+    "limitTitle": "Limite giornaliero raggiunto",
+    "limitBody": "Riprova tra {seconds} secondi oppure crea un account gratuito per un limite più alto.",
+    "limitReady": "Puoi riprovare ora oppure creare un account gratuito per un limite più alto.",
+    "limitCta": "Crea un account gratuito"
   },
   "demo": {
     "label": "Esempio illustrativo",
@@ -35,7 +52,26 @@
     "countries": "Paesi",
     "referrers": "Origini",
     "devices": "Dispositivi",
-    "created": "Creato"
+    "created": "Creato",
+    "shortLink": "Link breve",
+    "destination": "Destinazione",
+    "active": "Attivo",
+    "chartTitle": "Clic negli ultimi 30 giorni",
+    "chartCaption": "Solo dati illustrativi.",
+    "period": "Ultimi 30 giorni",
+    "totalClicks": "Clic totali",
+    "countryColumn": "Paese",
+    "sourceColumn": "Origine",
+    "deviceColumn": "Dispositivo",
+    "clicksColumn": "Clic",
+    "shareColumn": "Quota",
+    "sourceDirect": "Diretto",
+    "other": "Altri",
+    "deviceDesktop": "Desktop",
+    "deviceMobile": "Mobile",
+    "deviceTablet": "Tablet",
+    "linkTitle": "Settimana di lancio di Tricolink",
+    "dateColumn": "Data"
   },
   "features": {
     "title": "Tutto ciò che serve",
@@ -44,7 +80,13 @@
     "statsTitle": "Statistiche chiare",
     "statsBody": "Segui clic, paesi, origini e dispositivi nel tempo.",
     "controlTitle": "Hai il controllo",
-    "controlBody": "Modifica la destinazione, sospendi il link o imposta una scadenza."
+    "controlBody": "Modifica la destinazione, sospendi il link o imposta una scadenza.",
+    "subtitle": "Un solo strumento per tutta la vita del link, dalla creazione all'ultimo clic.",
+    "shortMockTitle": "Il tuo link breve",
+    "statsMockTitle": "Ultimi 7 giorni",
+    "controlMockTitle": "Impostazioni del link",
+    "controlMockExpiry": "Scade il",
+    "controlMockState": "Attivo"
   },
   "faq": {
     "title": "Domande frequenti",
@@ -63,7 +105,8 @@
     "q7": "I link scadono?",
     "a7": "I link anonimi scadono automaticamente. Gli utenti autenticati possono impostare o rimuovere una scadenza per ogni link.",
     "q8": "Conservate il mio indirizzo IP?",
-    "a8": "No. Le statistiche dei clic conservano solo il paese fornito dalla rete perimetrale, oltre a dispositivo, browser e host di provenienza."
+    "a8": "No. Le statistiche dei clic conservano solo il paese fornito dalla rete perimetrale, oltre a dispositivo, browser e host di provenienza.",
+    "subtitle": "Risposte brevi su link, privacy e account."
   },
   "auth": {
     "loginTitle": "Bentornato",
@@ -108,13 +151,25 @@
     "forbidden": "Non hai il permesso di farlo.",
     "notFound": "Non abbiamo trovato questa pagina.",
     "rateLimited": "Troppe richieste. Riprova tra {seconds} secondi.",
-    "invalidUrl": "Inserisci una URL http o https valida."
+    "invalidUrl": "Inserisci una URL http o https valida.",
+    "urlRequired": "Inserisci un URL da accorciare.",
+    "urlTooLong": "Gli URL possono avere al massimo 2048 caratteri."
   },
   "footer": {
     "tagline": "Link brevi con statistiche chiare.",
     "product": "Prodotto",
     "account": "Account",
     "language": "Lingua",
-    "copyright": "© {year} Tricolink. Tutti i diritti riservati."
+    "copyright": "© {year} Tricolink. Tutti i diritti riservati.",
+    "resources": "Risorse",
+    "faq": "Domande frequenti",
+    "llms": "llms.txt per gli assistenti IA",
+    "privacyNote": "Rispetto della privacy: nessun IP salvato, nessun tracker pubblicitario."
+  },
+  "finalCta": {
+    "title": "Pronto ad accorciare i tuoi link?",
+    "body": "Crea un account gratuito per conservare la cronologia, impostare scadenze e seguire ogni clic.",
+    "button": "Crea il tuo account gratuito",
+    "secondary": "Accorcia un link ora"
   }
 }

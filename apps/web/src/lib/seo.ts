@@ -1,5 +1,7 @@
 import { defaultLocale, locales } from "@/i18n/locales";
 
+const PRIVATE_SEGMENTS = new Set(["login", "account", "links"]);
+
 export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(
   /\/+$/,
   "",
@@ -17,4 +19,13 @@ export function languageAlternates(path = ""): Record<string, string> {
     ...Object.fromEntries(locales.map((locale) => [locale, localizedUrl(locale, normalized)])),
     "x-default": localizedUrl(defaultLocale, normalized),
   };
+}
+
+export function isPrivatePath(pathname: string): boolean {
+  const segments = pathname.split("/").filter(Boolean);
+  if (segments.length > 0 && (locales as readonly string[]).includes(segments[0])) {
+    segments.shift();
+  }
+
+  return segments.length > 0 && PRIVATE_SEGMENTS.has(segments[0]);
 }

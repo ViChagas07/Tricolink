@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 
 import { routing } from "@/i18n/routing";
 import { buildCspHeader, securityHeaders } from "@/lib/security";
+import { isPrivatePath } from "@/lib/seo";
 
 const intlMiddleware = createMiddleware(routing);
 
@@ -36,6 +37,10 @@ export default function proxy(request: NextRequest) {
 
   for (const [name, value] of Object.entries(securityHeaders({ isProduction: !isDev }))) {
     response.headers.set(name, value);
+  }
+
+  if (isPrivatePath(request.nextUrl.pathname)) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
   }
 
   return response;

@@ -3,7 +3,8 @@
     "title": "Tricolink — 짧은 링크를 명확하게",
     "description": "긴 URL을 짧고 측정 가능한 링크로 바꾸세요. 무료이고 빠르며 개인정보를 존중합니다.",
     "homeTitle": "Tricolink — 짧은 링크를 명확하게",
-    "homeDescription": "긴 URL을 몇 초 만에 짧고 측정 가능한 링크로 바꾸세요. 무료이고 빠르며 개인정보를 존중합니다."
+    "homeDescription": "긴 URL을 몇 초 만에 짧고 측정 가능한 링크로 바꾸세요. 무료이고 빠르며 개인정보를 존중합니다.",
+    "ogAlt": "Tricolink — 명확한 통계가 있는 짧은 링크"
   },
   "nav": {
     "main": "주요 탐색",
@@ -25,7 +26,23 @@
   "hero": {
     "title": "짧은 링크를 명확하게.",
     "subtitle": "긴 URL을 몇 초 만에 짧고 측정 가능한 링크로 바꾸세요.",
-    "cta": "무료 계정 만들기"
+    "cta": "무료 계정 만들기",
+    "eyebrow": "무료 URL 단축기",
+    "inputLabel": "긴 URL",
+    "placeholder": "긴 URL을 여기에 붙여넣으세요",
+    "submit": "줄이기",
+    "submitting": "줄이는 중…",
+    "resultTitle": "짧은 링크가 준비되었습니다",
+    "copy": "복사",
+    "copied": "복사됨!",
+    "copyFailed": "링크를 복사하지 못했습니다. 선택해서 직접 복사하세요.",
+    "stats": "통계 보기",
+    "anonymousNote": "계정이 필요 없습니다. 익명 링크는 자동으로 만료됩니다.",
+    "secureNote": "http 및 https 링크만 지원합니다. IP 주소는 저장하지 않습니다.",
+    "limitTitle": "일일 한도에 도달했습니다",
+    "limitBody": "{seconds}초 후에 다시 시도하거나 무료 계정을 만들면 한도가 높아집니다.",
+    "limitReady": "지금 다시 시도하거나 무료 계정을 만들어 한도를 높일 수 있습니다.",
+    "limitCta": "무료 계정 만들기"
   },
   "demo": {
     "label": "예시 화면",
@@ -35,7 +52,26 @@
     "countries": "국가",
     "referrers": "유입 경로",
     "devices": "기기",
-    "created": "생성일"
+    "created": "생성일",
+    "shortLink": "짧은 링크",
+    "destination": "대상",
+    "active": "활성",
+    "chartTitle": "지난 30일 클릭",
+    "chartCaption": "예시용 데이터입니다.",
+    "period": "지난 30일",
+    "totalClicks": "총 클릭수",
+    "countryColumn": "국가",
+    "sourceColumn": "유입 경로",
+    "deviceColumn": "기기",
+    "clicksColumn": "클릭",
+    "shareColumn": "비율",
+    "sourceDirect": "직접",
+    "other": "기타",
+    "deviceDesktop": "데스크톱",
+    "deviceMobile": "모바일",
+    "deviceTablet": "태블릿",
+    "linkTitle": "Tricolink 출시 주간",
+    "dateColumn": "날짜"
   },
   "features": {
     "title": "필요한 모든 기능",
@@ -44,7 +80,13 @@
     "statsTitle": "명확한 통계",
     "statsBody": "클릭, 국가, 유입 경로, 기기를 시간별로 추적하세요.",
     "controlTitle": "직접 관리하세요",
-    "controlBody": "목적지를 수정하고, 링크를 일시 중지하거나 만료일을 설정하세요."
+    "controlBody": "목적지를 수정하고, 링크를 일시 중지하거나 만료일을 설정하세요.",
+    "subtitle": "생성부터 마지막 클릭까지 링크의 전체 수명을 위한 하나의 도구.",
+    "shortMockTitle": "내 짧은 링크",
+    "statsMockTitle": "지난 7일",
+    "controlMockTitle": "링크 설정",
+    "controlMockExpiry": "만료일",
+    "controlMockState": "활성"
   },
   "faq": {
     "title": "자주 묻는 질문",
@@ -63,7 +105,8 @@
     "q7": "링크가 만료되나요?",
     "a7": "익명 링크는 자동으로 만료됩니다. 로그인한 사용자는 각 링크의 만료일을 설정하거나 제거할 수 있습니다.",
     "q8": "제 IP 주소를 저장하나요?",
-    "a8": "아니요. 클릭 통계에는 엣지 네트워크가 제공하는 국가와 기기, 브라우저, 참조 호스트만 저장합니다."
+    "a8": "아니요. 클릭 통계에는 엣지 네트워크가 제공하는 국가와 기기, 브라우저, 참조 호스트만 저장합니다.",
+    "subtitle": "링크, 개인정보, 계정에 대한 짧은 답변."
   },
   "auth": {
     "loginTitle": "다시 오신 것을 환영합니다",
@@ -108,13 +151,25 @@
     "forbidden": "권한이 없습니다.",
     "notFound": "페이지를 찾을 수 없습니다.",
     "rateLimited": "요청이 너무 많습니다. {seconds}초 후에 다시 시도하세요.",
-    "invalidUrl": "유효한 http 또는 https URL을 입력하세요."
+    "invalidUrl": "유효한 http 또는 https URL을 입력하세요.",
+    "urlRequired": "단축할 URL을 입력하세요.",
+    "urlTooLong": "URL은 2048자 이하여야 합니다."
   },
   "footer": {
     "tagline": "명확한 통계가 있는 짧은 링크.",
     "product": "제품",
     "account": "계정",
     "language": "언어",
-    "copyright": "© {year} Tricolink. All rights reserved."
+    "copyright": "© {year} Tricolink. All rights reserved.",
+    "resources": "리소스",
+    "faq": "자주 묻는 질문",
+    "llms": "AI 어시스턴트용 llms.txt",
+    "privacyNote": "개인정보 보호: IP를 저장하지 않으며 광고 추적기를 사용하지 않습니다."
+  },
+  "finalCta": {
+    "title": "링크를 줄일 준비가 되셨나요?",
+    "body": "무료 계정을 만들면 기록을 보관하고 만료일을 설정하며 모든 클릭을 추적할 수 있습니다.",
+    "button": "무료 계정 만들기",
+    "secondary": "지금 링크 줄이기"
   }
 }

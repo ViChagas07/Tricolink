@@ -3,7 +3,8 @@
     "title": "Tricolink — Enlaces cortos, con claridad",
     "description": "Convierte URLs largas en enlaces cortos y medibles. Gratis, rápido y respetuoso con la privacidad.",
     "homeTitle": "Tricolink — Enlaces cortos, con claridad",
-    "homeDescription": "Convierte URLs largas en enlaces cortos y medibles en segundos. Gratis, rápido y respetuoso con la privacidad."
+    "homeDescription": "Convierte URLs largas en enlaces cortos y medibles en segundos. Gratis, rápido y respetuoso con la privacidad.",
+    "ogAlt": "Tricolink — enlaces cortos con estadísticas claras"
   },
   "nav": {
     "main": "Navegación principal",
@@ -25,7 +26,23 @@
   "hero": {
     "title": "Enlaces cortos, con claridad.",
     "subtitle": "Convierte URLs largas en enlaces cortos y medibles en segundos.",
-    "cta": "Crea tu cuenta gratis"
+    "cta": "Crea tu cuenta gratis",
+    "eyebrow": "Acortador de URL gratuito",
+    "inputLabel": "URL larga",
+    "placeholder": "Pega tu URL larga aquí",
+    "submit": "Acortar",
+    "submitting": "Acortando…",
+    "resultTitle": "Tu enlace corto está listo",
+    "copy": "Copiar",
+    "copied": "¡Copiado!",
+    "copyFailed": "No pudimos copiar el enlace. Selecciónalo y cópialo manualmente.",
+    "stats": "Ver estadísticas",
+    "anonymousNote": "No necesitas cuenta. Los enlaces anónimos caducan automáticamente.",
+    "secureNote": "Solo enlaces http y https. Nunca guardamos direcciones IP.",
+    "limitTitle": "Límite diario alcanzado",
+    "limitBody": "Vuelve a intentarlo en {seconds} segundos o crea una cuenta gratis para un límite mayor.",
+    "limitReady": "Ya puedes volver a intentarlo o crear una cuenta gratis para un límite mayor.",
+    "limitCta": "Crear una cuenta gratis"
   },
   "demo": {
     "label": "Ejemplo ilustrativo",
@@ -35,7 +52,26 @@
     "countries": "Países",
     "referrers": "Orígenes",
     "devices": "Dispositivos",
-    "created": "Creado"
+    "created": "Creado",
+    "shortLink": "Enlace corto",
+    "destination": "Destino",
+    "active": "Activo",
+    "chartTitle": "Clics en los últimos 30 días",
+    "chartCaption": "Datos solo ilustrativos.",
+    "period": "Últimos 30 días",
+    "totalClicks": "Clics totales",
+    "countryColumn": "País",
+    "sourceColumn": "Origen",
+    "deviceColumn": "Dispositivo",
+    "clicksColumn": "Clics",
+    "shareColumn": "Parte",
+    "sourceDirect": "Directo",
+    "other": "Otros",
+    "deviceDesktop": "Escritorio",
+    "deviceMobile": "Móvil",
+    "deviceTablet": "Tableta",
+    "linkTitle": "Semana de lanzamiento de Tricolink",
+    "dateColumn": "Fecha"
   },
   "features": {
     "title": "Todo lo que necesitas",
@@ -44,7 +80,13 @@
     "statsTitle": "Estadísticas claras",
     "statsBody": "Sigue los clics, países, orígenes y dispositivos a lo largo del tiempo.",
     "controlTitle": "Tú tienes el control",
-    "controlBody": "Edita el destino, pausa el enlace o define una fecha de caducidad."
+    "controlBody": "Edita el destino, pausa el enlace o define una fecha de caducidad.",
+    "subtitle": "Una herramienta para toda la vida del enlace, desde su creación hasta el último clic.",
+    "shortMockTitle": "Tu enlace corto",
+    "statsMockTitle": "Últimos 7 días",
+    "controlMockTitle": "Ajustes del enlace",
+    "controlMockExpiry": "Caduca el",
+    "controlMockState": "Activo"
   },
   "faq": {
     "title": "Preguntas frecuentes",
@@ -63,7 +105,8 @@
     "q7": "¿Los enlaces caducan?",
     "a7": "Los enlaces anónimos caducan automáticamente. Los usuarios registrados pueden definir o quitar la caducidad de cada enlace.",
     "q8": "¿Guardan mi dirección IP?",
-    "a8": "No. Las estadísticas de clics solo conservan el país que proporciona la red perimetral, además del dispositivo, el navegador y el host de origen."
+    "a8": "No. Las estadísticas de clics solo conservan el país que proporciona la red perimetral, además del dispositivo, el navegador y el host de origen.",
+    "subtitle": "Respuestas breves sobre enlaces, privacidad y cuentas."
   },
   "auth": {
     "loginTitle": "Bienvenido de nuevo",
@@ -108,13 +151,25 @@
     "forbidden": "No tienes permiso para hacer eso.",
     "notFound": "No encontramos esa página.",
     "rateLimited": "Demasiadas solicitudes. Inténtalo de nuevo en {seconds} segundos.",
-    "invalidUrl": "Introduce una URL http o https válida."
+    "invalidUrl": "Introduce una URL http o https válida.",
+    "urlRequired": "Introduce una URL para acortar.",
+    "urlTooLong": "La URL puede tener como máximo 2048 caracteres."
   },
   "footer": {
     "tagline": "Enlaces cortos con estadísticas claras.",
     "product": "Producto",
     "account": "Cuenta",
     "language": "Idioma",
-    "copyright": "© {year} Tricolink. Todos los derechos reservados."
+    "copyright": "© {year} Tricolink. Todos los derechos reservados.",
+    "resources": "Recursos",
+    "faq": "Preguntas frecuentes",
+    "llms": "llms.txt para asistentes de IA",
+    "privacyNote": "Privacidad ante todo: sin guardar IP, sin rastreadores publicitarios."
+  },
+  "finalCta": {
+    "title": "¿Listo para acortar tus enlaces?",
+    "body": "Crea una cuenta gratis para conservar tu historial, definir caducidades y seguir cada clic.",
+    "button": "Crea tu cuenta gratis",
+    "secondary": "Acortar un enlace ahora"
   }
 }

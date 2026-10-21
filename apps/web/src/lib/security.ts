@@ -18,6 +18,7 @@ export function buildCspHeader({ nonce, isDev }: CspOptions): string {
     "default-src 'self'",
     `script-src ${scriptSrc.join(" ")}`,
     `style-src ${styleSrc.join(" ")}`,
+    "style-src-attr 'unsafe-inline'",
     "img-src 'self' data:",
     "font-src 'self'",
     `connect-src ${connectSrc.join(" ")}`,

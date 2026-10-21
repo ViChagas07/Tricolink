@@ -199,6 +199,35 @@
   background: rgb(7 26 77 / 0.45);
 }
 
+.tc-defer-render {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1200px;
+}
+
+.tc-defer-render-tall {
+  contain-intrinsic-size: auto 2000px;
+}
+
+.tc-hero-glow {
+  background-image:
+    radial-gradient(55% 55% at 50% 0%, rgb(20 80 200 / 0.14), transparent 72%),
+    radial-gradient(35% 40% at 100% 85%, rgb(214 20 31 / 0.1), transparent 72%),
+    radial-gradient(35% 35% at 0% 90%, rgb(10 61 168 / 0.1), transparent 72%);
+}
+
+.dark .tc-hero-glow {
+  background-image:
+    radial-gradient(55% 55% at 50% 0%, rgb(20 80 200 / 0.28), transparent 72%),
+    radial-gradient(35% 40% at 100% 85%, rgb(214 20 31 / 0.18), transparent 72%),
+    radial-gradient(35% 35% at 0% 90%, rgb(10 61 168 / 0.22), transparent 72%);
+}
+
+.tc-cta-glow {
+  background-image:
+    radial-gradient(40% 55% at 100% 0%, rgb(214 20 31 / 0.28), transparent 72%),
+    radial-gradient(45% 45% at 0% 100%, rgb(255 255 255 / 0.12), transparent 72%);
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

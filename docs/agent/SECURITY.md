@@ -26,6 +26,7 @@ Cada item abaixo vira **código + teste** (pasta `tests/security/` na API; Playw
 ## 4. Anti XSS / injeção no front
 - React escapa por padrão; **proibido** `dangerouslySetInnerHTML`. Título/alias exibidos apenas como texto.
 - **CSP com nonce** por requisição (middleware Next): `default-src 'self'; script-src 'self' 'nonce-…' 'strict-dynamic'; style-src 'self' 'nonce-…'/hash; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'; object-src 'none'`.
+- **Exceção documentada (P06):** `style-src-attr 'unsafe-inline'` é necessário para os atributos `style` gerados pelo Recharts e pelas barras de participação da demonstração/estatísticas. `script-src` continua com nonce + `strict-dynamic` e os elementos `<style>` continuam exigindo nonce. Reavaliar no P09 (hashes/`unsafe-hashes` ou remoção dos estilos inline).
 - Headers: HSTS (preload), `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy` mínimo, `Cross-Origin-Opener-Policy: same-origin`, `X-Frame-Options: DENY`.
 - `href` renderizado de URL do usuário: só se esquema `http/https` (mesma política do backend); `rel="noopener noreferrer nofollow ugc"` e `target="_blank"`.
 - Páginas HTML estáticas do backend (404/410) sem interpolar entrada do usuário.

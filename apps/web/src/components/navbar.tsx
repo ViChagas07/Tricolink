@@ -117,7 +117,7 @@ export function Navbar() {
         className="mx-auto flex h-16 w-full max-w-6xl items-center gap-1 px-4 sm:px-6"
       >
         <BrandLogo label={t("home")} />
-        <div className="ms-2">
+        <div className="ms-2 hidden sm:block">
           <LanguageSwitcher />
         </div>
 

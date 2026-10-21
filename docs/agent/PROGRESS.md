@@ -7,7 +7,7 @@
 - [x] P03 Links: encurtar, redirecionar, cache anti-stampede, cliques
 - [x] P04 Identity: cadastro/login, Google OIDC, sessões, anti brute force
 - [x] P05 Frontend: fundação, next-intl (11 idiomas), navbar, API client, CSP
-- [ ] P06 Landing page (hero, demo, recursos, FAQ, SEO/AEO/GEO)
+- [x] P06 Landing page (hero, demo, recursos, FAQ, SEO/AEO/GEO)
 - [ ] P07 Login, Account e Links (lista com código gerado)
 - [ ] P08 Estatísticas (backend + página de detalhe)
 - [ ] P09 Hardening de segurança + auditoria
@@ -65,6 +65,17 @@
 - P05: `rewrites` do Next são resolvidos no build. O Dockerfile do web agora recebe `API_INTERNAL_URL`/`NEXT_PUBLIC_SITE_URL` como `ARG` no builder; deploy precisa definir esses valores no build (Vercel/Render) ou reconstruir a imagem.
 - P05: foram adicionadas dependências de teste (`@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, `jsdom`, `@playwright/test`). O `i18n:check` importa `src/i18n/locales.ts` via type stripping do Node 22; por isso o script usa `--disable-warning=MODULE_TYPELESS_PACKAGE_JSON`.
 - P05: o seletor de idiomas usa um listbox próprio (teclado, foco, `aria-selected`, nomes nativos) e preserva o pathname via `createNavigation`. O menu mobile usa `<dialog>` nativo com `showModal`, bloqueio de scroll do body e as mesmas ações do desktop.
+- P06: a landing é RSC por padrão; só o formulário (`ShortenForm`), o gráfico (`ClicksChart`) e os componentes de client já existentes (navbar/footer/seletor de idioma) hidratam. O gráfico é importado dinamicamente por `IntersectionObserver` (`rootMargin: 0`) com placeholder de altura fixa (256px) e tabela `sr-only` equivalente, para não carregar Recharts no primeiro paint nem causar CLS.
+- P06: as seções abaixo da dobra (`demo`, `features`, `faq`, CTA) usam `content-visibility: auto` + `contain-intrinsic-size` para reduzir o layout inicial; o conteúdo continua no HTML (SEO) e no DOM. Os brilhos do hero/CTA foram trocados de `filter: blur()` para `radial-gradient` (paint mais barato).
+- P06: a demo usa dados fictícios fixos, país via `Intl.DisplayNames`, datas/números via `Intl` no servidor e `BreakdownTable`/`ClicksChart` reutilizáveis. A tabela de séries do gráfico fica `sr-only` para leitores de tela.
+- P06: CSP ganhou `style-src-attr 'unsafe-inline'` porque Recharts e as barras de participação usam atributos `style` (não é possível aplicar nonce a atributo). `script-src` continua nonce + `strict-dynamic`; a exceção está registrada em `SECURITY.md` §4 e fica para revisão no P09. `style-src-attr` não estava no P05.
+- P06: o client HTTP aceita `csrf: "skip"`. A landing usa `skip` somente quando o auth store já resolveu como `anonymous`; o backend não exige CSRF sem cookies de sessão. Usuários logados/estado ainda carregando continuam usando `auto` e enviando o token. Isso evita que o probing de auth (P05) esgote o balde `auth` e impeça o encurtamento anônimo.
+- P06: FAQ usa `<details name="tricolink-faq">` (sanfona nativa, teclado e foco nativos; um aberto por vez nos navegadores que suportam `name`) e a primeira pergunta vem aberta. O JSON-LD `FAQPage` é montado a partir das mesmas traduções de `faq.qN/aN` usadas na página; `WebApplication` e `FAQPage` vão no mesmo `@graph`.
+- P06: metadados por locale usam `homeTitle` como `title.absolute` (evita duplicar o template `%s · Tricolink`), canonical/hreflang de `languageAlternates`, e `metadataBase` na página. A OG image é gerada por `src/app/opengraph-image.tsx` (`next/og`, 1200×630, brand-only) e o `llms.txt` é uma route handler gerada por `buildLlmsTxt` (rotas públicas, fatos do produto e política de dados).
+- P06: `X-Robots-Tag: noindex, nofollow` é aplicado no proxy a `/login`, `/account`, `/links` e subrotas em qualquer locale (P07 ainda não criou essas páginas). `robots.txt`/sitemap já cobriam as rotas; o sitemap tem os 11 locales.
+- P06: o seletor de idiomas do topo fica oculto abaixo de `sm` (o menu mobile mantém o seletor) para o navbar caber em 320px. A demo/tabelas usam `overflow-x-auto` e as grades ganharam `grid-cols-1` + `min-w-0` para não estourar a viewport.
+- P06: o Playwright roda com `fullyParallel: false` e `workers: 1`; rodar várias páginas RSC dinâmicas em paralelo contra um único `next start` local deixou `page.goto` intermitente no Windows. A suíte é pequena e ficou determinística.
+- P06: nenhuma imagem raster na landing (visuais em CSS/SVG), então `next/image` não se aplica; não foi adicionada dependência nova.
 
 ## Validação P00
 - Consultas de fumaça executadas no grafo final: fluxo de redirect; baldes de rate limit (`redirect`, `create`, `auth`, `global`, `stats/list`); rotas do frontend. Os nós e trechos retornados batem com `CONTEXT.md` e `SECURITY.md`.
@@ -125,6 +136,18 @@
 - `GET /robots.txt` bloqueia `/account`, `/links`, `/login`, `/api/` e os equivalentes por locale; `GET /sitemap.xml` lista os 11 idiomas.
 - Rewrites exercitados ao vivo: `/api/v1/auth/me` foi encaminhado ao servidor configurado em `API_INTERNAL_URL` e `/zzzzzz9` foi encaminhado a `/api/v1/r/zzzzzz9` (404 da API, sem redirect de locale).
 
+## Validação P06
+- `pnpm i18n:check`: **11 locales, 149 chaves**, sem chave faltando/sobrando, valores vazios ou placeholders divergentes.
+- `pnpm test`: **62 testes Vitest passando** em 17 arquivos (novos: validação de URL, contagem regressiva, JSON-LD, `llms.txt`, `isPrivatePath`, `BreakdownTable`, FAQ e formulário com 429/cópia/erro inline).
+- `pnpm lint`, `pnpm typecheck` e `pnpm build` (Next 16.4.2, Turbopack) limpos; rotas geradas: `/[locale]` dinâmica, `/llms.txt`, `/opengraph-image`, `/robots.txt` e `/sitemap.xml`.
+- `pnpm test:e2e`: **14 testes Playwright passando** em Chromium contra build de produção e API real em `127.0.0.1:8001`: encurtar → link curto → copiar (clipboard) → `GET /{code}` 302 com `Location` correto; URL inválida inline; RTL/320px sem overflow; 1440px sem overflow; teclado no FAQ; JSON-LD `WebApplication` + `FAQPage`; `llms.txt`/OG image; os 6 testes P05 continuam passando.
+- Verificação HTTP ao vivo: `/llms.txt` → 200 `text/plain` com rotas públicas e política de dados; `/opengraph-image` → 200 `image/png` (~45 KB); `/en/login` (rota P07 ainda inexistente) → 404 com `X-Robots-Tag: noindex, nofollow`; `sitemap.xml` com 11 URLs; canonical, `hreflang` (incluindo `x-default`) e `og:image` absolutos em `/en`.
+- Responsividade: 320px em `ar` e 1440px em `en` sem overflow horizontal (`scrollWidth - clientWidth <= 1`); navbar esconde o seletor do topo abaixo de `sm`, mas mantém no menu mobile.
+- Lighthouse (produção local, `/en`, medido com Chrome headless do Playwright):
+  - **Desktop** (`--preset=desktop`): Performance **99**, Accessibility **100**, Best Practices **96**, SEO **100**; FCP 0,3 s, LCP 0,7 s, TBT 80 ms, CLS 0.
+  - **Mobile** (preset padrão, CPU 4×): melhor execução Performance **85** (faixa 79–85 em três execuções), Accessibility **100**, Best Practices **96**, SEO **100**; FCP 0,9–1,7 s, LCP 2,4–3,4 s, TBT 390–610 ms, CLS 0.
+- O alvo ≥95 de Performance foi cumprido no desktop; no mobile simulado ficou abaixo (registrado em "Não validado", não maquiado).
+
 ## Bloqueios
 (nenhum)
 
@@ -154,6 +177,15 @@
 - Lighthouse de acessibilidade foi executado apenas em `/en`; não foi rodado nos 11 idiomas nem em desktop/mobile separadamente (o preset padrão do Lighthouse é mobile).
 - O menu mobile e a troca de idioma foram validados em Chromium; não foram executados em Firefox/WebKit.
 - Avisos de depreciação do `httpx` no `TestClient` e do Authlib para `httpx` permanecem; não quebram os testes.
+- Lighthouse mobile da landing **não atingiu 95 em Performance** (melhor 85; faixa 79–85). O desktop atingiu 99. A diferença é dominada por TBT de hidratação do framework (React/Next) e LCP simulado; não foi possível reduzir sem mudar a arquitetura de CSP/nonce ou remover a checagem de auth do cliente, decisões fora do escopo da P06.
+- Lighthouse foi medido apenas em `/en` (desktop e mobile); não foi rodado nos 11 idiomas nem em Chrome/Firefox/WebKit reais. Os 14 E2E rodam em Chromium.
+- Best Practices ficou em 96 por causa de erros de console esperados do probing anônimo de auth (`401` em `/auth/me` e `429`/`401` no refresh disparado pelo client P05). Não é falha funcional, mas deve ser reavaliado em P07/P09 (ex.: não tentar refresh sem cookie de sessão).
+- `style-src-attr 'unsafe-inline'` foi adicionado por causa de Recharts/atributos `style`; a exceção não passou por auditoria de segurança da P09.
+- A OG image foi validada por content-type/tamanho e pelas tags `og:image`; não foi renderizada em um card real de rede social. O texto da imagem é brand-only em inglês; título/descrição/alt são por locale.
+- O build ainda emite o aviso de `metadataBase` para uma rota fora de `[locale]` (provavelmente `/_not-found`); as tags da landing foram conferidas e estão absolutas.
+- O fluxo autenticado da landing (link "Ver estatísticas") não foi testado ponta a ponta com uma sessão real; o Vitest cobre o estado autenticado mockado e o E2E cobre o fluxo anônimo.
+- O Playwright usa `next start`; o aviso de `output: standalone` permanece (a imagem Docker runner não foi revalidada nesta fase).
+- Não foram executados Firefox/WebKit, teste em dispositivo físico, nem Lighthouse nos idiomas RTL/LTR além de `en`/`ar` no E2E.
 
 ## Revisão humana pendente
-- Traduções geradas por IA: `es`, `fr`, `de`, `it`, `ja`, `ko`, `zh-CN`, `ru` e `ar` (pt-BR e en são as referências).
+- Traduções geradas por IA: `es`, `fr`, `de`, `it`, `ja`, `ko`, `zh-CN`, `ru` e `ar` (pt-BR e en são as referências). A P06 adicionou 53 chaves em todos os idiomas; revisar especialmente os textos longos de quota/erros e os rótulos da demo.

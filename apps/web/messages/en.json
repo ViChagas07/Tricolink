@@ -3,7 +3,8 @@
     "title": "Tricolink — Short links, clearly",
     "description": "Turn long URLs into short, trackable links. Free, fast and privacy-friendly.",
     "homeTitle": "Tricolink — Short links, clearly",
-    "homeDescription": "Turn long URLs into short, trackable links in seconds. Free, fast and privacy-friendly."
+    "homeDescription": "Turn long URLs into short, trackable links in seconds. Free, fast and privacy-friendly.",
+    "ogAlt": "Tricolink — short links with clear statistics"
   },
   "nav": {
     "main": "Main navigation",
@@ -25,7 +26,23 @@
   "hero": {
     "title": "Short links, clearly.",
     "subtitle": "Turn long URLs into short, trackable links in seconds.",
-    "cta": "Create your free account"
+    "cta": "Create your free account",
+    "eyebrow": "Free URL shortener",
+    "inputLabel": "Long URL",
+    "placeholder": "Paste your long URL here",
+    "submit": "Shorten",
+    "submitting": "Shortening…",
+    "resultTitle": "Your short link is ready",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "copyFailed": "We couldn't copy the link. Select it and copy manually.",
+    "stats": "View statistics",
+    "anonymousNote": "No account needed. Anonymous links expire automatically.",
+    "secureNote": "Only http and https links. We never store IP addresses.",
+    "limitTitle": "Daily limit reached",
+    "limitBody": "Try again in {seconds} seconds, or create a free account for a higher limit.",
+    "limitReady": "You can try again now, or create a free account for a higher limit.",
+    "limitCta": "Create a free account"
   },
   "demo": {
     "label": "Illustrative example",
@@ -35,7 +52,26 @@
     "countries": "Countries",
     "referrers": "Sources",
     "devices": "Devices",
-    "created": "Created"
+    "created": "Created",
+    "shortLink": "Short link",
+    "destination": "Destination",
+    "active": "Active",
+    "chartTitle": "Clicks in the last 30 days",
+    "chartCaption": "Illustrative data only.",
+    "period": "Last 30 days",
+    "totalClicks": "Total clicks",
+    "countryColumn": "Country",
+    "sourceColumn": "Source",
+    "deviceColumn": "Device",
+    "clicksColumn": "Clicks",
+    "shareColumn": "Share",
+    "sourceDirect": "Direct",
+    "other": "Other",
+    "deviceDesktop": "Desktop",
+    "deviceMobile": "Mobile",
+    "deviceTablet": "Tablet",
+    "linkTitle": "Tricolink launch week",
+    "dateColumn": "Date"
   },
   "features": {
     "title": "Everything you need",
@@ -44,7 +80,13 @@
     "statsTitle": "Clear statistics",
     "statsBody": "Follow clicks, countries, sources and devices over time.",
     "controlTitle": "You stay in control",
-    "controlBody": "Edit the destination, pause the link or set an expiry date."
+    "controlBody": "Edit the destination, pause the link or set an expiry date.",
+    "subtitle": "One tool for the whole life of the link, from creation to the last click.",
+    "shortMockTitle": "Your short link",
+    "statsMockTitle": "Last 7 days",
+    "controlMockTitle": "Link settings",
+    "controlMockExpiry": "Expires on",
+    "controlMockState": "Active"
   },
   "faq": {
     "title": "Frequently asked questions",
@@ -63,7 +105,8 @@
     "q7": "Do links expire?",
     "a7": "Anonymous links expire automatically. Signed-in users can set or remove an expiry date for each link.",
     "q8": "Do you store my IP address?",
-    "a8": "No. Click statistics keep only the country provided by the edge network, plus device, browser and referring host."
+    "a8": "No. Click statistics keep only the country provided by the edge network, plus device, browser and referring host.",
+    "subtitle": "Short answers about links, privacy and accounts."
   },
   "auth": {
     "loginTitle": "Welcome back",
@@ -108,13 +151,25 @@
     "forbidden": "You don't have permission to do that.",
     "notFound": "We couldn't find that page.",
     "rateLimited": "Too many requests. Try again in {seconds} seconds.",
-    "invalidUrl": "Enter a valid http or https URL."
+    "invalidUrl": "Enter a valid http or https URL.",
+    "urlRequired": "Enter a URL to shorten.",
+    "urlTooLong": "URLs can be at most 2048 characters."
   },
   "footer": {
     "tagline": "Short links with clear statistics.",
     "product": "Product",
     "account": "Account",
     "language": "Language",
-    "copyright": "© {year} Tricolink. All rights reserved."
+    "copyright": "© {year} Tricolink. All rights reserved.",
+    "resources": "Resources",
+    "faq": "FAQ",
+    "llms": "llms.txt for AI assistants",
+    "privacyNote": "Privacy-friendly: no IP storage, no ad trackers."
+  },
+  "finalCta": {
+    "title": "Ready to make your links shorter?",
+    "body": "Create a free account to keep your history, set expiry dates and follow every click.",
+    "button": "Create your free account",
+    "secondary": "Shorten a link now"
   }
 }

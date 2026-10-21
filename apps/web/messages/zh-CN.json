@@ -3,7 +3,8 @@
     "title": "Tricolink — 清晰的短链接",
     "description": "将长网址变成可追踪的短链接。免费、快速并尊重隐私。",
     "homeTitle": "Tricolink — 清晰的短链接",
-    "homeDescription": "几秒钟内将长网址变成可追踪的短链接。免费、快速并尊重隐私。"
+    "homeDescription": "几秒钟内将长网址变成可追踪的短链接。免费、快速并尊重隐私。",
+    "ogAlt": "Tricolink — 清晰统计的短链接"
   },
   "nav": {
     "main": "主导航",
@@ -25,7 +26,23 @@
   "hero": {
     "title": "清晰的短链接。",
     "subtitle": "几秒钟内将长网址变成可追踪的短链接。",
-    "cta": "创建免费账户"
+    "cta": "创建免费账户",
+    "eyebrow": "免费 URL 缩短器",
+    "inputLabel": "长 URL",
+    "placeholder": "在此粘贴长 URL",
+    "submit": "缩短",
+    "submitting": "正在缩短…",
+    "resultTitle": "你的短链接已生成",
+    "copy": "复制",
+    "copied": "已复制！",
+    "copyFailed": "无法复制链接。请选中后手动复制。",
+    "stats": "查看统计",
+    "anonymousNote": "无需账户。匿名链接会自动过期。",
+    "secureNote": "仅支持 http 和 https 链接。我们绝不存储 IP 地址。",
+    "limitTitle": "已达到每日限额",
+    "limitBody": "请在 {seconds} 秒后重试，或创建免费账户以获得更高限额。",
+    "limitReady": "你现在可以重试，或创建免费账户以获得更高限额。",
+    "limitCta": "创建免费账户"
   },
   "demo": {
     "label": "示例展示",
@@ -35,7 +52,26 @@
     "countries": "国家",
     "referrers": "来源",
     "devices": "设备",
-    "created": "创建于"
+    "created": "创建于",
+    "shortLink": "短链接",
+    "destination": "目标地址",
+    "active": "有效",
+    "chartTitle": "过去 30 天的点击",
+    "chartCaption": "仅为示例数据。",
+    "period": "过去 30 天",
+    "totalClicks": "总点击量",
+    "countryColumn": "国家/地区",
+    "sourceColumn": "来源",
+    "deviceColumn": "设备",
+    "clicksColumn": "点击",
+    "shareColumn": "占比",
+    "sourceDirect": "直接访问",
+    "other": "其他",
+    "deviceDesktop": "桌面端",
+    "deviceMobile": "移动端",
+    "deviceTablet": "平板",
+    "linkTitle": "Tricolink 发布周",
+    "dateColumn": "日期"
   },
   "features": {
     "title": "你需要的一切",
@@ -44,7 +80,13 @@
     "statsTitle": "清晰的统计",
     "statsBody": "长期跟踪点击、国家、来源和设备。",
     "controlTitle": "由你掌控",
-    "controlBody": "编辑目标地址、暂停链接或设置到期时间。"
+    "controlBody": "编辑目标地址、暂停链接或设置到期时间。",
+    "subtitle": "一个工具覆盖链接从创建到最后一次点击的完整生命周期。",
+    "shortMockTitle": "你的短链接",
+    "statsMockTitle": "过去 7 天",
+    "controlMockTitle": "链接设置",
+    "controlMockExpiry": "过期时间",
+    "controlMockState": "有效"
   },
   "faq": {
     "title": "常见问题",
@@ -63,7 +105,8 @@
     "q7": "链接会过期吗？",
     "a7": "匿名链接会自动过期。登录用户可以为每个链接设置或移除到期时间。",
     "q8": "你们会存储我的 IP 地址吗？",
-    "a8": "不会。点击统计只保留边缘网络提供的国家，以及设备、浏览器和来源主机。"
+    "a8": "不会。点击统计只保留边缘网络提供的国家，以及设备、浏览器和来源主机。",
+    "subtitle": "关于链接、隐私和账户的简短回答。"
   },
   "auth": {
     "loginTitle": "欢迎回来",
@@ -108,13 +151,25 @@
     "forbidden": "你没有权限执行此操作。",
     "notFound": "找不到该页面。",
     "rateLimited": "请求过多。请在 {seconds} 秒后重试。",
-    "invalidUrl": "请输入有效的 http 或 https 网址。"
+    "invalidUrl": "请输入有效的 http 或 https 网址。",
+    "urlRequired": "请输入要缩短的 URL。",
+    "urlTooLong": "URL 最多 2048 个字符。"
   },
   "footer": {
     "tagline": "带清晰统计的短链接。",
     "product": "产品",
     "account": "账户",
     "language": "语言",
-    "copyright": "© {year} Tricolink. 保留所有权利。"
+    "copyright": "© {year} Tricolink. 保留所有权利。",
+    "resources": "资源",
+    "faq": "常见问题",
+    "llms": "面向 AI 助手的 llms.txt",
+    "privacyNote": "隐私优先：不存储 IP，不使用广告跟踪器。"
+  },
+  "finalCta": {
+    "title": "准备好缩短你的链接了吗？",
+    "body": "创建免费账户即可保留历史记录、设置过期时间并跟踪每一次点击。",
+    "button": "创建免费账户",
+    "secondary": "立即缩短链接"
   }
 }

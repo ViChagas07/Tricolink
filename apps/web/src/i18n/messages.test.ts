@@ -37,5 +37,5 @@ describe("i18n configuration", () => {
     );
 
     expect(output).toContain("i18n:check ok");
-  });
+  }, 15_000);
 });

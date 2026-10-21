@@ -3,7 +3,8 @@
     "title": "Tricolink — Des liens courts, en toute clarté",
     "description": "Transformez de longues URL en liens courts et mesurables. Gratuit, rapide et respectueux de la vie privée.",
     "homeTitle": "Tricolink — Des liens courts, en toute clarté",
-    "homeDescription": "Transformez de longues URL en liens courts et mesurables en quelques secondes. Gratuit, rapide et respectueux de la vie privée."
+    "homeDescription": "Transformez de longues URL en liens courts et mesurables en quelques secondes. Gratuit, rapide et respectueux de la vie privée.",
+    "ogAlt": "Tricolink — des liens courts aux statistiques claires"
   },
   "nav": {
     "main": "Navigation principale",
@@ -25,7 +26,23 @@
   "hero": {
     "title": "Des liens courts, en toute clarté.",
     "subtitle": "Transformez de longues URL en liens courts et mesurables en quelques secondes.",
-    "cta": "Créez votre compte gratuit"
+    "cta": "Créez votre compte gratuit",
+    "eyebrow": "Raccourcisseur d'URL gratuit",
+    "inputLabel": "URL longue",
+    "placeholder": "Collez votre URL longue ici",
+    "submit": "Raccourcir",
+    "submitting": "Raccourcissement…",
+    "resultTitle": "Votre lien court est prêt",
+    "copy": "Copier",
+    "copied": "Copié !",
+    "copyFailed": "Impossible de copier le lien. Sélectionnez-le et copiez-le manuellement.",
+    "stats": "Voir les statistiques",
+    "anonymousNote": "Aucun compte requis. Les liens anonymes expirent automatiquement.",
+    "secureNote": "Uniquement des liens http et https. Nous ne stockons jamais les adresses IP.",
+    "limitTitle": "Limite quotidienne atteinte",
+    "limitBody": "Réessayez dans {seconds} secondes ou créez un compte gratuit pour une limite plus élevée.",
+    "limitReady": "Vous pouvez réessayer maintenant ou créer un compte gratuit pour une limite plus élevée.",
+    "limitCta": "Créer un compte gratuit"
   },
   "demo": {
     "label": "Exemple illustratif",
@@ -35,7 +52,26 @@
     "countries": "Pays",
     "referrers": "Sources",
     "devices": "Appareils",
-    "created": "Créé le"
+    "created": "Créé le",
+    "shortLink": "Lien court",
+    "destination": "Destination",
+    "active": "Actif",
+    "chartTitle": "Clics des 30 derniers jours",
+    "chartCaption": "Données illustratives uniquement.",
+    "period": "30 derniers jours",
+    "totalClicks": "Clics au total",
+    "countryColumn": "Pays",
+    "sourceColumn": "Source",
+    "deviceColumn": "Appareil",
+    "clicksColumn": "Clics",
+    "shareColumn": "Part",
+    "sourceDirect": "Direct",
+    "other": "Autres",
+    "deviceDesktop": "Ordinateur",
+    "deviceMobile": "Mobile",
+    "deviceTablet": "Tablette",
+    "linkTitle": "Semaine de lancement de Tricolink",
+    "dateColumn": "Date"
   },
   "features": {
     "title": "Tout ce qu'il vous faut",
@@ -44,7 +80,13 @@
     "statsTitle": "Des statistiques claires",
     "statsBody": "Suivez les clics, pays, sources et appareils dans le temps.",
     "controlTitle": "Vous gardez le contrôle",
-    "controlBody": "Modifiez la destination, mettez le lien en pause ou fixez une date d'expiration."
+    "controlBody": "Modifiez la destination, mettez le lien en pause ou fixez une date d'expiration.",
+    "subtitle": "Un seul outil pour toute la vie du lien, de sa création au dernier clic.",
+    "shortMockTitle": "Votre lien court",
+    "statsMockTitle": "7 derniers jours",
+    "controlMockTitle": "Réglages du lien",
+    "controlMockExpiry": "Expire le",
+    "controlMockState": "Actif"
   },
   "faq": {
     "title": "Questions fréquentes",
@@ -63,7 +105,8 @@
     "q7": "Les liens expirent-ils ?",
     "a7": "Les liens anonymes expirent automatiquement. Les utilisateurs connectés peuvent définir ou retirer une date d'expiration pour chaque lien.",
     "q8": "Conservez-vous mon adresse IP ?",
-    "a8": "Non. Les statistiques ne gardent que le pays fourni par le réseau de périphérie, ainsi que l'appareil, le navigateur et l'hôte référent."
+    "a8": "Non. Les statistiques ne gardent que le pays fourni par le réseau de périphérie, ainsi que l'appareil, le navigateur et l'hôte référent.",
+    "subtitle": "Des réponses courtes sur les liens, la confidentialité et les comptes."
   },
   "auth": {
     "loginTitle": "Bon retour",
@@ -108,13 +151,25 @@
     "forbidden": "Vous n'avez pas l'autorisation de faire cela.",
     "notFound": "Nous n'avons pas trouvé cette page.",
     "rateLimited": "Trop de requêtes. Réessayez dans {seconds} secondes.",
-    "invalidUrl": "Saisissez une URL http ou https valide."
+    "invalidUrl": "Saisissez une URL http ou https valide.",
+    "urlRequired": "Saisissez une URL à raccourcir.",
+    "urlTooLong": "L'URL ne peut pas dépasser 2048 caractères."
   },
   "footer": {
     "tagline": "Des liens courts avec des statistiques claires.",
     "product": "Produit",
     "account": "Compte",
     "language": "Langue",
-    "copyright": "© {year} Tricolink. Tous droits réservés."
+    "copyright": "© {year} Tricolink. Tous droits réservés.",
+    "resources": "Ressources",
+    "faq": "FAQ",
+    "llms": "llms.txt pour les assistants IA",
+    "privacyNote": "Respect de la vie privée : aucune IP stockée, aucun traceur publicitaire."
+  },
+  "finalCta": {
+    "title": "Prêt à raccourcir vos liens ?",
+    "body": "Créez un compte gratuit pour conserver votre historique, définir des expirations et suivre chaque clic.",
+    "button": "Créez votre compte gratuit",
+    "secondary": "Raccourcir un lien maintenant"
   }
 }
