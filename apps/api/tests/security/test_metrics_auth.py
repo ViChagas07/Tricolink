@@ -5,7 +5,11 @@ from tricolink.main import create_app
 
 
 def test_metrics_requires_token() -> None:
-    settings = Settings(app_env="test", metrics_token="metrics-secret-token")
+    settings = Settings(
+        app_env="test",
+        metrics_token="metrics-secret-token",
+        click_flusher_enabled=False,
+    )
     with TestClient(create_app(settings)) as client:
         response = client.get("/metrics")
 
@@ -14,7 +18,11 @@ def test_metrics_requires_token() -> None:
 
 
 def test_metrics_rejects_wrong_token() -> None:
-    settings = Settings(app_env="test", metrics_token="metrics-secret-token")
+    settings = Settings(
+        app_env="test",
+        metrics_token="metrics-secret-token",
+        click_flusher_enabled=False,
+    )
     with TestClient(create_app(settings)) as client:
         response = client.get("/metrics", headers={"Authorization": "Bearer wrong"})
 
@@ -22,7 +30,11 @@ def test_metrics_rejects_wrong_token() -> None:
 
 
 def test_metrics_accepts_valid_token() -> None:
-    settings = Settings(app_env="test", metrics_token="metrics-secret-token")
+    settings = Settings(
+        app_env="test",
+        metrics_token="metrics-secret-token",
+        click_flusher_enabled=False,
+    )
     with TestClient(create_app(settings)) as client:
         response = client.get(
             "/metrics",

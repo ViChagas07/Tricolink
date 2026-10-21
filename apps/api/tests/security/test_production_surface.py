@@ -12,6 +12,7 @@ def production_settings(**overrides: object) -> Settings:
         "csrf_secret": "c" * 48,
         "session_secret": "s" * 48,
         "metrics_token": "m" * 48,
+        "click_flusher_enabled": False,
     }
     values.update(overrides)
     return Settings(**values)  # type: ignore[arg-type]

@@ -106,6 +106,17 @@ class Settings:
     cache_jitter_pct: float = 0.15
     negative_cache_ttl_seconds: int = 30
     lock_ttl_ms: int = 5_000
+    cache_wait_timeout_seconds: float = 0.25
+
+    dns_timeout_seconds: float = 2.0
+
+    click_stream_key: str = "tl:clicks"
+    click_stream_group: str = "tricolink-flusher"
+    click_stream_maxlen: int = 100_000
+    click_flush_batch_size: int = 500
+    click_flush_block_ms: int = 1_000
+    click_publish_timeout_seconds: float = 0.2
+    click_flusher_enabled: bool = True
 
     anon_daily_link_limit: int = 5
     user_daily_link_limit: int = 100
@@ -182,6 +193,9 @@ class Settings:
             "BULKHEAD_DB_WRITE": self.bulkhead_db_write,
             "BULKHEAD_HASHING": self.bulkhead_hashing,
             "BULKHEAD_DNS": self.bulkhead_dns,
+            "CLICK_STREAM_MAXLEN": self.click_stream_maxlen,
+            "CLICK_FLUSH_BATCH_SIZE": self.click_flush_batch_size,
+            "CLICK_FLUSH_BLOCK_MS": self.click_flush_block_ms,
         }
         for name, value in positive_integers.items():
             if value < 1:
@@ -209,6 +223,9 @@ class Settings:
                 self.circuit_breaker_recovery_timeout_seconds
             ),
             "BULKHEAD_ACQUIRE_TIMEOUT_SECONDS": self.bulkhead_acquire_timeout_seconds,
+            "CACHE_WAIT_TIMEOUT_SECONDS": self.cache_wait_timeout_seconds,
+            "DNS_TIMEOUT_SECONDS": self.dns_timeout_seconds,
+            "CLICK_PUBLISH_TIMEOUT_SECONDS": self.click_publish_timeout_seconds,
         }
         for name, positive_value in positive_numbers.items():
             if positive_value <= 0:
@@ -216,6 +233,8 @@ class Settings:
 
         if self.db_max_overflow < 0:
             raise SettingsError("DB_MAX_OVERFLOW cannot be negative")
+        if self.anon_link_ttl_days < 1:
+            raise SettingsError("ANON_LINK_TTL_DAYS must be at least 1")
         if self.cache_soft_ttl_seconds > self.cache_hard_ttl_seconds:
             raise SettingsError("CACHE_SOFT_TTL_SECONDS cannot exceed CACHE_HARD_TTL_SECONDS")
 
@@ -277,6 +296,16 @@ class Settings:
             cache_jitter_pct=_number("CACHE_JITTER_PCT", 0.15),
             negative_cache_ttl_seconds=_integer("NEGATIVE_CACHE_TTL_SECONDS", 30),
             lock_ttl_ms=_integer("LOCK_TTL_MS", 5_000),
+            cache_wait_timeout_seconds=_number("CACHE_WAIT_TIMEOUT_SECONDS", 0.25),
+            dns_timeout_seconds=_number("DNS_TIMEOUT_SECONDS", 2.0),
+            click_stream_key=_text("CLICK_STREAM_KEY", "tl:clicks") or "tl:clicks",
+            click_stream_group=_text("CLICK_STREAM_GROUP", "tricolink-flusher")
+            or "tricolink-flusher",
+            click_stream_maxlen=_integer("CLICK_STREAM_MAXLEN", 100_000),
+            click_flush_batch_size=_integer("CLICK_FLUSH_BATCH_SIZE", 500),
+            click_flush_block_ms=_integer("CLICK_FLUSH_BLOCK_MS", 1_000),
+            click_publish_timeout_seconds=_number("CLICK_PUBLISH_TIMEOUT_SECONDS", 0.2),
+            click_flusher_enabled=_boolean("CLICK_FLUSHER_ENABLED", True),
             anon_daily_link_limit=_integer("ANON_DAILY_LINK_LIMIT", 5),
             user_daily_link_limit=_integer("USER_DAILY_LINK_LIMIT", 100),
             anon_link_ttl_days=_integer("ANON_LINK_TTL_DAYS", 30),

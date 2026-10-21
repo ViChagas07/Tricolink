@@ -50,10 +50,25 @@ class Database:
                     await connection.execute(text("SELECT 1"))
 
     @asynccontextmanager
+    async def read(self) -> AsyncIterator[AsyncSession]:
+        async with AsyncExitStack() as stack:
+            if self._read_bulkhead is not None:
+                await stack.enter_async_context(self._read_bulkhead.acquire())
+            if self._breaker is not None:
+                await stack.enter_async_context(self._breaker.guard())
+            session = self._session_factory()
+            try:
+                yield session
+            finally:
+                await session.close()
+
+    @asynccontextmanager
     async def unit_of_work(self) -> AsyncIterator[AsyncSession]:
         async with AsyncExitStack() as stack:
             if self._write_bulkhead is not None:
                 await stack.enter_async_context(self._write_bulkhead.acquire())
+            if self._breaker is not None:
+                await stack.enter_async_context(self._breaker.guard())
             async with unit_of_work(self._session_factory) as session:
                 yield session
 

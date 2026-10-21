@@ -4,7 +4,7 @@
 - [x] P00 Bootstrap SDD + Graphify
 - [x] P01 Monorepo, Docker e tooling
 - [x] P02 Backend: fundação + núcleo de segurança (token bucket, circuit breaker, bulkhead, middlewares)
-- [ ] P03 Links: encurtar, redirecionar, cache anti-stampede, cliques
+- [x] P03 Links: encurtar, redirecionar, cache anti-stampede, cliques
 - [ ] P04 Identity: cadastro/login, Google OIDC, sessões, anti brute force
 - [ ] P05 Frontend: fundação, next-intl (11 idiomas), navbar, API client, CSP
 - [ ] P06 Landing page (hero, demo, recursos, FAQ, SEO/AEO/GEO)
@@ -34,6 +34,18 @@
 - P02: IP real conta o `X-Forwarded-For` da direita para a esquerda (`parts[-TRUSTED_PROXY_COUNT]`), então entradas forjadas à esquerda não criam novos baldes. `TRUSTED_PROXY_COUNT=0` ignora o header. O balde `global` usa a chave fixa `all` (load shedding do processo inteiro), enquanto os baldes por IP (redirect/create/auth) usarão o IP resolvido.
 - P02: `/metrics` exige `Authorization: Bearer <METRICS_TOKEN>` (comparação em tempo constante) e responde 401 sem token. Métricas: requisições, latência, 429, estado/transições de circuit breaker e cache hit/miss. `/health/ready` checa Postgres e Redis, ambos com timeout e circuit breaker.
 - P02: `docker-compose`/Dockerfile de dev passam `--limit-concurrency 200` ao uvicorn. Nenhuma dependência nova foi adicionada.
+- P03: `modules/links` e `modules/analytics` seguem domain/application/adapters/presentation. `application/ports.py` não importa FastAPI/SQLAlchemy; os adapters SQLAlchemy/Redis implementam os ports. `RecordClick` fica em `links/application` e usa o domínio de analytics.
+- P03: `UrlPolicy` resolve DNS via `HostResolver` injetado; `SystemHostResolver` roda sob o bulkhead `dns`, com timeout, e o policy bloqueia se **qualquer** resposta não for global. Bloqueia localhost/hosts internos, IPs privados/loopback/link-local/metadata/multicast/reservados/CGNAT, IPv4 mapeado em IPv6, credenciais, esquemas != http/https, controles/whitespace, `%0d`/`%5c` e URLs do próprio domínio (inclui subdomínios). IDN é normalizado para punycode.
+- P03: o cache do redirect usa `tl:link:{code}`, `tl:lock:{code}`, `tl:neg:{code}`. O JSON guarda `{id,u,e,s,sf}`: `sf` é o "fresh until" com jitter, necessário para SWR determinístico (o hard TTL é o TTL da chave Redis). TTLs duro, macio e negativo recebem jitter de ±15%.
+- P03: anti-stampede combina single-flight **em processo** (uma task por código atende todas as requisições concorrentes) com `SET NX PX` no Redis para coordenação entre processos, além de SWR e cache negativo. Isso evita saturar o pool Redis antes do single-flight.
+- P03: PATCH/DELETE (e criação de alias) invalidam `tl:link` + `tl:neg`; expiração/inatividade são checadas a cada redirect mesmo com cache. Redis indisponível/estourado/circuito aberto → `CacheUnavailable` → repositório via bulkhead `db_read`.
+- P03: cotas diárias usam Redis (`INCR` + expiração até a meia-noite UTC) com fallback em memória; a chave é hash SHA-256 de escopo+IP/user, para não persistir IP em claro. `ANON_LINK_TTL_DAYS` define a expiração do link anônimo.
+- P03: cliques vão para o Redis Stream `tl:clicks` via XADD; `RecordClick` agenda a publicação e nunca bloqueia o redirect. Falha de Redis incrementa `tricolink_clicks_dropped_total{reason="redis_unavailable"}`. O flusher usa consumer group, grava `click_events` em lote e incrementa `links.click_count` no mesmo commit; eventos de links deletados são descartados.
+- P03: UA bruto e IP nunca são persistidos. O evento guarda apenas device/browser leve, país normalizado de `X-Vercel-IP-Country`/`CF-IPCountry` e `referrer_host` (sem path/query). Cliques são at-least-once.
+- P03: `create_app()` passou a devolver a instância FastAPI (middlewares via `add_middleware`), permitindo `dependency_overrides` nos testes de autenticação enquanto P04 não existe. `get_current_user_optional` é o ponto de extensão e retorna `None` por padrão.
+- P03: repositório usa somente ORM/Core com parâmetros ligados, keyset pagination por `(created_at, id)`, busca `ILIKE` com `%`/`_` escapados, cursor base64 estrito e filtro de dono no SQL (não-dono → 404). Não há relationships/selects extras (sem N+1).
+- P03: `Database.read()` aplica bulkhead `db_read` + circuit breaker; `unit_of_work()` aplica `db_write` + breaker. O publicador, cache, quota e flusher usam o breaker Redis; `CacheClient` genérico também passou a aceitar breaker/timeout.
+- P03: redirect responde 302 com `Cache-Control: no-store` e `X-Robots-Tag: noindex, nofollow`; 404/410 usam HTML estático sem interpolação; rotas de gestão exigem usuário e as de listagem/detalhe usam o balde `stats_list` por usuário.
 
 
 ## Validação P00
@@ -59,6 +71,20 @@
 - Token bucket: 100 chamadas paralelas no Redis respeitaram a capacidade; consume/esgota/recarga e fallback com Redis derrubado cobertos. Circuit breaker: transições closed → open → half_open → closed/open. Bulkhead: concorrência limitada e timeout.
 - IP real: testes provam que `X-Forwarded-For` forjado à esquerda não burla o limite com `TRUSTED_PROXY_COUNT=1`; corpo chunked/acima do limite → 413.
 
+## Validação P03
+- `make test-api`: 249 testes passando (domain, application, cache, repositório, pipeline de cliques, API e segurança).
+- Cobertura de `modules/links/domain`: 96% (226 stmts, 8 miss; 82 branches, 4 partial). Todos os arquivos de domínio ≥94%.
+- `ruff check`, `ruff format --check` e `mypy src` limpos.
+- `alembic check`: nenhuma operação pendente (P03 não alterou schema).
+- Stampede HTTP: 200 GETs concorrentes no mesmo código frio → 1 consulta ao repositório e 200 respostas 302 com `Location` correto.
+- Cache: 200 chamadas concorrentes → 1 loader; SWR serve stale e executa 1 refresh; 1000 códigos inexistentes → 1 loader; jitter de 2000 TTLs sempre dentro de 85–115 para base 100 ±15%; invalidação força nova leitura.
+- Redirect: validado ao vivo com `curl.exe`: `HTTP/1.1 302 Found`, `location: https://93.184.216.34/p03`, `x-robots-tag`, `cache-control: no-store` e headers `RateLimit-*`.
+- Clique: após o redirect, o flusher gravou `click_events` e `links.click_count=1`; evento `BR|mobile|safari|news.example.com`, sem IP/UA bruto.
+- Colisão real: IntegrityError de UNIQUE(code) forçado no Postgres → retry gerou outro código.
+- SQLi: payloads em `code`, `alias`, `q` e `cursor` não alteraram consultas (404/400/422/lista vazia conforme o caso).
+- Redis fora no publicador: redirect continuou 302 e `clicks_dropped_total` incrementou; publisher bloqueante não impediu a resposta.
+- Rate limits: redirect acima da capacidade → 429 com `Retry-After` e `RateLimit-Limit`; baldes de create cobrem IP e usuário.
+
 ## Bloqueios
 (nenhum)
 
@@ -73,6 +99,11 @@
 - RLS em `links`/`refresh_tokens` (SECURITY §3) não foi criada em P02; fica para as fases de identidade/hardening.
 - Não foram executados k6/carga, `pip-audit`, deploy real em Render/Vercel nem teste em Linux/macOS.
 - No Compose o usuário do Postgres é superuser do container. Não foi validado em Postgres gerenciado se o usuário de migração tem permissão para `CREATE EXTENSION citext`; o plano é rodar migrations com um usuário/procedimento privilegiado separado do runtime.
+- Cliques são at-least-once: se o processo cair entre o commit do lote e o `XACK`, os eventos pendentes podem ser reprocessados e duplicar linhas em `click_events` (não há chave de idempotência). O `click_count` também pode duplicar nesse cenário.
+- O flusher usa consumer name derivado do hostname; entradas pendentes de um consumer morto com hostname diferente não são reclamadas automaticamente (não foi implementado `XAUTOCLAIM`).
+- Existe uma janela de corrida entre um refresh SWR em andamento e um PATCH/DELETE: o refresh pode repopular o cache com dados lidos antes da alteração. A invalidação sequencial é coberta por teste; a corrida concorrente fica para o hardening (P09).
+- A política de URL resolve DNS no momento da criação, mas não fixa/pinna os IPs depois; como o servidor nunca busca a URL, o risco de SSRF em runtime é nulo, mas a checagem não protege contra mudanças posteriores de DNS.
+- Não foram executados k6/carga, `pip-audit`, deploy real em Render/Vercel nem teste em Linux/macOS.
 
 ## Revisão humana pendente
 - Traduções geradas por IA (todos os idiomas exceto pt-BR e en)

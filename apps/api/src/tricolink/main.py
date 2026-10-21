@@ -4,7 +4,6 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from starlette.types import ASGIApp
 
 from tricolink.core.config import Settings, get_settings
 from tricolink.core.error_handlers import install_error_handlers
@@ -20,12 +19,13 @@ from tricolink.core.middleware import (
 )
 from tricolink.core.services import Services, build_services
 from tricolink.infra.observability.http import router as ops_router
+from tricolink.modules.links.presentation import router as links_router
 
 
 def create_app(
     settings: Settings | None = None,
     services: Services | None = None,
-) -> ASGIApp:
+) -> FastAPI:
     current = settings or get_settings()
     current_services = services or build_services(current)
     configure_logging(current)
@@ -33,6 +33,7 @@ def create_app(
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         configure_logging(current)
+        await current_services.start()
         try:
             yield
         finally:
@@ -52,19 +53,31 @@ def create_app(
 
     install_error_handlers(application)
     application.include_router(ops_router)
+    application.include_router(links_router)
 
-    stack: ASGIApp = application
-    stack = BodyLimitMiddleware(stack, max_body_bytes=current.max_body_bytes)
-    stack = GlobalRateLimitMiddleware(stack, current_services.rate_limiter)
-    stack = RequestTimeoutMiddleware(
-        stack,
+    application.add_middleware(
+        BodyLimitMiddleware,
+        max_body_bytes=current.max_body_bytes,
+    )
+    application.add_middleware(
+        GlobalRateLimitMiddleware,
+        limiter=current_services.rate_limiter,
+    )
+    application.add_middleware(
+        RequestTimeoutMiddleware,
         timeout_seconds=current.request_timeout_seconds,
     )
-    stack = RealIPMiddleware(stack, trusted_proxy_count=current.trusted_proxy_count)
-    stack = MetricsMiddleware(stack)
-    stack = SecurityHeadersMiddleware(stack, is_production=current.is_production)
-    stack = RequestIDMiddleware(stack)
-    return stack
+    application.add_middleware(
+        RealIPMiddleware,
+        trusted_proxy_count=current.trusted_proxy_count,
+    )
+    application.add_middleware(MetricsMiddleware)
+    application.add_middleware(
+        SecurityHeadersMiddleware,
+        is_production=current.is_production,
+    )
+    application.add_middleware(RequestIDMiddleware)
+    return application
 
 
 app = create_app()

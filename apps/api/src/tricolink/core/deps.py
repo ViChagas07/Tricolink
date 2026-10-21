@@ -1,15 +1,24 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator
+from dataclasses import dataclass
 from typing import cast
+from uuid import UUID
 
-from fastapi import Request
+from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tricolink.core.config import Settings
 from tricolink.core.services import Services
 from tricolink.infra.cache import CacheClient
 from tricolink.infra.ratelimit import RateLimiter
+from tricolink.shared_kernel.security_errors import AuthenticationError
+
+
+@dataclass(frozen=True, slots=True)
+class CurrentUser:
+    id: UUID
+    email: str | None = None
 
 
 def settings_dependency(request: Request) -> Settings:
@@ -26,6 +35,21 @@ def get_cache(request: Request) -> CacheClient:
 
 def get_rate_limiter(request: Request) -> RateLimiter:
     return get_services(request).rate_limiter
+
+
+async def get_current_user_optional(request: Request) -> CurrentUser | None:
+    """P04 extension point: resolve the authenticated user from cookies/JWT."""
+
+    del request
+    return None
+
+
+async def get_current_user(
+    user: CurrentUser | None = Depends(get_current_user_optional),
+) -> CurrentUser:
+    if user is None:
+        raise AuthenticationError()
+    return user
 
 
 async def get_session(request: Request) -> AsyncIterator[AsyncSession]:

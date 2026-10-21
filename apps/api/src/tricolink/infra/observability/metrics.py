@@ -50,6 +50,17 @@ CACHE_MISSES = Counter(
     labelnames=("namespace",),
 )
 
+CLICKS_DROPPED = Counter(
+    "tricolink_clicks_dropped_total",
+    "Click events dropped before reaching the Redis stream.",
+    labelnames=("reason",),
+)
+
+CLICKS_FLUSHED = Counter(
+    "tricolink_clicks_flushed_total",
+    "Click events persisted by the stream flusher.",
+)
+
 _STATE_VALUES = {"closed": 0, "half_open": 1, "open": 2}
 
 
@@ -77,3 +88,11 @@ def record_cache_hit(namespace: str) -> None:
 
 def record_cache_miss(namespace: str) -> None:
     CACHE_MISSES.labels(namespace=namespace).inc()
+
+
+def record_click_dropped(reason: str) -> None:
+    CLICKS_DROPPED.labels(reason=reason).inc()
+
+
+def record_clicks_flushed(count: int) -> None:
+    CLICKS_FLUSHED.inc(count)
