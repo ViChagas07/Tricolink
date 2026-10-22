@@ -4,10 +4,11 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { CopyLinkButton } from "@/components/links/copy-link-button";
+import { LinkStatsPanel } from "@/components/links/link-stats";
 import { Link } from "@/i18n/navigation";
 import { defaultLocale, isLocale } from "@/i18n/locales";
 import { linkStatus } from "@/lib/links";
-import { requireUser, getServerLink } from "@/lib/server-api";
+import { getServerLink, getServerLinkStats, requireUser } from "@/lib/server-api";
 import { safeExternalHref } from "@/lib/url";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +33,7 @@ export default async function LinkDetailPage({ params }: LinkDetailPageProps) {
   }
 
   await requireUser(rawLocale, `/${rawLocale}/links/${encodeURIComponent(code)}`);
-  const link = await getServerLink(code);
+  const [link, stats] = await Promise.all([getServerLink(code), getServerLinkStats(code, "30d")]);
   if (!link) {
     notFound();
   }
@@ -169,6 +170,8 @@ export default async function LinkDetailPage({ params }: LinkDetailPageProps) {
           </div>
         </div>
       </section>
+
+      <LinkStatsPanel code={link.code} initialRange="30d" initialStats={stats} />
     </div>
   );
 }

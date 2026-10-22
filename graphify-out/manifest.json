@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "docs/agent/CONTEXT.md": {
-    "mtime": 1792639266.980262,
-    "seen": 1792639908.1336334,
-    "ast_hash": "c77c923dc3494731f994bc695340b8a5",
+    "mtime": 1792643725.4157946,
+    "seen": 1792644125.905679,
+    "ast_hash": "ea26ec69f10c4e91e3993f6c4c237064",
     "semantic_hash": ""
   },
   "docs/agent/GRAPHIFY.md": {
@@ -24,9 +24,9 @@
     "semantic_hash": "aa05b3b82c1a22e91f8cec76cf9be242"
   },
   "docs/agent/PROGRESS.md": {
-    "mtime": 1792639842.2975378,
-    "seen": 1792639908.1338208,
-    "ast_hash": "f8037af936fc85bc5004af18cdf32c68",
+    "mtime": 1792644102.0728076,
+    "seen": 1792644125.9058795,
+    "ast_hash": "e8889b615d27d6d9cb5adcb49545e582",
     "semantic_hash": ""
   },
   "docs/agent/RULES.md": {
@@ -60,15 +60,15 @@
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/core/config.py": {
-    "mtime": 1792596322.0730493,
-    "seen": 1792596516.4360454,
-    "ast_hash": "6702089c286884e6c7fe6f0100d36111",
+    "mtime": 1792641127.5711918,
+    "seen": 1792643498.218661,
+    "ast_hash": "b0f90d76802dc6edfd8053dc418f2295",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/main.py": {
-    "mtime": 1792594600.5216458,
-    "seen": 1792596516.4435375,
-    "ast_hash": "5111f52b46a90b24ea733dfb54ea3708",
+    "mtime": 1792641148.74393,
+    "seen": 1792643498.227051,
+    "ast_hash": "d62ef7dff83c397b45ee239c1c423977",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/shared_kernel/clock.py": {
@@ -156,9 +156,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/core/deps.py": {
-    "mtime": 1792594599.2946475,
-    "seen": 1792596516.4360507,
-    "ast_hash": "a26236f9db1d78235df9472f15f2ddc5",
+    "mtime": 1792644000.0198023,
+    "seen": 1792644125.8581202,
+    "ast_hash": "38b71d6849108df209ed01b67f496260",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/core/logging.py": {
@@ -222,9 +222,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/core/services.py": {
-    "mtime": 1792639234.435427,
-    "seen": 1792639908.0885768,
-    "ast_hash": "3a8be15d4d35227fb9674c427e301e9b",
+    "mtime": 1792641142.1705167,
+    "seen": 1792643498.2213643,
+    "ast_hash": "0ae5cd7cae89412d009c6895eab240be",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/infra/cache/client.py": {
@@ -594,15 +594,15 @@
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/modules/links/presentation/dependencies.py": {
-    "mtime": 1792639243.4305825,
-    "seen": 1792639908.1068869,
-    "ast_hash": "8a3f9c240b090426e7eb8ef0d4074b69",
+    "mtime": 1792644008.945786,
+    "seen": 1792644125.8743844,
+    "ast_hash": "d429cd0398da79fdcfdfe10c86a7aa30",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/modules/links/presentation/router.py": {
-    "mtime": 1792639256.211334,
-    "seen": 1792639908.1068904,
-    "ast_hash": "9fddaceca2c19cc1e55ca4bac3b9c696",
+    "mtime": 1792644009.8840716,
+    "seen": 1792644125.8743873,
+    "ast_hash": "c50c3541d28bac4d7ef3fff2f772cd19",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/modules/links/presentation/schemas.py": {
@@ -846,15 +846,15 @@
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/modules/identity/presentation/dependencies.py": {
-    "mtime": 1792594514.653905,
-    "seen": 1792596516.4441538,
-    "ast_hash": "d5e20fb76cb0f6b65a88910f24d70778",
+    "mtime": 1792644019.965374,
+    "seen": 1792644125.87021,
+    "ast_hash": "2d4225d2d6f7c0377922d6e229e627a9",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/modules/identity/presentation/router.py": {
-    "mtime": 1792594677.5324607,
-    "seen": 1792596516.4441562,
-    "ast_hash": "42d8df44a5865e006b6c819c580771be",
+    "mtime": 1792644037.6715832,
+    "seen": 1792644125.870213,
+    "ast_hash": "ea4d562f11e5ed20c396f41710f80944",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/modules/identity/presentation/schemas.py": {
@@ -906,69 +906,69 @@
     "semantic_hash": ""
   },
   "apps/web/messages/ar.json": {
-    "mtime": 1792636683.1133225,
-    "seen": 1792639908.1174612,
-    "ast_hash": "19bfd8a2ae9722b340dcf9114247936f",
+    "mtime": 1792641664.759312,
+    "seen": 1792643498.2825541,
+    "ast_hash": "7057b745e8b141560158ca3e79359626",
     "semantic_hash": ""
   },
   "apps/web/messages/de.json": {
-    "mtime": 1792636683.0980225,
-    "seen": 1792639908.1174645,
-    "ast_hash": "2def3dce21391977a8ba0abc5c71be0b",
+    "mtime": 1792641664.7365026,
+    "seen": 1792643498.2825615,
+    "ast_hash": "7755204291637bfaec92c544860bbaa5",
     "semantic_hash": ""
   },
   "apps/web/messages/en.json": {
-    "mtime": 1792636683.0744822,
-    "seen": 1792639908.1174667,
-    "ast_hash": "e93ce5fb250cdcb4204c1b62b582b1b5",
+    "mtime": 1792641664.7243686,
+    "seen": 1792643498.2825673,
+    "ast_hash": "9fbe8ff3285b87f269d0fc8459d58c79",
     "semantic_hash": ""
   },
   "apps/web/messages/es.json": {
-    "mtime": 1792636683.0877254,
-    "seen": 1792639908.1174695,
-    "ast_hash": "4a543ae2e349f14921a03ec2367a7afd",
+    "mtime": 1792641664.7289112,
+    "seen": 1792643498.2825758,
+    "ast_hash": "8b58703c3c929d73e800c99537aff06b",
     "semantic_hash": ""
   },
   "apps/web/messages/fr.json": {
-    "mtime": 1792636683.095431,
-    "seen": 1792639908.117472,
-    "ast_hash": "17a6e566c0f82c4c0121382def161a15",
+    "mtime": 1792641664.7334774,
+    "seen": 1792643498.282584,
+    "ast_hash": "88f81d7de4b4af6b708695ce74d47bb5",
     "semantic_hash": ""
   },
   "apps/web/messages/it.json": {
-    "mtime": 1792636683.0996976,
-    "seen": 1792639908.117474,
-    "ast_hash": "ce85c1ecf0f8be9a3efe8138bb73d3d7",
+    "mtime": 1792641664.7445538,
+    "seen": 1792643498.2827616,
+    "ast_hash": "3db502e64f87febecd16270bc4766b1e",
     "semantic_hash": ""
   },
   "apps/web/messages/ja.json": {
-    "mtime": 1792636683.101864,
-    "seen": 1792639908.1174765,
-    "ast_hash": "1b2cfb6f2291a2051b23613bb1446f5c",
+    "mtime": 1792641664.7471037,
+    "seen": 1792643498.2827706,
+    "ast_hash": "0b801cfcc37e1ab1b8cefb524300802c",
     "semantic_hash": ""
   },
   "apps/web/messages/ko.json": {
-    "mtime": 1792636683.1045747,
-    "seen": 1792639908.1174784,
-    "ast_hash": "59080e043197512adf463b760234f541",
+    "mtime": 1792641664.750619,
+    "seen": 1792643498.2827773,
+    "ast_hash": "18f5283ecc1625d4d1be24bb62538bb6",
     "semantic_hash": ""
   },
   "apps/web/messages/pt-BR.json": {
-    "mtime": 1792636683.0867183,
-    "seen": 1792639908.1174812,
-    "ast_hash": "be135d7d5e19bf3e21c8361f23c4bd00",
+    "mtime": 1792641664.7268853,
+    "seen": 1792643498.282785,
+    "ast_hash": "ddaf44839b06e0f9645071b5cae4fda5",
     "semantic_hash": ""
   },
   "apps/web/messages/ru.json": {
-    "mtime": 1792636683.1092603,
-    "seen": 1792639908.1174827,
-    "ast_hash": "394a0c2cf869f3b57429846a139c1e8e",
+    "mtime": 1792641664.7562554,
+    "seen": 1792643498.283193,
+    "ast_hash": "e972dea0bee9d43823b7cc94c7944d03",
     "semantic_hash": ""
   },
   "apps/web/messages/zh-CN.json": {
-    "mtime": 1792636683.1061735,
-    "seen": 1792639908.1174853,
-    "ast_hash": "fbd7a01da7eecd65b310b787be502e15",
+    "mtime": 1792641664.7531793,
+    "seen": 1792643498.283372,
+    "ast_hash": "1ceeff95deb352e5fafbc0545d53c65b",
     "semantic_hash": ""
   },
   "apps/web/playwright.config.ts": {
@@ -1344,9 +1344,9 @@
     "semantic_hash": ""
   },
   "apps/web/e2e/auth-links.spec.ts": {
-    "mtime": 1792639603.5187907,
-    "seen": 1792639908.1167457,
-    "ast_hash": "1b74740d59b89b4d9280c1f805cf4c97",
+    "mtime": 1792643029.1453393,
+    "seen": 1792643498.2811244,
+    "ast_hash": "6b88ab638bcd9cd2ae09afb1c4ff1bb6",
     "semantic_hash": ""
   },
   "apps/web/src/app/[locale]/account/loading.tsx": {
@@ -1362,9 +1362,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/[locale]/links/[code]/page.tsx": {
-    "mtime": 1792638857.210464,
-    "seen": 1792639908.1181152,
-    "ast_hash": "4523e7f2568ca7d2e830bf67b4460ef3",
+    "mtime": 1792643527.039627,
+    "seen": 1792644125.886962,
+    "ast_hash": "886c43725149e55156fd4d8d33779da8",
     "semantic_hash": ""
   },
   "apps/web/src/app/[locale]/links/loading.tsx": {
@@ -1464,15 +1464,105 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/server-api.ts": {
-    "mtime": 1792639278.4233055,
-    "seen": 1792639908.1300669,
-    "ast_hash": "223bd33d302d0150bdbf6b14aaecb364",
+    "mtime": 1792641560.642156,
+    "seen": 1792643498.3130612,
+    "ast_hash": "861d457c9755c49d4b33dfd7bc809d38",
     "semantic_hash": ""
   },
   "apps/web/src/lib/theme.ts": {
     "mtime": 1792636319.5285575,
     "seen": 1792639908.1305993,
     "ast_hash": "f0078504c40be56d49ac2f6d37c93af9",
+    "semantic_hash": ""
+  },
+  "apps/api/src/tricolink/modules/analytics/adapters/stats_cache.py": {
+    "mtime": 1792641256.3813436,
+    "seen": 1792643498.2277534,
+    "ast_hash": "02932e6748c6c21fa42b0b72a7b134ba",
+    "semantic_hash": ""
+  },
+  "apps/api/src/tricolink/modules/analytics/adapters/stats_repository.py": {
+    "mtime": 1792643614.5373893,
+    "seen": 1792644125.8644643,
+    "ast_hash": "3d6d3d82560e9164095600c0d090a663",
+    "semantic_hash": ""
+  },
+  "apps/api/src/tricolink/modules/analytics/application/get_link_stats.py": {
+    "mtime": 1792643611.6461153,
+    "seen": 1792644125.8644671,
+    "ast_hash": "077f03616a98134b3af00ee5c271e65f",
+    "semantic_hash": ""
+  },
+  "apps/api/src/tricolink/modules/analytics/application/ports.py": {
+    "mtime": 1792643611.0141044,
+    "seen": 1792644125.8644698,
+    "ast_hash": "f9c981a8abc63c354ab71dcf08e69caf",
+    "semantic_hash": ""
+  },
+  "apps/api/src/tricolink/modules/analytics/domain/stats.py": {
+    "mtime": 1792643661.405804,
+    "seen": 1792644125.8646557,
+    "ast_hash": "ec89c4393253619bdbacb46004cea1c2",
+    "semantic_hash": ""
+  },
+  "apps/api/src/tricolink/modules/analytics/presentation/dependencies.py": {
+    "mtime": 1792641117.742064,
+    "seen": 1792643498.228097,
+    "ast_hash": "5bca3f1acb7f0d5d236090da323e2685",
+    "semantic_hash": ""
+  },
+  "apps/api/src/tricolink/modules/analytics/presentation/router.py": {
+    "mtime": 1792644010.847645,
+    "seen": 1792644125.8648524,
+    "ast_hash": "ba48d71ee2c3f9e8c23680d1bcc2d395",
+    "semantic_hash": ""
+  },
+  "apps/api/src/tricolink/modules/analytics/presentation/schemas.py": {
+    "mtime": 1792641117.150285,
+    "seen": 1792643498.2281036,
+    "ast_hash": "7c06cf8aebab3de27042866e2ff267a8",
+    "semantic_hash": ""
+  },
+  "apps/api/tests/integration/test_stats_api.py": {
+    "mtime": 1792643685.8700118,
+    "seen": 1792644125.8775349,
+    "ast_hash": "0ffc26ebf4503f118d251e905299618a",
+    "semantic_hash": ""
+  },
+  "apps/api/tests/unit/test_analytics_stats.py": {
+    "mtime": 1792643635.0001032,
+    "seen": 1792644125.8787408,
+    "ast_hash": "5f39e0217234cfc4cfb741b990436408",
+    "semantic_hash": ""
+  },
+  "apps/web/src/app/[locale]/links/[code]/error.tsx": {
+    "mtime": 1792641912.58049,
+    "seen": 1792643498.2897787,
+    "ast_hash": "18cbd1e8267b19380d776e10a068f709",
+    "semantic_hash": ""
+  },
+  "apps/web/src/app/[locale]/links/[code]/loading.tsx": {
+    "mtime": 1792641589.6250725,
+    "seen": 1792643498.2897835,
+    "ast_hash": "f4062b3226e4edadc932011a8ff04be4",
+    "semantic_hash": ""
+  },
+  "apps/web/src/components/links/link-stats.test.tsx": {
+    "mtime": 1792641812.0183687,
+    "seen": 1792643498.29905,
+    "ast_hash": "a2e04b07fb2c9f4c9dfd364e803f2b2c",
+    "semantic_hash": ""
+  },
+  "apps/web/src/components/links/link-stats.tsx": {
+    "mtime": 1792641912.715501,
+    "seen": 1792643498.2990556,
+    "ast_hash": "49e04c8338ca9914976f0824b290a77b",
+    "semantic_hash": ""
+  },
+  "apps/web/src/lib/stats.ts": {
+    "mtime": 1792641912.7689002,
+    "seen": 1792643498.3130655,
+    "ast_hash": "745cee984be5a153f70d3a04d4c1b023",
     "semantic_hash": ""
   }
 }

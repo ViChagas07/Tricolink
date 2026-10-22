@@ -5,6 +5,7 @@ import { cache } from "react";
 import { isLocale } from "@/i18n/locales";
 import type { UserDto } from "@/lib/api";
 import type { LinkDto, ListLinksDto } from "@/lib/links";
+import type { LinkStatsDto, StatsRange } from "@/lib/stats";
 import type { AuthUser } from "@/stores/auth-store";
 
 const API_INTERNAL_URL = (process.env.API_INTERNAL_URL ?? "http://localhost:8000").replace(
@@ -135,6 +136,28 @@ export async function getServerLink(code: string): Promise<LinkDto | null> {
       return null;
     }
     return link;
+  } catch {
+    return null;
+  }
+}
+
+export async function getServerLinkStats(
+  code: string,
+  range: StatsRange = "30d",
+): Promise<LinkStatsDto | null> {
+  try {
+    const search = new URLSearchParams({ range });
+    const response = await serverFetch(
+      `/links/${encodeURIComponent(code)}/stats?${search.toString()}`,
+    );
+    if (!response.ok) {
+      return null;
+    }
+    const stats = (await response.json()) as LinkStatsDto;
+    if (!stats || !Array.isArray(stats.series) || typeof stats.total !== "number") {
+      return null;
+    }
+    return stats;
   } catch {
     return null;
   }

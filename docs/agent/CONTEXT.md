@@ -61,7 +61,7 @@ Links:
 - `GET /links?cursor=&limit=&q=` — lista do usuário (paginação por cursor, limit máx 50)
 - `GET /links/overview?range=7d|30d|90d` — `{ total_clicks, total_links, range }` do usuário (cabeçalho de `/links`)
 - `GET /links/{code}` · `PATCH /links/{code}` (title, original_url, expires_at, is_active) · `DELETE /links/{code}` — só o dono (404 se não for dono, para não vazar existência)
-- `GET /links/{code}/stats?range=7d|30d|90d` — `{ total, series[{date,clicks}], countries[], devices[], referrers[] }`
+- `GET /links/{code}/stats?range=7d|30d|90d` — `{ total, series[{date,clicks}], countries[], devices[], referrers[] }` (só o dono; série em dias UTC com buracos preenchidos com 0; países/origens = top 10 + `other`; origem nula vira `direct` (linha própria, mesmo fora do top 10); dispositivos sem corte; `pct` de 0 a 100)
 Auth: `POST /auth/register` · `POST /auth/login` · `POST /auth/refresh` · `POST /auth/logout` · `GET /auth/me` · `PATCH /auth/me` · `GET /auth/google/login` · `GET /auth/google/callback`
 Ops: `GET /health/live` · `GET /health/ready` · `GET /metrics` (token)
 Redirect (público): `GET /r/{code}` → 302 `Location: <original_url>`; 404 (inexistente) / 410 (expirado/inativo) com HTML estático mínimo, `X-Robots-Tag: noindex`.
@@ -71,6 +71,7 @@ Redirect (público): `GET /r/{code}` → 302 `Location: <original_url>`; 404 (in
 - Alias customizado: regex `^[A-Za-z0-9_-]{3,32}$`; lista reservada (login, account, links, api, r, en, pt-br, es, fr, de, it, ja, ko, zh-cn, ru, ar, admin, static, _next, favicon.ico, robots.txt, sitemap.xml, llms.txt…); 409 se existir.
 - Usar **302** (não 301) para que o navegador não faça cache e os cliques sejam contados. Documentar a decisão no README.
 - Chaves Redis: `tl:link:{code}` (JSON `{id,u,e,s}`), `tl:lock:{code}`, `tl:neg:{code}`, `tl:clicks` (Stream).
+- Estatísticas: `tl:stats:{code}:{range}` (JSON, TTL ≈30 s com jitter) e `tl:stats:lock:{code}:{range}` (single-flight).
 - **Anti cache stampede (três camadas combinadas):**
   1. **Stale-While-Revalidate:** TTL duro `CACHE_HARD_TTL_SECONDS`; TTL macio `CACHE_SOFT_TTL_SECONDS`. Passou do macio → serve o valor em cache e atualiza em background, protegido por lock.
   2. **Jitter** de ±`CACHE_JITTER_PCT` em todos os TTLs (evita expiração simultânea).

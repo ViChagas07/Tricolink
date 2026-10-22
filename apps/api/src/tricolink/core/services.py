@@ -18,7 +18,13 @@ from tricolink.infra.ratelimit import (
 from tricolink.infra.ratelimit.daily_quota import RedisDailyQuota
 from tricolink.infra.resilience import CircuitBreaker, build_bulkheads
 from tricolink.infra.resilience.bulkhead import BulkheadRegistry
-from tricolink.modules.analytics.adapters import ClickFlusher, RedisClickPublisher
+from tricolink.modules.analytics.adapters import (
+    ClickFlusher,
+    RedisClickPublisher,
+    RedisStatsCache,
+    SqlAlchemyStatsRepository,
+)
+from tricolink.modules.analytics.application.get_link_stats import GetLinkStats
 from tricolink.modules.identity.adapters import (
     Argon2PasswordHasher,
     GoogleOIDCClient,
@@ -58,6 +64,9 @@ from tricolink.shared_kernel.clock import SystemClock
 class AnalyticsServices:
     publisher: RedisClickPublisher
     flusher: ClickFlusher
+    stats_repository: SqlAlchemyStatsRepository
+    stats_cache: RedisStatsCache
+    get_link_stats: GetLinkStats
 
 
 @dataclass(slots=True)
@@ -186,6 +195,12 @@ def build_services(settings: Settings) -> Services:
         breaker=redis_breaker,
         settings=settings,
     )
+    stats_repository = SqlAlchemyStatsRepository(database)
+    stats_cache = RedisStatsCache(
+        redis,
+        breaker=redis_breaker,
+        settings=settings,
+    )
     record_click = RecordClick(clock=clock, publisher=publisher)
     code_generator = CodeGenerator()
 
@@ -301,7 +316,18 @@ def build_services(settings: Settings) -> Services:
         bulkheads=bulkheads,
         links=links,
         identity=identity,
-        analytics=AnalyticsServices(publisher=publisher, flusher=flusher),
+        analytics=AnalyticsServices(
+            publisher=publisher,
+            flusher=flusher,
+            stats_repository=stats_repository,
+            stats_cache=stats_cache,
+            get_link_stats=GetLinkStats(
+                links=repository,
+                stats=stats_repository,
+                cache=stats_cache,
+                clock=clock,
+            ),
+        ),
         record_click=record_click,
     )
 

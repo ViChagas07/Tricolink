@@ -1,18 +1,21 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+import math
+from collections.abc import AsyncIterator, Awaitable, Callable
 from dataclasses import dataclass
 from typing import cast
 from uuid import UUID
 
-from fastapi import Depends, Request
+from fastapi import Depends, Request, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tricolink.core.config import Settings
 from tricolink.core.services import Services
 from tricolink.infra.cache import CacheClient
 from tricolink.infra.ratelimit import RateLimiter
-from tricolink.shared_kernel.security_errors import AuthenticationError
+from tricolink.infra.ratelimit.dependencies import apply_rate_limit_headers
+from tricolink.infra.ratelimit.models import RateLimitResult
+from tricolink.shared_kernel.security_errors import AuthenticationError, RateLimitExceeded
 
 
 @dataclass(frozen=True, slots=True)
@@ -61,6 +64,35 @@ async def get_current_user(
     if user is None:
         raise AuthenticationError()
     return user
+
+
+def user_rate_limit(scope: str) -> Callable[..., Awaitable[None]]:
+    async def dependency(
+        request: Request,
+        response: Response,
+        user: CurrentUser = Depends(get_current_user),
+    ) -> None:
+        limiter = get_services(request).rate_limiter
+        result = await limiter.check(scope, f"user:{user.id}")
+        apply_rate_limit_headers(response, result)
+        if not result.allowed:
+            raise _rate_limit_error(result)
+
+    return dependency
+
+
+def _rate_limit_error(result: RateLimitResult) -> RateLimitExceeded:
+    retry_after = (
+        max(1, math.ceil(result.retry_after_ms / 1000))
+        if result.retry_after_ms >= 0
+        else max(1, result.reset_after_seconds)
+    )
+    return RateLimitExceeded(
+        retry_after_seconds=retry_after,
+        limit=result.limit,
+        remaining=result.remaining,
+        reset_after_seconds=result.reset_after_seconds,
+    )
 
 
 async def get_session(request: Request) -> AsyncIterator[AsyncSession]:

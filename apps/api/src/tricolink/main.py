@@ -20,6 +20,7 @@ from tricolink.core.middleware import (
 )
 from tricolink.core.services import Services, build_services
 from tricolink.infra.observability.http import router as ops_router
+from tricolink.modules.analytics.presentation import router as analytics_router
 from tricolink.modules.identity.presentation import router as identity_router
 from tricolink.modules.links.presentation import router as links_router
 
@@ -56,6 +57,7 @@ def create_app(
     install_error_handlers(application)
     application.include_router(ops_router)
     application.include_router(links_router)
+    application.include_router(analytics_router)
     application.include_router(identity_router)
 
     application.add_middleware(

@@ -117,6 +117,7 @@ class Settings:
     cache_soft_ttl_seconds: int = 600
     cache_jitter_pct: float = 0.15
     negative_cache_ttl_seconds: int = 30
+    stats_cache_ttl_seconds: int = 30
     lock_ttl_ms: int = 5_000
     cache_wait_timeout_seconds: float = 0.25
 
@@ -194,6 +195,7 @@ class Settings:
             "CACHE_HARD_TTL_SECONDS": self.cache_hard_ttl_seconds,
             "CACHE_SOFT_TTL_SECONDS": self.cache_soft_ttl_seconds,
             "NEGATIVE_CACHE_TTL_SECONDS": self.negative_cache_ttl_seconds,
+            "STATS_CACHE_TTL_SECONDS": self.stats_cache_ttl_seconds,
             "LOCK_TTL_MS": self.lock_ttl_ms,
             "ACCESS_TOKEN_TTL_MIN": self.access_token_ttl_min,
             "REFRESH_TOKEN_TTL_DAYS": self.refresh_token_ttl_days,
@@ -369,6 +371,7 @@ class Settings:
             cache_soft_ttl_seconds=_integer("CACHE_SOFT_TTL_SECONDS", 600),
             cache_jitter_pct=_number("CACHE_JITTER_PCT", 0.15),
             negative_cache_ttl_seconds=_integer("NEGATIVE_CACHE_TTL_SECONDS", 30),
+            stats_cache_ttl_seconds=_integer("STATS_CACHE_TTL_SECONDS", 30),
             lock_ttl_ms=_integer("LOCK_TTL_MS", 5_000),
             cache_wait_timeout_seconds=_number("CACHE_WAIT_TIMEOUT_SECONDS", 0.25),
             dns_timeout_seconds=_number("DNS_TIMEOUT_SECONDS", 2.0),

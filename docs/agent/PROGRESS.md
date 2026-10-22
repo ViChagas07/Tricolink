@@ -9,7 +9,7 @@
 - [x] P05 Frontend: fundação, next-intl (11 idiomas), navbar, API client, CSP
 - [x] P06 Landing page (hero, demo, recursos, FAQ, SEO/AEO/GEO)
 - [x] P07 Login, Account e Links (lista com código gerado)
-- [ ] P08 Estatísticas (backend + página de detalhe)
+- [x] P08 Estatísticas (backend + página de detalhe)
 - [ ] P09 Hardening de segurança + auditoria
 - [ ] P10 Testes E2E/carga, CI/CD e deploy
 - [ ] P11 README final e documentação
@@ -87,6 +87,14 @@
 - P07: Account salva `display_name` por PATCH e troca o idioma salvando `locale` + `router.replace(pathname, { locale })`; o e-mail é read-only, o tema (claro/escuro) fica em `localStorage` e o logout navega para a home sem reload. O E2E usa um marcador em `window` para provar que login e logout foram navegações client-side.
 - P07: o Playwright continua em build de produção na 3100 (sem reusar o dev container) e API real em 8001. Como a origem do teste (`127.0.0.1:3100`) difere de `FRONTEND_ORIGIN` (`localhost:3001`), as specs autenticadas normalizam o header `Origin` via `context.route`; em produção `FRONTEND_ORIGIN` precisa ser a origem pública do web.
 - P07: foram adicionadas 69 chaves nos 11 idiomas (218 no total), incluindo estados, erros, diálogos e preferências. Traduções por IA marcadas para revisão humana.
+- P08: `analytics/domain/stats.py` é puro (janela UTC, preenchimento de dias, top 10 + `other`, `direct`, percentuais). `GetLinkStats` valida o dono antes de qualquer cache (não-dono → 404) e delega as consultas a um port; o adapter SQLAlchemy executa 5 agregações na mesma transação de leitura (série, dispositivos, países, top 10 origens e contagem de origem nula), todas parametrizadas, com `date_trunc('day', timezone('UTC', clicked_at))` e o índice `(link_id, clicked_at)`. O total vem da soma dos dispositivos, então não há consulta extra nem N+1.
+- P08: países usam `ORDER BY count DESC ... LIMIT 11`; o restante (inclusive país nulo) vira `other`. Origens usam top 10 não nulas + contagem separada de origem nula, que vira `direct` mesmo fora do top 10; o restante vira `other`. Dispositivos vêm completos (máx. 5 grupos). Percentual é 0–100 com uma casa; a soma pode variar 0,1 por arredondamento.
+- P08: cache Redis `tl:stats:{code}:{range}` com TTL `STATS_CACHE_TTL_SECONDS` (30) + jitter, single-flight em processo e lock `SET NX PX` no Redis. Falha de Redis cai direto no banco (o endpoint continua funcionando). O dono é conferido a cada request, então cache não vaza entre usuários nem sobrevive a uma exclusão.
+- P08: `GET /links/{code}/stats` usa `Literal["7d","30d","90d"]` (range inválido → 422), exige login, aplica o balde `stats_list` e responde 404 para link de outro usuário. O total de 30 dias do cabeçalho de `/links` continua vindo do `/links/overview` criado na P07; nenhum endpoint duplicado foi adicionado.
+- P08: a página de detalhe busca o link e as estatísticas de 30 dias em paralelo no RSC; o painel client troca 7/30/90 dias, mostra skeleton, mantém os dados anteriores se a troca falhar e oferece retry. Reutiliza `ClicksChart` e `BreakdownTable` da demo; países usam `Intl.DisplayNames` no locale atual.
+- P08: o fluxo Playwright de estatísticas foi incorporado ao teste autenticado existente (cria link → clica 5x via `/{code}` → espera o flusher → confere 5 no total, gráfico e três tabelas). A suíte já consome os 5 tokens do balde `auth`; um spec separado com novo cadastro/login estouraria o limite (capacidade 5, recarga 0,02/s).
+- P08: `user_rate_limit` foi consolidado em `core/deps.py` e passou a ser reutilizado por links, identity e analytics. Isso removeu duas cópias da mesma dependency e a dependência da presentation de analytics para a de links.
+- P08: o build do web precisa rodar com `NODE_ENV=production`. O serviço `web` do Compose é o alvo `dev` e define `NODE_ENV=development`; nesse modo o Next 16 falha ao pré-renderizar `/_global-error` com `useContext` nulo. O comando validado foi `docker compose run --rm --no-deps -e NODE_ENV=production web pnpm build`.
 
 ## Validação P00
 - Consultas de fumaça executadas no grafo final: fluxo de redirect; baldes de rate limit (`redirect`, `create`, `auth`, `global`, `stats/list`); rotas do frontend. Os nós e trechos retornados batem com `CONTEXT.md` e `SECURITY.md`.
@@ -177,6 +185,19 @@
 - Inspeção HTTP: `/en/links` deslogado → `307` com `Location: /en/login?next=%2Fen%2Flinks`; `/links/overview` autenticado responde `{total_clicks,total_links,range}` e `/en/login` sem sessão → 200 com o card.
 - Fluxo autenticado ponta a ponta com a API real foi validado (o item “não validado” do P05/P06 foi resolvido).
 
+## Validação P08
+- API: **338 testes pytest passando** (12 novos em `test_analytics_stats.py` + `test_stats_api.py`), incluindo série com buracos, top 10 + `other`, `direct`, 422, 404 para outro dono, 401 sem sessão, cache single-flight e 429 no balde `stats_list`.
+- API: single-flight medido com **25 chamadas concorrentes → 1 loader**; o TTL observado no Redis ficou entre 1 e 35 s com jitter de 30 s. A falha de Redis não derruba o endpoint (fallback para o banco coberto pelo desenho do adapter).
+- API: benchmark de **50.000 cliques sintéticos** (30 dias, 40 países, 25 origens) respondeu em **269,9 ms no cliente** (handler reportou **266,63 ms**), com `total=50000`, 30 pontos na série e top 10 + `direct` + `other` corretos. Medição local no Docker Desktop/Windows, uma execução a frio.
+- `ruff check`, `ruff format --check` e `mypy src` limpos (128 arquivos).
+- Web: **87 testes Vitest passando** em 21 arquivos (novos: `link-stats.test.tsx` com dados cheios, vazio, erro/retry e troca de período).
+- `pnpm i18n:check`: **11 locales, 234 chaves**, sem faltas, sobras, vazios ou placeholders divergentes.
+- `pnpm lint`, `pnpm typecheck` (`next typegen && tsc --noEmit`) e `pnpm format:check` limpos.
+- `pnpm build` (Next 16.4.2, Turbopack, `NODE_ENV=production`) concluiu; `/links/[code]` aparece como dinâmica no manifesto.
+- `pnpm test:e2e`: **17 testes Playwright passando** em Chromium contra build de produção na 3100 e API real no Docker (8001). O teste autenticado agora cria o link, gera 5 cliques via `/{code}`, espera o `click_count` do flusher chegar a 5 e confere o total, o gráfico (`Clicks per day`) e as tabelas de países (`other`), origens (`direct`) e dispositivos; em seguida troca para 7 dias.
+- O balde `auth` e as cotas diárias são estado compartilhado do Redis de dev. Antes da rodada final do Playwright, as chaves `rl:*`, `quota:*`, `auth:fail:*` e `auth:lock:*` foram limpas; sem isso, rodadas repetidas da suíte esgotam os 5 links anônimos/dia e os 5 tokens de auth.
+- Inspeção manual: `GET /api/v1/links/{code}/stats?range=7d` autenticado retorna `total`, 7 pontos e as três listas; sem cookie → 401; outro usuário → 404; `range=1y` → 422.
+
 ## Bloqueios
 (nenhum)
 
@@ -222,6 +243,15 @@
 - P07: Lighthouse foi rodado só em `/en` e em Chromium; não foi executado nos 11 idiomas (incluindo RTL) nem em Firefox/WebKit.
 - P07: título e expiração do diálogo de edição são cobertos no Vitest; o E2E edita o destino. A paginação por cursor e a busca têm testes de componente, não E2E.
 - Não foram executados Firefox/WebKit, teste em dispositivo físico, nem Lighthouse nos idiomas RTL/LTR além de `en`/`ar` no E2E.
+- P08: o benchmark de 50 mil cliques é uma medição pontual no Docker Desktop/Windows, não k6 nem hardware de produção; não há percentis (p50/p95/p99) nem teste com workers concorrentes.
+- P08: o single-flight entre processos usa o lock Redis, mas o teste concorrente exercita o single-flight em processo (25 chamadas, 1 loader). Contenção entre múltiplos workers/processos não foi medida.
+- P08: o cache de estatísticas tem TTL de 30 s; uma página aberta pode ficar até ~30 s desatualizada depois de novos cliques. O teste de aceite abre a página depois do flush, então não mede essa defasagem.
+- P08: a série é agregada em dias UTC; os rótulos do gráfico são formatados no navegador com `Intl` (parsing ao meio-dia UTC). O SSR usa o fuso do servidor (UTC no Docker), então fusos extremos (UTC+12 a +14) podem ver o rótulo mudar após a hidratação.
+- P08: a página de estatísticas não passou por Lighthouse/A11y automatizado nem foi inspecionada visualmente nos 11 idiomas; `i18n:check` garante apenas paridade de chaves.
+- P08: a suíte E2E fica exatamente no limite do balde `auth` (5 tokens). Qualquer novo fluxo de cadastro/login no Playwright exigirá aumentar `RL_AUTH_CAPACITY` no ambiente de teste ou compartilhar sessão entre specs.
+- P08: `pnpm build` dentro do serviço `web` do Compose (alvo `dev`, `NODE_ENV=development`) falha no prerender de `/_global-error`; o build foi validado com `-e NODE_ENV=production`. O `next start` continua emitindo o aviso de `output: standalone`.
+- P08: a suíte completa da API imprimiu uma vez `Task exception was never retrieved ... BUSYGROUP Consumer Group name already exists` depois do resumo, com 338 testes passando e exit code 0; não foi investigado se é flake do flusher ou efeito de apps de teste concorrentes.
+- P08: o total de cliques do cabeçalho de `/links` continua sem cache (vem de `/links/overview`); não foi adicionado cache curto para esse endpoint.
 
 ## Revisão humana pendente
-- Traduções geradas por IA: `es`, `fr`, `de`, `it`, `ja`, `ko`, `zh-CN`, `ru` e `ar` (pt-BR e en são as referências). A P06 adicionou 53 chaves e a P07 outras 69 (218 no total); revisar especialmente mensagens de erro de auth/limite, estados da lista, diálogos de edição/exclusão e rótulos de conta.
+- Traduções geradas por IA: `es`, `fr`, `de`, `it`, `ja`, `ko`, `zh-CN`, `ru` e `ar` (pt-BR e en são as referências). A P06 adicionou 53 chaves, a P07 outras 69 e a P08 outras 16 (234 no total); revisar especialmente mensagens de erro de auth/limite, estados da lista, diálogos de edição/exclusão, rótulos de conta e os textos de período/estatísticas/vazio (incluindo "bot" e "desconhecido").

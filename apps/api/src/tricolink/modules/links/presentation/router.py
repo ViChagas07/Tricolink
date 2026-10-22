@@ -11,6 +11,7 @@ from tricolink.core.deps import (
     get_current_user,
     get_current_user_optional,
     settings_dependency,
+    user_rate_limit,
 )
 from tricolink.infra.ratelimit import client_ip, rate_limit
 from tricolink.modules.identity.presentation.security import csrf_protect
@@ -40,7 +41,6 @@ from tricolink.modules.links.presentation.dependencies import (
     get_record_click,
     get_resolve_link,
     get_update_link,
-    user_rate_limit,
 )
 from tricolink.modules.links.presentation.schemas import (
     CreateLinkRequest,

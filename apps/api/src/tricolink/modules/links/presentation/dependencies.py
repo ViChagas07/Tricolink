@@ -1,13 +1,11 @@
 from __future__ import annotations
 
 import math
-from collections.abc import Awaitable, Callable
 
 from fastapi import Depends, Request, Response
 
 from tricolink.core.deps import (
     CurrentUser,
-    get_current_user,
     get_current_user_optional,
     get_services,
 )
@@ -77,21 +75,6 @@ async def create_link_rate_limit(
     apply_rate_limit_headers(response, result)
     if any(not item.allowed for item in results):
         raise _rate_limit_error(result)
-
-
-def user_rate_limit(scope: str) -> Callable[..., Awaitable[None]]:
-    async def dependency(
-        request: Request,
-        response: Response,
-        user: CurrentUser = Depends(get_current_user),
-    ) -> None:
-        limiter = get_services(request).rate_limiter
-        result = await limiter.check(scope, f"user:{user.id}")
-        apply_rate_limit_headers(response, result)
-        if not result.allowed:
-            raise _rate_limit_error(result)
-
-    return dependency
 
 
 def _most_restrictive(results: list[RateLimitResult]) -> RateLimitResult:

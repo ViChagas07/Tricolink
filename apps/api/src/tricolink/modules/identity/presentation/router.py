@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Query, Request, Response, status
 from fastapi.responses import RedirectResponse
 
 from tricolink.core.config import Settings
-from tricolink.core.deps import CurrentUser, get_current_user
+from tricolink.core.deps import CurrentUser, get_current_user, user_rate_limit
 from tricolink.core.logging import get_logger
 from tricolink.infra.ratelimit import rate_limit
 from tricolink.modules.identity.adapters.google import GoogleOIDCClient
@@ -44,7 +44,6 @@ from tricolink.modules.identity.presentation.dependencies import (
     get_refresh_session,
     get_register,
     get_update_me,
-    user_rate_limit,
 )
 from tricolink.modules.identity.presentation.schemas import (
     AuthResponse,

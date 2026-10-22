@@ -85,6 +85,53 @@ test.describe("authenticated pages", () => {
     await page.getByRole("button", { name: `Copy: ${code}` }).click();
     await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(shortHref);
 
+    await test.step("shows clicks in the statistics after the flush", async () => {
+      for (let index = 0; index < 5; index += 1) {
+        const redirect = await page.request.get(`/${code}`, { maxRedirects: 0 });
+        expect(redirect.status()).toBe(302);
+      }
+
+      await expect
+        .poll(
+          async () => {
+            const response = await page.request.get(`/api/v1/links/${code}`);
+            if (!response.ok()) {
+              return -1;
+            }
+            const payload = (await response.json()) as { click_count?: number };
+            return payload.click_count ?? -1;
+          },
+          { timeout: 20_000 },
+        )
+        .toBeGreaterThanOrEqual(5);
+
+      await page.goto(`/en/links/${code}`);
+      const stats = page.getByRole("region", { name: "Clicks over time" });
+      await expect(stats.getByTestId("stats-total")).toHaveText("5");
+
+      const chart = stats.getByRole("table", { name: /Clicks per day/ });
+      await expect(chart.getByRole("cell", { name: "5", exact: true })).toHaveCount(1);
+
+      const countries = stats.getByRole("table", { name: "Countries" });
+      await expect(countries.getByRole("rowheader", { name: "Other" })).toBeVisible();
+      await expect(countries.getByRole("cell", { name: "5", exact: true })).toBeVisible();
+
+      const referrers = stats.getByRole("table", { name: "Sources" });
+      await expect(referrers.getByRole("rowheader", { name: "Direct" })).toBeVisible();
+
+      const devices = stats.getByRole("table", { name: "Devices" });
+      await expect(devices.getByRole("cell", { name: "5", exact: true })).toBeVisible();
+
+      await stats.getByRole("button", { name: "7 days" }).click();
+      await expect(stats.getByRole("button", { name: "7 days" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+      await expect(stats.getByTestId("stats-total")).toHaveText("5");
+
+      await page.goto("/en/links");
+    });
+
     const storage = await page.evaluate(() => ({
       local: { ...window.localStorage },
       session: { ...window.sessionStorage },
