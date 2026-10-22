@@ -144,6 +144,8 @@ jobs:
           sed -i 's|^API_PUBLIC_BASE_URL=.*|API_PUBLIC_BASE_URL=http://localhost:8001|' .env
       - name: Start API, Postgres and Redis
         run: docker compose up -d --build --wait postgres redis api
+      - name: Apply migrations
+        run: docker compose exec -T api alembic upgrade head
       - name: Install web dependencies
         working-directory: apps/web
         run: pnpm install --frozen-lockfile
