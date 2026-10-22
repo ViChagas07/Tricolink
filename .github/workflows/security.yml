@@ -85,6 +85,8 @@ jobs:
             tests/security \
             tests/integration/test_rls.py \
             tests/integration/test_link_cache.py \
+            tests/integration/test_click_pipeline.py \
+            tests/integration/test_redirect_stampede.py \
             tests/integration/test_stats_api.py
 
   web-security:
