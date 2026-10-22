@@ -3,24 +3,14 @@
 import { Moon, Sun } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-type Theme = "light" | "dark";
-
-const STORAGE_KEY = "tricolink-theme";
-
-function applyTheme(theme: Theme) {
-  const root = document.documentElement;
-  root.classList.toggle("dark", theme === "dark");
-  root.style.colorScheme = theme;
-}
+import { readTheme, storeTheme } from "@/lib/theme";
 
 export function ThemeToggle() {
   const t = useTranslations("nav");
 
   function toggleTheme() {
-    const isDark = document.documentElement.classList.contains("dark");
-    const next: Theme = isDark ? "light" : "dark";
-    applyTheme(next);
-    window.localStorage.setItem(STORAGE_KEY, next);
+    const next = readTheme() === "dark" ? "light" : "dark";
+    storeTheme(next);
   }
 
   return (

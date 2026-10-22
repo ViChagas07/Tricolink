@@ -44,6 +44,7 @@ from tricolink.modules.links.application import (
     CreateLink,
     DeleteLink,
     GetLink,
+    GetLinksOverview,
     ListLinks,
     RecordClick,
     ResolveLink,
@@ -69,6 +70,7 @@ class LinkServices:
     quota: RedisDailyQuota
     create_link: CreateLink
     get_link: GetLink
+    get_overview: GetLinksOverview
     list_links: ListLinks
     update_link: UpdateLink
     delete_link: DeleteLink
@@ -272,6 +274,7 @@ def build_services(settings: Settings) -> Services:
             anon_ttl_days=settings.anon_link_ttl_days,
         ),
         get_link=GetLink(repository=repository),
+        get_overview=GetLinksOverview(repository=repository, clock=clock),
         list_links=ListLinks(repository=repository),
         update_link=UpdateLink(
             repository=repository,

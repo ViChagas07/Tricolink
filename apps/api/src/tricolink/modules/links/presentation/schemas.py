@@ -49,3 +49,9 @@ class LinkResponse(BaseModel):
 class ListLinksResponse(BaseModel):
     items: list[LinkResponse]
     next_cursor: str | None
+
+
+class LinksOverviewResponse(BaseModel):
+    total_clicks: int
+    total_links: int
+    range: str

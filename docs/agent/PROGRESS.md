@@ -8,7 +8,7 @@
 - [x] P04 Identity: cadastro/login, Google OIDC, sessões, anti brute force
 - [x] P05 Frontend: fundação, next-intl (11 idiomas), navbar, API client, CSP
 - [x] P06 Landing page (hero, demo, recursos, FAQ, SEO/AEO/GEO)
-- [ ] P07 Login, Account e Links (lista com código gerado)
+- [x] P07 Login, Account e Links (lista com código gerado)
 - [ ] P08 Estatísticas (backend + página de detalhe)
 - [ ] P09 Hardening de segurança + auditoria
 - [ ] P10 Testes E2E/carga, CI/CD e deploy
@@ -72,10 +72,21 @@
 - P06: o client HTTP aceita `csrf: "skip"`. A landing usa `skip` somente quando o auth store já resolveu como `anonymous`; o backend não exige CSRF sem cookies de sessão. Usuários logados/estado ainda carregando continuam usando `auto` e enviando o token. Isso evita que o probing de auth (P05) esgote o balde `auth` e impeça o encurtamento anônimo.
 - P06: FAQ usa `<details name="tricolink-faq">` (sanfona nativa, teclado e foco nativos; um aberto por vez nos navegadores que suportam `name`) e a primeira pergunta vem aberta. O JSON-LD `FAQPage` é montado a partir das mesmas traduções de `faq.qN/aN` usadas na página; `WebApplication` e `FAQPage` vão no mesmo `@graph`.
 - P06: metadados por locale usam `homeTitle` como `title.absolute` (evita duplicar o template `%s · Tricolink`), canonical/hreflang de `languageAlternates`, e `metadataBase` na página. A OG image é gerada por `src/app/opengraph-image.tsx` (`next/og`, 1200×630, brand-only) e o `llms.txt` é uma route handler gerada por `buildLlmsTxt` (rotas públicas, fatos do produto e política de dados).
-- P06: `X-Robots-Tag: noindex, nofollow` é aplicado no proxy a `/login`, `/account`, `/links` e subrotas em qualquer locale (P07 ainda não criou essas páginas). `robots.txt`/sitemap já cobriam as rotas; o sitemap tem os 11 locales.
+- P06: `X-Robots-Tag: noindex, nofollow` é aplicado no proxy a `/login`, `/account`, `/links` e subrotas em qualquer locale (confirmado na P07, que criou essas páginas). `robots.txt`/sitemap já cobriam as rotas; o sitemap tem os 11 locales.
 - P06: o seletor de idiomas do topo fica oculto abaixo de `sm` (o menu mobile mantém o seletor) para o navbar caber em 320px. A demo/tabelas usam `overflow-x-auto` e as grades ganharam `grid-cols-1` + `min-w-0` para não estourar a viewport.
 - P06: o Playwright roda com `fullyParallel: false` e `workers: 1`; rodar várias páginas RSC dinâmicas em paralelo contra um único `next start` local deixou `page.goto` intermitente no Windows. A suíte é pequena e ficou determinística.
-- P06: nenhuma imagem raster na landing (visuais em CSS/SVG), então `next/image` não se aplica; não foi adicionada dependência nova.
+- P06 (brand assets): o hero usa o lockup sólido fornecido (`public/brand/tricolink-hero.png`, 640×640) com `next/image`, `priority` e `sizes`; o navbar e o footer usam o lockup transparente (`public/brand/tricolink-navbar.png`, 640×603, transparência preservada) a 48px no mobile e 56px no desktop, com fundo branco apenas no dark mode para contraste. O navbar passou a 72px no desktop (64px no mobile).
+- P06 (brand assets): favicon do app gerado a partir do PNG fornecido — `src/app/favicon.ico` 32×32, `src/app/icon.png` 256×256 e `src/app/apple-icon.png` 180×180; o antigo `icon.svg` foi removido. Os PNGs originais ficaram fora do repo; só os derivados otimizados foram adicionados.
+- P06 (brand assets): o lockup transparente contém a tagline "ENCURTE SUAS IDEIAS"; em 48–56px ela não é legível, então no navbar o que se lê é o emblema + "TricoLink". Um lockup horizontal dedicado pode ser gerado na P11 se necessário.
+- P07: as rotas privadas são protegidas em dois níveis. O proxy envia `x-pathname`; o layout `[locale]` chama `requireUser` **antes** de renderizar, então `/account`, `/links` e `/links/[code]` deslogados respondem **307** para `/login?next=...` (sem shell com refresh por meta tag). A página repete `requireUser`; o `cache()` do React garante um único `GET /auth/me` por request.
+- P07: `next` é validado no servidor e no cliente por `lib/next-path.ts`: só caminho interno começando com `/`, sem `//`, esquema, backslash, controles ou variantes percent-encoded (`/%2F%2Fevil.com`). O formulário usa o target locale-aware (`router.replace` com `locale`), e o E2E confirma que `next=https://evil.com` cai em `/links`.
+- P07: cadastro responde 202 (sem sessão, por design do P04) e o formulário faz login automático em seguida. Login/registro usam `csrf: "skip"` (o backend valida Origin e não há cookie de sessão) para não gastar o balde `auth`. Erros 401, 409, `weak_password`, `invalid_email`, rede e 429 têm mensagens próprias; o 429 mostra contagem regressiva e desabilita o submit.
+- P07: o proxy grava `tl_session_hint=1` (não-httpOnly, não é token) quando existe cookie de refresh e o apaga quando não existe. `lib/api.ts` só tenta `POST /auth/refresh` após 401 se o hint estiver presente. Isso elimina o probing anônimo de `/auth/me` → refresh que consumia o balde `auth` e derrubava o Best Practices no P06; `logout` limpa o estado mesmo se a chamada falhar.
+- P07: `/links` recebe a primeira página por RSC e o resumo de `GET /links/overview?range=30d` — endpoint novo e autenticado que conta `click_events` do usuário na janela e o total de links (registrado no CONTEXT §5). Busca (`q`), cursor e “carregar mais” rodam no client; skeletons cobrem o primeiro load, busca e paginação.
+- P07: edição e exclusão são otimistas. A linha é atualizada/removida na hora; em erro de API o item anterior é restaurado (edição) ou reinserido na posição original (exclusão), com `role="alert"`/`status`. O diálogo de edição usa `<dialog>` nativo, código `readOnly` e valida URL/expiração; a exclusão pede confirmação. A linha inteira abre `/links/[code]` por um link com `after:absolute`, enquanto as ações ficam em `relative z-10`.
+- P07: Account salva `display_name` por PATCH e troca o idioma salvando `locale` + `router.replace(pathname, { locale })`; o e-mail é read-only, o tema (claro/escuro) fica em `localStorage` e o logout navega para a home sem reload. O E2E usa um marcador em `window` para provar que login e logout foram navegações client-side.
+- P07: o Playwright continua em build de produção na 3100 (sem reusar o dev container) e API real em 8001. Como a origem do teste (`127.0.0.1:3100`) difere de `FRONTEND_ORIGIN` (`localhost:3001`), as specs autenticadas normalizam o header `Origin` via `context.route`; em produção `FRONTEND_ORIGIN` precisa ser a origem pública do web.
+- P07: foram adicionadas 69 chaves nos 11 idiomas (218 no total), incluindo estados, erros, diálogos e preferências. Traduções por IA marcadas para revisão humana.
 
 ## Validação P00
 - Consultas de fumaça executadas no grafo final: fluxo de redirect; baldes de rate limit (`redirect`, `create`, `auth`, `global`, `stats/list`); rotas do frontend. Os nós e trechos retornados batem com `CONTEXT.md` e `SECURITY.md`.
@@ -139,14 +150,32 @@
 ## Validação P06
 - `pnpm i18n:check`: **11 locales, 149 chaves**, sem chave faltando/sobrando, valores vazios ou placeholders divergentes.
 - `pnpm test`: **62 testes Vitest passando** em 17 arquivos (novos: validação de URL, contagem regressiva, JSON-LD, `llms.txt`, `isPrivatePath`, `BreakdownTable`, FAQ e formulário com 429/cópia/erro inline).
-- `pnpm lint`, `pnpm typecheck` e `pnpm build` (Next 16.4.2, Turbopack) limpos; rotas geradas: `/[locale]` dinâmica, `/llms.txt`, `/opengraph-image`, `/robots.txt` e `/sitemap.xml`.
+- `pnpm lint`, `pnpm typecheck` e `pnpm build` (Next 16.4.2, Turbopack) limpos; rotas geradas: `/[locale]` dinâmica, `/llms.txt`, `/opengraph-image`, `/favicon.ico`, `/icon.png`, `/apple-icon.png`, `/robots.txt` e `/sitemap.xml`.
+- Brand assets verificados no build de produção: `/favicon.ico` → 200 `image/x-icon` (2,1 KB), `/icon.png` → 200 `image/png` (63 KB), `/apple-icon.png` → 200 `image/png` (33 KB), `/icon.svg` → 404. O otimizador entregou WebP de ~10 KB para o logo do hero (384w) e ~9 KB para o do navbar (128w).
+- Inspeção visual com Playwright em 1440, 768 e 390 px (claro/escuro): logo do hero e do navbar carregam, navbar sem overflow; no dark mode o lockup transparente fica sobre tile branco.
+- `pnpm test:e2e` cobre também `img[alt="Tricolink"]` no hero, `header img` e o link de favicon (`link[rel="icon"]`).
 - `pnpm test:e2e`: **14 testes Playwright passando** em Chromium contra build de produção e API real em `127.0.0.1:8001`: encurtar → link curto → copiar (clipboard) → `GET /{code}` 302 com `Location` correto; URL inválida inline; RTL/320px sem overflow; 1440px sem overflow; teclado no FAQ; JSON-LD `WebApplication` + `FAQPage`; `llms.txt`/OG image; os 6 testes P05 continuam passando.
 - Verificação HTTP ao vivo: `/llms.txt` → 200 `text/plain` com rotas públicas e política de dados; `/opengraph-image` → 200 `image/png` (~45 KB); `/en/login` (rota P07 ainda inexistente) → 404 com `X-Robots-Tag: noindex, nofollow`; `sitemap.xml` com 11 URLs; canonical, `hreflang` (incluindo `x-default`) e `og:image` absolutos em `/en`.
 - Responsividade: 320px em `ar` e 1440px em `en` sem overflow horizontal (`scrollWidth - clientWidth <= 1`); navbar esconde o seletor do topo abaixo de `sm`, mas mantém no menu mobile.
 - Lighthouse (produção local, `/en`, medido com Chrome headless do Playwright):
-  - **Desktop** (`--preset=desktop`): Performance **99**, Accessibility **100**, Best Practices **96**, SEO **100**; FCP 0,3 s, LCP 0,7 s, TBT 80 ms, CLS 0.
-  - **Mobile** (preset padrão, CPU 4×): melhor execução Performance **85** (faixa 79–85 em três execuções), Accessibility **100**, Best Practices **96**, SEO **100**; FCP 0,9–1,7 s, LCP 2,4–3,4 s, TBT 390–610 ms, CLS 0.
-- O alvo ≥95 de Performance foi cumprido no desktop; no mobile simulado ficou abaixo (registrado em "Não validado", não maquiado).
+  - **Desktop** (`--preset=desktop`, após os logos): Performance **99**, Accessibility **100**, Best Practices **96**, SEO **100**; FCP 0,3 s, LCP 0,7 s, TBT 10 ms, CLS 0 (LCP = `h1`).
+  - **Mobile** (preset padrão, CPU 4×, após os logos): Performance **89**, Accessibility **100**, Best Practices **96**, SEO **100**; FCP 0,9 s, LCP 3,2 s, TBT 210 ms, CLS 0. O LCP agora é a imagem do logo no hero; antes dos logos a faixa era 79–85.
+- O alvo ≥95 de Performance foi cumprido no desktop; no mobile simulado ficou em 89 (registrado em "Não validado", não maquiado).
+
+## Validação P07
+- `pnpm lint`, `pnpm typecheck` (`next typegen && tsc --noEmit`) e `pnpm format:check` limpos no web.
+- `pnpm test`: **83 testes Vitest passando** em 20 arquivos (novos: validação de `next`, login com 401/409/429/redirect/Google/toggle de senha, lista com cópia/edição otimista/rollback/exclusão/busca/cursor e diálogos).
+- `pnpm i18n:check`: **11 locales, 218 chaves**, sem faltas, sobras, valores vazios ou placeholders divergentes.
+- API: **326 testes pytest passando**; `ruff check`, `ruff format --check` e `mypy src` (120 arquivos) limpos. O teste de integração novo cobre `/links/overview` com cliques dentro/fora da janela de 30 dias, `range=90d`, `total_links` e a precedência da rota sobre `/links/{code}`.
+- `pnpm build` (Next 16.4.2, Turbopack) concluiu; `/login`, `/account`, `/links` e `/links/[code]` aparecem como dinâmicas no manifesto.
+- `pnpm test:e2e`: **17 testes Playwright passando** em Chromium contra build de produção na 3100 e API real no Docker (8001):
+  - cadastro → login automático → criar link na landing → `/links` com código e URL → editar destino (título/expiração cobertos no Vitest) → copiar (clipboard real) → excluir → conta (nome, tema, idioma `en` ↔ `pt-BR`) → logout;
+  - `/links` deslogado → `307` para `/en/login?next=%2Fen%2Flinks` → login volta para `/links`; `next=https://evil.com` é ignorado e cai em `/links`;
+  - 429 de login exibe “Too many attempts” + espera e desabilita o botão (resposta 429 simulada via `context.route` para não esgotar o balde `auth` do ambiente);
+  - marcador em `window` prova que login/logout foram client-side (navbar reflete o estado sem reload); `localStorage`/`sessionStorage` sem JWT/refresh/access; cookies `tl_access`/`tl_refresh` são `HttpOnly`; `/auth/me` responde 401 após logout.
+- Lighthouse a11y (produção, `/en`, preset mobile, Chrome headless do Playwright): **Login 100, Account 100, Links 100**. O Account começou em 97 por contraste do botão destrutivo no tema escuro; o token `tc-red-700/400` e o fundo `destructive/10–20` foram ajustados e a nota subiu para 100.
+- Inspeção HTTP: `/en/links` deslogado → `307` com `Location: /en/login?next=%2Fen%2Flinks`; `/links/overview` autenticado responde `{total_clicks,total_links,range}` e `/en/login` sem sessão → 200 com o card.
+- Fluxo autenticado ponta a ponta com a API real foi validado (o item “não validado” do P05/P06 foi resolvido).
 
 ## Bloqueios
 (nenhum)
@@ -172,20 +201,27 @@
 - Não há verificação de posse do e-mail no cadastro local. O vínculo automático de uma conta de senha existente a um e-mail verificado do Google (conforme pedido) pode permitir pré-hijacking se alguém registrar o e-mail de outra pessoa antes; uma fase futura deve adicionar verificação de e-mail ou exigir login antes de vincular.
 - O access JWT não é revogado no logout; ele continua válido até `exp` (15 min). O refresh é revogado imediatamente.
 - CSRF depende de o proxy do frontend encaminhar `Origin` ou `Sec-Fetch-Site`; se remover ambos, mutações autenticadas serão rejeitadas com 403. O frontend deve usar `/api/v1/auth/csrf` e os nomes `__Host-`/`__Secure-` em produção.
-- P05 consumiu `/auth/me` no client (cookie + CSRF/refresh), mas o fluxo autenticado ponta a ponta **não foi validado contra a API real**: o build usado no Playwright resolveu `API_INTERNAL_URL` para o default `http://localhost:8000`, onde não estava a API do Tricolink, e `/api/v1/auth/me` respondeu 404. Os testes do client usam `fetch` mockado.
-- O build de produção do web foi validado com `next build` + `next start` local. A imagem Docker `runner` (standalone) não foi reconstruída/revalidada em P05; o Playwright emite o aviso de que `next start` não é o modo standalone.
+- O build de produção do web foi validado com `next build` + `next start` local. A imagem Docker `runner` (standalone) não foi reconstruída/revalidada em P05/P07; o Playwright emite o aviso de que `next start` não é o modo standalone.
 - Lighthouse de acessibilidade foi executado apenas em `/en`; não foi rodado nos 11 idiomas nem em desktop/mobile separadamente (o preset padrão do Lighthouse é mobile).
 - O menu mobile e a troca de idioma foram validados em Chromium; não foram executados em Firefox/WebKit.
 - Avisos de depreciação do `httpx` no `TestClient` e do Authlib para `httpx` permanecem; não quebram os testes.
-- Lighthouse mobile da landing **não atingiu 95 em Performance** (melhor 85; faixa 79–85). O desktop atingiu 99. A diferença é dominada por TBT de hidratação do framework (React/Next) e LCP simulado; não foi possível reduzir sem mudar a arquitetura de CSP/nonce ou remover a checagem de auth do cliente, decisões fora do escopo da P06.
+- Lighthouse mobile da landing **não atingiu 95 em Performance** (melhor 89, com LCP na imagem do logo; antes dos logos era 79–85). O desktop atingiu 99. O TBT caiu para 210 ms, mas o LCP simulado do logo do hero (3,2 s) limita a nota; reduzir mais exigiria um logo mobile menor/asset diferente ou mudanças na arquitetura de CSP/nonce/auth, decisões fora do escopo desta rodada.
+- O favicon foi validado por HTTP, links `<link rel="icon">` e tamanho; não foi inspecionado visualmente na aba real de um navegador/SO. O logo transparente em 48px no navbar é legível como emblema + "TricoLink", mas a tagline não é legível nesse tamanho.
 - Lighthouse foi medido apenas em `/en` (desktop e mobile); não foi rodado nos 11 idiomas nem em Chrome/Firefox/WebKit reais. Os 14 E2E rodam em Chromium.
-- Best Practices ficou em 96 por causa de erros de console esperados do probing anônimo de auth (`401` em `/auth/me` e `429`/`401` no refresh disparado pelo client P05). Não é falha funcional, mas deve ser reavaliado em P07/P09 (ex.: não tentar refresh sem cookie de sessão).
+- O P06 mediu Best Practices 96 por causa do probing anônimo de auth (`401` em `/auth/me` e refresh). A P07 adicionou `tl_session_hint` para evitar o refresh sem cookie de sessão, mas o Best Practices pós-P07 **não foi remedido**; fica para a auditoria/medição final da P09.
 - `style-src-attr 'unsafe-inline'` foi adicionado por causa de Recharts/atributos `style`; a exceção não passou por auditoria de segurança da P09.
 - A OG image foi validada por content-type/tamanho e pelas tags `og:image`; não foi renderizada em um card real de rede social. O texto da imagem é brand-only em inglês; título/descrição/alt são por locale.
 - O build ainda emite o aviso de `metadataBase` para uma rota fora de `[locale]` (provavelmente `/_not-found`); as tags da landing foram conferidas e estão absolutas.
-- O fluxo autenticado da landing (link "Ver estatísticas") não foi testado ponta a ponta com uma sessão real; o Vitest cobre o estado autenticado mockado e o E2E cobre o fluxo anônimo.
+- O fluxo autenticado da landing foi coberto na P07 (criar link logado). A página de estatísticas em si é P08.
 - O Playwright usa `next start`; o aviso de `output: standalone` permanece (a imagem Docker runner não foi revalidada nesta fase).
+- P07: o E2E autenticado normaliza `Origin` para `FRONTEND_ORIGIN` porque roda em `127.0.0.1:3100` e a API local está configurada para `http://localhost:3001`. Em um deploy real, `FRONTEND_ORIGIN` deve ser exatamente a origem pública do web (sem normalização de teste).
+- P07: o teste de 429 no Playwright usa uma resposta 429 simulada via `context.route` para não esgotar o balde `auth` compartilhado do Docker; o 429 real do backend continua coberto pelos testes de identidade.
+- P07: o novo cookie `tl_session_hint` é um marcador não sensível e não passou por auditoria da P09; ele não substitui o cookie de refresh e não é aceito pelo backend.
+- P07: a janela de 30 dias conta `click_events`; como os cliques são at-least-once (P03), um replay do flusher pode duplicar cliques no total. O endpoint não tem cache.
+- P07: a troca de idioma da conta foi exercitada no E2E apenas `en` ↔ `pt-BR`; as 11 opções usam o mesmo código e o `i18n:check` cobre as chaves, mas não houve troca real para cada idioma.
+- P07: Lighthouse foi rodado só em `/en` e em Chromium; não foi executado nos 11 idiomas (incluindo RTL) nem em Firefox/WebKit.
+- P07: título e expiração do diálogo de edição são cobertos no Vitest; o E2E edita o destino. A paginação por cursor e a busca têm testes de componente, não E2E.
 - Não foram executados Firefox/WebKit, teste em dispositivo físico, nem Lighthouse nos idiomas RTL/LTR além de `en`/`ar` no E2E.
 
 ## Revisão humana pendente
-- Traduções geradas por IA: `es`, `fr`, `de`, `it`, `ja`, `ko`, `zh-CN`, `ru` e `ar` (pt-BR e en são as referências). A P06 adicionou 53 chaves em todos os idiomas; revisar especialmente os textos longos de quota/erros e os rótulos da demo.
+- Traduções geradas por IA: `es`, `fr`, `de`, `it`, `ja`, `ko`, `zh-CN`, `ru` e `ar` (pt-BR e en são as referências). A P06 adicionou 53 chaves e a P07 outras 69 (218 no total); revisar especialmente mensagens de erro de auth/limite, estados da lista, diálogos de edição/exclusão e rótulos de conta.

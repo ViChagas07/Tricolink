@@ -1,6 +1,7 @@
 const API_BASE = "/api/v1";
 const CSRF_HEADER = "x-csrf-token";
 const CSRF_COOKIES = ["__Host-tl_csrf", "__Secure-tl_csrf", "tl_csrf"];
+const SESSION_HINT_COOKIE = "tl_session_hint";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const NO_REFRESH_PATHS = [
   "/auth/csrf",
@@ -29,6 +30,10 @@ export type UserDto = {
 
 export type AuthResponseDto = {
   user: UserDto;
+};
+
+export type RegisterResponseDto = {
+  status: "registered";
 };
 
 export type ApiRequestOptions = Omit<RequestInit, "body" | "credentials" | "method"> & {
@@ -219,7 +224,15 @@ function shouldAttemptRefresh(path: string): boolean {
   );
 }
 
+function hasSessionHint(): boolean {
+  return readCookie(SESSION_HINT_COOKIE) === "1";
+}
+
 async function refreshSession(): Promise<boolean> {
+  if (!hasSessionHint()) {
+    return false;
+  }
+
   if (!refreshInFlight) {
     refreshInFlight = (async () => {
       try {
@@ -294,12 +307,24 @@ export const api = {
   getMe() {
     return request<UserDto>("/auth/me");
   },
+  register(body: { email: string; password: string }) {
+    return request<RegisterResponseDto>("/auth/register", {
+      method: "POST",
+      body,
+      skipAuthRefresh: true,
+      csrf: "skip",
+    });
+  },
   login(body: { email: string; password: string }) {
     return request<AuthResponseDto>("/auth/login", {
       method: "POST",
       body,
       skipAuthRefresh: true,
+      csrf: "skip",
     });
+  },
+  updateMe(body: { display_name?: string | null; locale?: string | null }) {
+    return request<UserDto>("/auth/me", { method: "PATCH", body });
   },
   logout() {
     return request<void>("/auth/logout", { method: "POST", skipAuthRefresh: true });

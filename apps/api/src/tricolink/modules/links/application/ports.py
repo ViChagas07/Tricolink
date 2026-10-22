@@ -57,6 +57,10 @@ class LinkRepository(Protocol):
 
     async def delete(self, code: ShortCode, user_id: UUID) -> bool: ...
 
+    async def count_clicks_since(self, user_id: UUID, since: datetime) -> int: ...
+
+    async def count_for_user(self, user_id: UUID) -> int: ...
+
 
 class LinkCache(Protocol):
     async def resolve(

@@ -27,6 +27,7 @@ RESERVED_ALIASES = frozenset(
         "metrics",
         "new",
         "openapi.json",
+        "overview",
         "pt-br",
         "r",
         "register",

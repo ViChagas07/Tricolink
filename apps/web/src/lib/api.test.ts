@@ -17,6 +17,7 @@ describe("api client", () => {
     vi.stubGlobal("fetch", fetchMock);
     resetApiClientForTests();
     document.cookie = "tl_csrf=csrf-123; path=/";
+    document.cookie = "tl_session_hint=1; path=/";
   });
 
   it("uses a same-origin path with credentials", async () => {
@@ -70,6 +71,16 @@ describe("api client", () => {
       "/api/v1/auth/refresh",
       "/api/v1/links",
     ]);
+  });
+
+  it("does not request a refresh without a session hint", async () => {
+    document.cookie = "tl_session_hint=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/";
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ error: { code: "unauthorized", message: "expired" } }, 401),
+    );
+
+    await expect(api.get("/links")).rejects.toMatchObject({ status: 401 });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("does not refresh twice when the refresh fails", async () => {

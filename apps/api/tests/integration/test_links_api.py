@@ -7,12 +7,13 @@ from uuid import UUID, uuid4
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import delete
+from sqlalchemy import delete, select
 
 from tricolink.core.config import Settings
 from tricolink.core.deps import CurrentUser, get_current_user_optional
 from tricolink.infra.cache import create_redis
 from tricolink.infra.db import Database
+from tricolink.infra.db.models import ClickEvent as ClickEventRow
 from tricolink.infra.db.models import Link as LinkRow
 from tricolink.infra.db.models import User as UserRow
 from tricolink.main import create_app
@@ -75,6 +76,31 @@ def seed_links(settings: Settings, links: list[Link]) -> None:
         try:
             for link in links:
                 await repository.create(link)
+        finally:
+            await database.dispose()
+
+    asyncio.run(run())
+
+
+def seed_click(settings: Settings, code: str, clicked_at: datetime) -> None:
+    admin_settings = replace(
+        settings,
+        database_url=settings.migration_database_url or settings.database_url,
+    )
+
+    async def run() -> None:
+        database = Database(admin_settings)
+        try:
+            async with database.unit_of_work() as session:
+                link_id = await session.scalar(select(LinkRow.id).where(LinkRow.code == code))
+                assert link_id is not None
+                session.add(
+                    ClickEventRow(
+                        link_id=link_id,
+                        clicked_at=clicked_at,
+                        device="unknown",
+                    )
+                )
         finally:
             await database.dispose()
 
@@ -237,9 +263,30 @@ def test_owner_crud_alias_rules_and_cache_invalidation() -> None:
             assert reserved.status_code == 409
             assert reserved.json()["error"]["code"] == "alias_reserved"
 
+            reserved_overview = client.post(
+                "/api/v1/links",
+                json={"url": "https://93.184.216.34/x", "alias": "overview"},
+            )
+            assert reserved_overview.status_code == 409
+            assert reserved_overview.json()["error"]["code"] == "alias_reserved"
+
             listing = client.get("/api/v1/links")
             assert listing.status_code == 200
             assert listing.json()["items"][0]["code"] == code
+
+            seed_click(settings, code, datetime.now(UTC) - timedelta(days=1))
+            seed_click(settings, code, datetime.now(UTC) - timedelta(days=40))
+
+            overview = client.get("/api/v1/links/overview")
+            assert overview.status_code == 200, overview.text
+            assert overview.json() == {
+                "total_clicks": 1,
+                "total_links": 1,
+                "range": "30d",
+            }
+            wide_overview = client.get("/api/v1/links/overview", params={"range": "90d"})
+            assert wide_overview.status_code == 200
+            assert wide_overview.json()["total_clicks"] == 2
 
             first_redirect = client.get(f"/api/v1/r/{code}", follow_redirects=False)
             assert first_redirect.status_code == 302

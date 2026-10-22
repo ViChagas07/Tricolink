@@ -20,6 +20,7 @@ from tricolink.modules.links.application import (
     DailyQuotaExceeded,
     DeleteLink,
     GetLink,
+    GetLinksOverview,
     InvalidCursor,
     InvalidPagination,
     LinkNotFound,
@@ -79,6 +80,9 @@ class FakeRepository:
         self.fail_codes: list[str] = []
         self.next_id = 1
         self.get_by_code_calls = 0
+        self.click_counts: dict[UUID, int] = {}
+        self.link_counts: dict[UUID, int] = {}
+        self.click_since_calls: list[tuple[UUID, datetime]] = []
 
     async def create(self, link: Link) -> Link:
         self.create_calls.append(link.code.value)
@@ -132,11 +136,18 @@ class FakeRepository:
         return link
 
     async def delete(self, code: ShortCode, user_id: UUID) -> bool:
-        current = self.links.get(code.value)
-        if current is None or current.user_id != user_id:
+        link = self.links.get(code.value)
+        if link is None or link.user_id != user_id:
             return False
         del self.links[code.value]
         return True
+
+    async def count_clicks_since(self, user_id: UUID, since: datetime) -> int:
+        self.click_since_calls.append((user_id, since))
+        return self.click_counts.get(user_id, 0)
+
+    async def count_for_user(self, user_id: UUID) -> int:
+        return self.link_counts.get(user_id, 0)
 
 
 class FakeCache:
@@ -458,6 +469,26 @@ async def test_get_and_list_use_cursor_pagination() -> None:
         await lister.execute(user_id=user_id, cursor=None, limit=51, query=None)
     with pytest.raises(InvalidPagination):
         await lister.execute(user_id=user_id, cursor=None, limit=2, query="\x00")
+
+
+@pytest.mark.asyncio
+async def test_overview_counts_clicks_in_the_requested_window() -> None:
+    user_id = uuid4()
+    repository = FakeRepository()
+    repository.click_counts[user_id] = 42
+    repository.link_counts[user_id] = 3
+    overview = GetLinksOverview(repository=repository, clock=FakeClock())
+
+    result = await overview.execute(user_id, "30d")
+
+    assert result.total_clicks == 42
+    assert result.total_links == 3
+    assert result.range == "30d"
+    assert repository.click_since_calls == [(user_id, NOW - timedelta(days=30))]
+
+    fallback = await overview.execute(user_id, "invalid")
+    assert fallback.range == "30d"
+    assert repository.click_since_calls[-1] == (user_id, NOW - timedelta(days=30))
 
 
 @pytest.mark.asyncio

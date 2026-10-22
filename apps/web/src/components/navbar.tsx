@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { BrandLogo } from "@/components/brand-logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { usePathname, Link } from "@/i18n/navigation";
+import { usePathname, useRouter, Link } from "@/i18n/navigation";
 import { defaultLocale, getDirection, isLocale } from "@/i18n/locales";
 import { buttonVariants } from "@/components/ui/button";
 import type { AuthUser } from "@/stores/auth-store";
@@ -25,7 +25,14 @@ function initialsFor(user: AuthUser): string {
 
 function AccountMenu({ user }: { user: AuthUser }) {
   const t = useTranslations("nav");
+  const router = useRouter();
   const logout = useAuthStore((state) => state.logout);
+
+  async function handleLogout() {
+    await logout();
+    router.replace("/");
+    router.refresh();
+  }
 
   return (
     <details className="group relative">
@@ -51,7 +58,13 @@ function AccountMenu({ user }: { user: AuthUser }) {
         </Link>
         <button
           type="button"
-          onClick={() => void logout()}
+          onClick={(event) => {
+            const details = event.currentTarget.closest("details");
+            if (details) {
+              details.open = false;
+            }
+            void handleLogout();
+          }}
           className="flex w-full rounded-lg px-3 py-2 text-start text-sm text-destructive hover:bg-destructive/10 focus-visible:bg-destructive/10"
         >
           {t("logout")}
@@ -67,6 +80,7 @@ export function Navbar() {
   const currentLocale = isLocale(locale) ? locale : defaultLocale;
   const direction = getDirection(currentLocale);
   const pathname = usePathname();
+  const router = useRouter();
 
   const user = useAuthStore((state) => state.user);
   const status = useAuthStore((state) => state.status);
@@ -101,6 +115,13 @@ export function Navbar() {
     setMobileOpen(false);
   }
 
+  async function handleLogout() {
+    closeMobileMenu();
+    await logout();
+    router.replace("/");
+    router.refresh();
+  }
+
   const linksActive = pathname === "/links" || pathname.startsWith("/links/");
   const linksHref = user
     ? "/links"
@@ -114,7 +135,7 @@ export function Navbar() {
     >
       <nav
         aria-label={t("main")}
-        className="mx-auto flex h-16 w-full max-w-6xl items-center gap-1 px-4 sm:px-6"
+        className="mx-auto flex h-16 w-full max-w-6xl items-center gap-1 px-4 sm:h-[4.5rem] sm:px-6"
       >
         <BrandLogo label={t("home")} />
         <div className="ms-2 hidden sm:block">
@@ -216,10 +237,7 @@ export function Navbar() {
                   </Link>
                   <button
                     type="button"
-                    onClick={() => {
-                      closeMobileMenu();
-                      void logout();
-                    }}
+                    onClick={() => void handleLogout()}
                     className="rounded-lg px-3 py-2.5 text-start text-sm font-medium text-destructive hover:bg-destructive/10"
                   >
                     {t("logout")}

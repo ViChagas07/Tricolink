@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import cast
+from typing import Literal, cast
 
 from fastapi import APIRouter, Depends, Query, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -20,6 +20,7 @@ from tricolink.modules.links.application import (
     CreateLinkCommand,
     DeleteLink,
     GetLink,
+    GetLinksOverview,
     LinkPage,
     ListLinks,
     RecordClick,
@@ -34,6 +35,7 @@ from tricolink.modules.links.presentation.dependencies import (
     get_create_link,
     get_delete_link,
     get_get_link,
+    get_links_overview,
     get_list_links,
     get_record_click,
     get_resolve_link,
@@ -43,6 +45,7 @@ from tricolink.modules.links.presentation.dependencies import (
 from tricolink.modules.links.presentation.schemas import (
     CreateLinkRequest,
     LinkResponse,
+    LinksOverviewResponse,
     ListLinksResponse,
     UpdateLinkRequest,
 )
@@ -106,6 +109,21 @@ async def list_links(
     return ListLinksResponse(
         items=[_link_response(link, settings) for link in page.items],
         next_cursor=page.next_cursor,
+    )
+
+
+@router.get("/links/overview", response_model=LinksOverviewResponse)
+async def links_overview(
+    current_user: CurrentUser = Depends(get_current_user),
+    use_case: GetLinksOverview = Depends(get_links_overview),
+    range_key: Literal["7d", "30d", "90d"] = Query(default="30d", alias="range"),
+    _: None = Depends(user_rate_limit("stats_list")),
+) -> LinksOverviewResponse:
+    overview = await use_case.execute(current_user.id, range_key)
+    return LinksOverviewResponse(
+        total_clicks=overview.total_clicks,
+        total_links=overview.total_links,
+        range=overview.range,
     )
 
 

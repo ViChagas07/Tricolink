@@ -35,6 +35,7 @@ Cada item abaixo vira **código + teste** (pasta `tests/security/` na API; Playw
 ## 5. Autenticação, sessão e força bruta
 - argon2id (parâmetros OWASP), comparação em tempo constante, mensagens genéricas ("credenciais inválidas"), sem enumeração de e-mails (cadastro e login respondem de forma indistinguível quando possível).
 - Access JWT curto (15 min) + refresh opaco rotativo com **detecção de reuso** (reuso revoga a família inteira). Tokens só em **cookies httpOnly, Secure, SameSite=Lax** (prefixo `__Host-` quando possível). Nada em localStorage.
+- O frontend grava `tl_session_hint=1` (não-httpOnly, sem token) quando o cookie de refresh existe, só para decidir se vale tentar `/auth/refresh` após um 401. O backend ignora esse cookie; ele não autentica nem autoriza nada.
 - **CSRF**: double-submit token em requisições mutáveis + checagem de `Origin`/`Sec-Fetch-Site`.
 - Google OIDC: `state`, `nonce` e PKCE; validar `iss`, `aud`, `exp`, `email_verified`.
 - Brute force: token bucket por IP **e** por e-mail + backoff progressivo / lockout temporário; logs de tentativas (sem senha).

@@ -18,6 +18,7 @@ from tricolink.modules.links.application import (
     CreateLink,
     DeleteLink,
     GetLink,
+    GetLinksOverview,
     ListLinks,
     RecordClick,
     ResolveLink,
@@ -36,6 +37,10 @@ def get_get_link(request: Request) -> GetLink:
 
 def get_list_links(request: Request) -> ListLinks:
     return get_services(request).links.list_links
+
+
+def get_links_overview(request: Request) -> GetLinksOverview:
+    return get_services(request).links.get_overview
 
 
 def get_update_link(request: Request) -> UpdateLink:

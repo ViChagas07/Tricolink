@@ -9,7 +9,8 @@ import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { defaultLocale, getDirection, isLocale } from "@/i18n/locales";
 import { routing } from "@/i18n/routing";
-import { siteUrl } from "@/lib/seo";
+import { isProtectedPath, siteUrl } from "@/lib/seo";
+import { requireUser } from "@/lib/server-api";
 import { cn } from "@/lib/utils";
 
 import "../globals.css";
@@ -75,8 +76,14 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const { locale: rawLocale } = await params;
   const locale = isLocale(rawLocale) ? rawLocale : defaultLocale;
   const direction = getDirection(locale);
+  const requestHeaders = await headers();
+  const pathname = requestHeaders.get("x-pathname") ?? "";
+  if (isProtectedPath(pathname)) {
+    await requireUser(locale, pathname);
+  }
+
   const messages = await getMessages({ locale });
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const nonce = requestHeaders.get("x-nonce") ?? undefined;
   const nav = await getTranslations({ locale, namespace: "nav" });
 
   return (

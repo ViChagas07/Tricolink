@@ -22,7 +22,7 @@ type AuthState = {
   reset: () => void;
 };
 
-function toAuthUser(dto: UserDto): AuthUser {
+export function mapUserDto(dto: UserDto): AuthUser {
   return {
     id: dto.id,
     email: dto.email,
@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ status: "loading" });
     try {
       const user = await api.getMe();
-      set({ user: toAuthUser(user), status: "authenticated" });
+      set({ user: mapUserDto(user), status: "authenticated" });
     } catch {
       set({ user: null, status: "anonymous" });
     }

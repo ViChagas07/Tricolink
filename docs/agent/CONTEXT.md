@@ -59,6 +59,7 @@ repo/
 Links:
 - `POST /links` — cria (anônimo permitido). Body: `{ url, alias?, title?, expires_at? }` (alias/title/expires só para logados). Resp: `{ code, short_url, original_url, created_at, expires_at }`
 - `GET /links?cursor=&limit=&q=` — lista do usuário (paginação por cursor, limit máx 50)
+- `GET /links/overview?range=7d|30d|90d` — `{ total_clicks, total_links, range }` do usuário (cabeçalho de `/links`)
 - `GET /links/{code}` · `PATCH /links/{code}` (title, original_url, expires_at, is_active) · `DELETE /links/{code}` — só o dono (404 se não for dono, para não vazar existência)
 - `GET /links/{code}/stats?range=7d|30d|90d` — `{ total, series[{date,clicks}], countries[], devices[], referrers[] }`
 Auth: `POST /auth/register` · `POST /auth/login` · `POST /auth/refresh` · `POST /auth/logout` · `GET /auth/me` · `PATCH /auth/me` · `GET /auth/google/login` · `GET /auth/google/callback`

@@ -6,6 +6,8 @@ import { buildCspHeader, securityHeaders } from "@/lib/security";
 import { isPrivatePath } from "@/lib/seo";
 
 const intlMiddleware = createMiddleware(routing);
+const SESSION_HINT_COOKIE = "tl_session_hint";
+const REFRESH_COOKIES = ["tl_refresh", "__Secure-tl_refresh"];
 
 function createNonce(): string {
   const bytes = new Uint8Array(16);
@@ -25,6 +27,7 @@ export default function proxy(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-nonce", nonce);
+  requestHeaders.set("x-pathname", request.nextUrl.pathname);
   requestHeaders.set("Content-Security-Policy", csp);
 
   const localizedRequest = new NextRequest(request.url, {
@@ -34,6 +37,15 @@ export default function proxy(request: NextRequest) {
 
   const response = intlMiddleware(localizedRequest);
   response.headers.set("Content-Security-Policy", csp);
+
+  const hasSession = REFRESH_COOKIES.some((name) => request.cookies.has(name));
+  response.cookies.set(SESSION_HINT_COOKIE, hasSession ? "1" : "", {
+    path: "/",
+    httpOnly: false,
+    sameSite: "lax",
+    secure: !isDev,
+    maxAge: hasSession ? 60 * 60 * 24 * 30 : 0,
+  });
 
   for (const [name, value] of Object.entries(securityHeaders({ isProduction: !isDev }))) {
     response.headers.set(name, value);

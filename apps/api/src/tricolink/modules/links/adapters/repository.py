@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import and_, delete, or_, select
+from sqlalchemy import and_, delete, func, or_, select
 from sqlalchemy.exc import IntegrityError
 
 from tricolink.infra.db import Database
+from tricolink.infra.db.models import ClickEvent as ClickEventRow
 from tricolink.infra.db.models import Link as LinkRow
 from tricolink.infra.db.rls import set_rls_context
 from tricolink.modules.links.application.ports import PageCursor
@@ -127,6 +129,27 @@ class SqlAlchemyLinkRepository:
                 .returning(LinkRow.id)
             )
         return deleted_id is not None
+
+    async def count_clicks_since(self, user_id: UUID, since: datetime) -> int:
+        statement = (
+            select(func.count(ClickEventRow.id))
+            .join(LinkRow, ClickEventRow.link_id == LinkRow.id)
+            .where(
+                LinkRow.user_id == user_id,
+                ClickEventRow.clicked_at >= since,
+            )
+        )
+        async with self._database.read() as session:
+            await set_rls_context(session, user_id=user_id)
+            total = await session.scalar(statement)
+        return int(total or 0)
+
+    async def count_for_user(self, user_id: UUID) -> int:
+        statement = select(func.count(LinkRow.id)).where(LinkRow.user_id == user_id)
+        async with self._database.read() as session:
+            await set_rls_context(session, user_id=user_id)
+            total = await session.scalar(statement)
+        return int(total or 0)
 
 
 def _to_domain(row: LinkRow) -> Link:
