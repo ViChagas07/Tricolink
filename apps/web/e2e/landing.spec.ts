@@ -11,6 +11,12 @@ test.describe("landing page", () => {
     await expect(page.getByRole("heading", { name: "Frequently asked questions" })).toBeVisible();
     await expect(page.locator("#faq details")).toHaveCount(8);
     await expect(page.getByText("Illustrative example")).toBeVisible();
+    await expect(page.locator('img[alt="Tricolink"]').first()).toBeVisible();
+    await expect(page.locator("header img").first()).toBeVisible();
+    await expect(page.locator('link[rel="icon"]').first()).toHaveAttribute(
+      "href",
+      /(favicon\.ico|icon\.png)/,
+    );
 
     const canonical = await page.locator('link[rel="canonical"]').getAttribute("href");
     expect(canonical).toMatch(/\/en$/);

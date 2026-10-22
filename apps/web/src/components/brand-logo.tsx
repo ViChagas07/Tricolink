@@ -1,4 +1,4 @@
-import { Link2 } from "lucide-react";
+import Image from "next/image";
 
 import { Link } from "@/i18n/navigation";
 
@@ -7,17 +7,18 @@ export function BrandLogo({ label }: { label: string }) {
     <Link
       href="/"
       aria-label={label}
-      className="inline-flex items-center gap-2 rounded-xl outline-offset-4"
+      className="inline-flex shrink-0 items-center rounded-xl outline-offset-4"
     >
-      <span
-        aria-hidden="true"
-        className="relative grid size-9 shrink-0 place-items-center overflow-hidden rounded-xl bg-tc-blue-700 text-tc-white shadow-sm"
-      >
-        <span className="tc-tricolor-bar absolute inset-x-0 top-0 h-1" />
-        <Link2 className="size-4" />
-      </span>
-      <span className="font-heading text-lg font-bold tracking-tight text-tc-blue-950 dark:text-tc-white">
-        Trico<span className="text-tc-red-600 dark:text-tc-red-400">link</span>
+      <span className="inline-flex items-center justify-center rounded-xl dark:bg-white dark:p-1 dark:shadow-sm dark:ring-1 dark:ring-white/20">
+        <Image
+          src="/brand/tricolink-navbar.png"
+          alt=""
+          width={640}
+          height={603}
+          sizes="(min-width: 640px) 56px, 48px"
+          loading="eager"
+          className="h-12 w-auto sm:h-14"
+        />
       </span>
     </Link>
   );

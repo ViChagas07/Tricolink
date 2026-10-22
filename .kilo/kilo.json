@@ -1,4 +1,5 @@
 {
+  "$schema": "https://app.kilo.ai/config.json",
   "plugin": [
     "file:///C:/Users/Alisson%20Davi/Downloads/Tricolink/.kilo/plugins/graphify.js"
   ]

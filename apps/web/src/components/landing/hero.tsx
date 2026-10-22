@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 
 import { ShortenForm } from "@/components/landing/shorten-form";
@@ -11,12 +12,17 @@ export async function HeroSection() {
 
       <div className="relative mx-auto w-full max-w-6xl px-4 pt-14 pb-16 sm:px-6 sm:pt-20 sm:pb-20 lg:pt-24">
         <div className="mx-auto max-w-4xl text-center">
-          <p className="inline-flex items-center gap-2 rounded-full border border-tc-blue-600/20 bg-tc-blue-100/60 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-tc-blue-800 dark:border-tc-blue-600/30 dark:bg-tc-blue-600/15 dark:text-tc-blue-100">
-            <span aria-hidden="true" className="size-1.5 rounded-full bg-tc-red-600" />
-            {t("eyebrow")}
-          </p>
+          <Image
+            src="/brand/tricolink-hero.png"
+            alt="Tricolink"
+            width={640}
+            height={640}
+            priority
+            sizes="(min-width: 640px) 208px, 160px"
+            className="mx-auto size-40 rounded-[1.75rem] shadow-[0_30px_70px_-30px_rgba(7,26,77,0.65)] ring-1 ring-tc-blue-950/10 sm:size-52"
+          />
 
-          <h1 className="mt-5 text-balance font-heading text-4xl font-bold tracking-tight text-tc-blue-950 sm:text-6xl lg:text-7xl dark:text-tc-white">
+          <h1 className="mt-6 text-balance font-heading text-4xl font-bold tracking-tight text-tc-blue-950 sm:mt-8 sm:text-6xl lg:text-7xl dark:text-tc-white">
             {t("title")}
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground sm:text-lg">
