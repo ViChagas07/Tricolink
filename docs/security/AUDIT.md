@@ -126,7 +126,7 @@ Time-based payload `'; SELECT pg_sleep(2);--` respondeu em < 1,5 s (sem execuç�
 | Item | Status | Evidência | Risco residual |
 |---|---|---|---|
 | `.env` fora do git; `.env.example` sem segredos reais | OK | `.gitignore`; gitleaks | Nenhum. |
-| gitleaks no histórico | OK | `docker run ... gitleaks detect`: 10 commits, 29,86 MB, **no leaks found**; workflow `security.yml` | Workflow não foi executado no GitHub Actions nesta rodada. |
+| gitleaks no histórico | OK | `docker run ... gitleaks detect`: 13 commits, 35,89 MB, **no leaks found**; workflow `security.yml` | Workflow não foi executado no GitHub Actions nesta rodada. |
 | `os.getenv` só em `core/config.py` | OK | `tests/unit/test_config.py::test_only_config_module_reads_process_environment`; busca manual | Nenhum. |
 | Nenhum segredo no bundle cliente | OK | `pnpm scan:bundle` (env carregado) em `.next/static` e `.next/server`: limpo; `bundle-safety.test.ts` | Build local; deploy precisa repetir o scan. |
 | `NEXT_PUBLIC_*` sem nomes sensíveis | OK | `bundle-safety.test.ts`; `scan-bundle.mjs` | Nenhum. |
