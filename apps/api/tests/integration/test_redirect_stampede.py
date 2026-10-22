@@ -53,6 +53,7 @@ async def test_200_concurrent_cold_redirects_hit_the_database_once() -> None:
         click_flusher_enabled=False,
         click_stream_key=f"test:stampede:{uuid4().hex[:10]}",
         short_base_url="https://short.test",
+        cache_wait_timeout_seconds=2.0,
         rl_redirect_capacity=1000,
         rl_redirect_refill_per_sec=1000,
         rl_global_capacity=100_000,

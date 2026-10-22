@@ -126,7 +126,7 @@ Time-based payload `'; SELECT pg_sleep(2);--` respondeu em < 1,5 s (sem execuç�
 | Item | Status | Evidência | Risco residual |
 |---|---|---|---|
 | `.env` fora do git; `.env.example` sem segredos reais | OK | `.gitignore`; gitleaks | Nenhum. |
-| gitleaks no histórico | OK | `docker run ... gitleaks detect`: 13 commits, 35,89 MB, **no leaks found**; workflow `security.yml` | Workflow não foi executado no GitHub Actions nesta rodada. |
+| gitleaks no histórico | OK | `docker run ... gitleaks detect`: histórico até a P09 (13 commits, 35,89 MB), **no leaks found**; workflow `security.yml` | Workflow não foi executado no GitHub Actions nesta rodada. |
 | `os.getenv` só em `core/config.py` | OK | `tests/unit/test_config.py::test_only_config_module_reads_process_environment`; busca manual | Nenhum. |
 | Nenhum segredo no bundle cliente | OK | `pnpm scan:bundle` (env carregado) em `.next/static` e `.next/server`: limpo; `bundle-safety.test.ts` | Build local; deploy precisa repetir o scan. |
 | `NEXT_PUBLIC_*` sem nomes sensíveis | OK | `bundle-safety.test.ts`; `scan-bundle.mjs` | Nenhum. |
@@ -235,7 +235,7 @@ Resultados: **423 testes de API** (103 só em `tests/security`), **91 testes Vit
 
 ## O que não foi possível testar / limitações honestas
 
-- **CI real:** o workflow `.github/workflows/security.yml` foi criado e os comandos foram executados localmente, mas **não foi executado no GitHub Actions** nesta máquina. O P10 deve validar o workflow, os services Postgres/Redis e o job E2E no runner Linux.
+- **CI real:** o workflow `.github/workflows/ci.yml` foi criado e os comandos foram executados localmente, mas **não foi executado no GitHub Actions** nesta máquina. O P10 consolidou o workflow em ci.yml, validado com ctionlint; a execução real no GitHub Actions/runner Linux continua pendente.
 - **k6 e ZAP** foram executados localmente em Docker Desktop/Windows; não há execução periódica em CI nem em hardware de produção.
 - **Google OIDC real** não foi exercitado: os testes usam IdP mockado/Authlib. `state`, `nonce`, PKCE e claims são testados, mas o fluxo de navegador com o Google real e o redirect URI do Render não.
 - **Role do Render/Postgres gerenciado** não foi consultado; o teste de RLS prova o role local `tricolink_app`. Em produção é preciso confirmar `rolsuper=false`/`rolbypassrls=false` para o role usado pela API.

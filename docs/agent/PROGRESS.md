@@ -11,7 +11,7 @@
 - [x] P07 Login, Account e Links (lista com código gerado)
 - [x] P08 Estatísticas (backend + página de detalhe)
 - [x] P09 Hardening de segurança + auditoria
-- [ ] P10 Testes E2E/carga, CI/CD e deploy
+- [x] P10 Testes E2E/carga, CI/CD e deploy
 - [ ] P11 README final e documentação
 
 ## Decisões
@@ -101,8 +101,16 @@
 - P09: flusher recria o consumer group ao receber `NOGROUP` (Redis flush/failover) e segue processando; antes ele ficava preso para sempre. O teste `test_flusher_recreates_the_group_after_the_stream_is_lost` cobre.
 - P09: API em produção ganhou CSP deny-by-default (`default-src 'none'`) e `Cache-Control: no-store` em `/api/v1/auth/*` e `/metrics`. O proxy do Next passou a cobrir prefixos reservados e locales de 2 letras, eliminando HTML sem CSP em `/links`, `/login`, `/account` e `/xx/...`.
 - P09: `shadcn` passou de `dependencies` para `devDependencies` (é CLI/build-time: `globals.css` importa `shadcn/tailwind.css`, então o pacote precisa existir no install de build, mas não em runtime); `pnpm audit --prod` fica limpo. O advisory dev-only de `braces` (via `eslint-config-next`, sem versão corrigida) está documentado como exceção em AUDIT R-12.
-- P09: adicionados `.github/dependabot.yml`, `.github/workflows/security.yml`, `.gitleaks.toml` e `apps/web/scripts/scan-bundle.mjs`; `apps/api/tests/load/token_bucket.js` cobre flood/429, varredura de códigos inexistentes e stampede frio com k6.
+- P09: adicionados `.github/dependabot.yml`, `.github/workflows/ci.yml`, `.gitleaks.toml` e `apps/web/scripts/scan-bundle.mjs`; `apps/api/tests/load/token_bucket.js` cobre flood/429, varredura de códigos inexistentes e stampede frio com k6.
 - P09: a suíte `apps/api/tests/security/` cresceu para 103 testes; o total da API ficou em 423. Web: 91 Vitest e 20 Playwright. As evidências de carga, ZAP, gitleaks, pip-audit e pnpm audit estão em AUDIT.md.
+
+- P10: cobertura backend medida com `pytest --cov=tricolink`: **90,40% global** (4455 statements, 335 miss) e **96% no agregado dos domínios** (`links/identity/analytics.domain`). Gates no CI: `--cov-fail-under=85` e `coverage report --include="*/domain/*" --fail-under=90`. O stampede de 200 redirects ficou estável com `cache_wait_timeout_seconds=2.0` no teste.
+- P10: `loadtest/redirect.js` e `loadtest/create.js` medidos com k6 v2.3.0 no Docker Desktop/Windows (Ryzen 7 5800X, 16 GB; VM 16 CPUs/8,29 GB). Resultados reais em `docs/perf/RESULTS.md`: warm 101,1 RPS (p50 4,84 ms/p95 941,92 ms/p99 1.593,63 ms, 0 429); cold 500 códigos 88,5 RPS (p50 342 ms/p95 1.518 ms/p99 1.535 ms, 500/500 302); rate limit redirect 8.531 429 (83,2%); create 72,7 RPS (p50 69,8 ms/p95 880,6 ms); create com IP fixo 2.530 429 (99,8%, cota diária de 5). O teto do dev é o `--limit-concurrency 200`; os 5xx de cauda não são extrapolados para produção.
+- P10: `ci.yml` consolidou o antigo `security.yml` em jobs `api` (ruff, format, mypy, pytest com cobertura e RLS/cleanup, services Postgres/Redis), `web` (lint, typecheck, i18n, Vitest, build, bundle scan), `e2e` (compose + migrations + Playwright), `security` (gitleaks, pip-audit, pnpm audit) e `docker` (build das imagens runtime/runner). `deploy.yml` roda manual/tag e chama deploy hooks do Render/Vercel + health checks. `actionlint` 0 erros; o workflow ainda **não rodou no GitHub Actions** nesta máquina.
+- P10: deploy documentado em `docs/deploy/DEPLOY.md`, com `render.yaml` validado contra o schema oficial (0 erros), `docs/deploy/render_app_role.sql` (role `tricolink_app` NOSUPERUSER/NOBYPASSRLS) e tabela de variáveis por serviço. O `Settings` normaliza `postgresql://`/`postgres://` para `postgresql+asyncpg://`, permitindo usar o `connectionString` do Render. O callback OAuth fica no domínio do web (`/api/v1/auth/google/callback`) para o cookie nascer no domínio certo. O `TRUSTED_PROXY_COUNT=2` da cadeia Vercel→Render é uma hipótese a confirmar no staging.
+- P10: observabilidade local opcional em `docker-compose.yml` (`profiles: ["observability"]`, portas 9091/3002), Prometheus com Bearer token e dashboard Grafana `Tricolink` (RPS, p50/p95, 429 por bucket, cache hit ratio, circuit breaker, 5xx). `SENTRY_DSN` ativa o SDK com `send_default_pii=False` e scrub de headers/cookies/body; testado.
+- P10: job de limpeza `python -m tricolink.jobs.cleanup` apaga `click_events` além de `CLICK_RETENTION_DAYS` (365) em lotes e links expirados; é idempotente e coberto por `test_cleanup.py`. O cron do Render usa `MIGRATION_DATABASE_URL` e os secrets da API por `fromService` para satisfazer a validação de produção.
+- P10: as imagens Docker `runtime` (API) e `runner` (web standalone) foram construídas localmente com sucesso; o aviso de `next start` vs standalone continua no E2E, mas a imagem runner agora foi validada.
 
 ## Validação P00
 - Consultas de fumaça executadas no grafo final: fluxo de redirect; baldes de rate limit (`redirect`, `create`, `auth`, `global`, `stats/list`); rotas do frontend. Os nós e trechos retornados batem com `CONTEXT.md` e `SECURITY.md`.
@@ -216,7 +224,16 @@
 - `pip-audit --desc`: **nenhuma vulnerabilidade conhecida**. `pnpm audit --prod --audit-level high`: **limpo**. `pnpm audit` completo ainda aponta `braces@3.0.3` dev-only via `eslint-config-next`, sem versão corrigida; exceção documentada (AUDIT R-12).
 - `alembic check` não foi reexecutado porque a P09 não alterou schema. A validação de RLS da P04 continua; a P09 adicionou prova com `rolsuper=false`/`rolbypassrls=false`, leitura sem contexto = 0 linhas e update/delete cruzado = 0.
 - Produção: `/docs` e `/openapi.json` → 404; `/metrics` sem token/errado → 401 e com token → 200; cookies `__Host-`/`__Secure-` + `Secure`; CORS ausente; erro inesperado sem stack; `/auth/*` e `/metrics` com `no-store`; CSP da API `default-src 'none'`.
-- O workflow `.github/workflows/security.yml` e o Dependabot foram criados, mas **não executados no GitHub Actions** nesta máquina Windows; a validação foi local. O P10 deve rodar o workflow em Linux e validar os services.
+- O workflow `.github/workflows/ci.yml` e o Dependabot foram criados, mas **não executados no GitHub Actions** nesta máquina Windows; a validação foi local. O P10 deve rodar o workflow em Linux e validar os services.
+
+## Validação P10
+- API: **428 testes passando** com `pytest --cov=tricolink --cov-fail-under=85`; cobertura **90,40% global** (4455 statements, 335 miss) e **96%** no agregado `*/domain/*` (`coverage report --fail-under=90`). `ruff check`, `ruff format --check` e `mypy src` (131 arquivos) limpos. O stampede de 200 redirects foi estabilizado com `cache_wait_timeout_seconds=2.0` e passou em três execuções.
+- Web: **91 testes Vitest** em 22 arquivos; `pnpm lint`, `pnpm typecheck` e `pnpm i18n:check` limpos. Playwright: **20 testes** cobrindo os 5 fluxos pedidos — encurtar anônimo (`landing.spec.ts`), cadastro/login (`auth-links.spec.ts`), CRUD de `/links` + logout, troca dos 11 idiomas incluindo `ar`/RTL (`smoke.spec.ts`), redirect + estatística (`auth-links.spec.ts` + `landing.spec.ts`), além de CSP/XSS (`security.spec.ts`).
+- k6: resultados reais em `docs/perf/RESULTS.md`. Warm 6.581 redirects / 101,1 RPS / p50 4,84 ms / p95 941,92 ms / p99 1.593,63 ms / 0 429 / 42 5xx; cold 500 códigos / 88,5 RPS / p50 342 ms / p95 1.518 ms / p99 1.535 ms / 500 302; rate limit redirect 8.531 429 (83,2%); create 3.997 requests / 72,7 RPS / p50 69,8 ms / p95 880,6 ms / 99,85% 201; create IP fixo 2.530 429 (99,8%, cota diária 5). Sem números inventados; limitações e 5xx de saturação estão no documento.
+- CI: `actionlint` nos dois workflows → **0 erros**; `docker compose config --quiet` → 0; `render.yaml` validado contra o JSON Schema oficial → **0 erros**. Imagens `tricolink-api:p10` (runtime) e `tricolink-web:p10` (runner standalone) construídas localmente com sucesso.
+- Observabilidade: Prometheus scrape de `api:8000/metrics` com Bearer token **UP**; Grafana 11.5.2 provisionou o dashboard `Tricolink` (uid `tricolink-overview`); perfil `observability` validado nas portas 9091/3002. Sentry testado com `send_default_pii=False` e scrub de headers/cookies/body.
+- Cleanup: `test_cleanup.py` cobre 5 cliques antigos + 1 recente + link expirado + link ativo; primeira execução apagou 5/1, segunda apagou 0/0. Job manual: `docker compose run --rm api python -m tricolink.jobs.cleanup`.
+- Deploy: `docs/deploy/DEPLOY.md` com arquitetura, variáveis por serviço, role de runtime, Vercel/Render, migrations no pre-deploy, callback OAuth no domínio do web, confirmação de rewrite de links curtos, cron, rollback e checklist. **Não houve deploy real** (sem credenciais novas/autorização); o workflow e o blueprint estão prontos.
 
 ## Bloqueios
 (nenhum)
@@ -230,7 +247,7 @@
 - Prometheus usa o registry padrão por processo: com os 2 workers do gunicorn em produção, cada scrape vê as métricas do worker que respondeu. Não foi implementado modo multiprocess do `prometheus_client`; fica para P10 (deploy/observabilidade).
 - O pool Redis padrão é 50 conexões por worker. O teste de 100 chamadas concorrentes usou pool de 120; com o pool padrão, excesso de concorrência cai no fallback em memória (seguro, mas os contadores ficam por processo).
 - RLS foi criada em P04 (`links`/`refresh_tokens`), mas a validação foi local. Em Postgres gerenciado é preciso confirmar que o role de runtime não é superuser nem tem `BYPASSRLS`; o role de migração também precisa poder criar `citext` e rodar futuras migrações de dados com contexto RLS.
-- P09 executou k6 e `pip-audit` localmente (Docker Desktop/Windows), mas não em Linux/macOS/CI; o deploy real em Render/Vercel também não foi executado.
+- P09 executou `pip-audit` localmente (Docker Desktop/Windows); a P10 executou k6 e as imagens Docker, mas nada em Linux/CI; o deploy real em Render/Vercel não foi executado.
 - Cliques são at-least-once: se o processo cair entre o commit do lote e o `XACK`, os eventos pendentes podem ser reprocessados e duplicar linhas em `click_events` (não há chave de idempotência). O `click_count` também pode duplicar nesse cenário.
 - O flusher usa consumer name derivado do hostname; entradas pendentes de um consumer morto com hostname diferente não são reclamadas automaticamente (não foi implementado `XAUTOCLAIM`).
 - ~~Existe uma janela de corrida entre um refresh SWR em andamento e um PATCH/DELETE.~~ **Resolvido na P09** com geração atômica por código e store condicional via Lua; coberto por `test_invalidation_during_a_stale_refresh_cannot_repopulate_the_cache`.
@@ -272,11 +289,21 @@
 - P08: `pnpm build` dentro do serviço `web` do Compose (alvo `dev`, `NODE_ENV=development`) falha no prerender de `/_global-error`; o build foi validado com `-e NODE_ENV=production`. O `next start` continua emitindo o aviso de `output: standalone`.
 - P08: a suíte completa da API imprimiu uma vez `Task exception was never retrieved ... BUSYGROUP Consumer Group name already exists` depois do resumo, com 338 testes passando e exit code 0; não foi investigado se é flake do flusher ou efeito de apps de teste concorrentes.
 - P08: o total de cliques do cabeçalho de `/links` continua sem cache (vem de `/links/overview`); não foi adicionado cache curto para esse endpoint.
-- P09: o workflow de segurança e o Dependabot foram criados, mas não executados no GitHub Actions nesta máquina; a suíte local é verde. P10 deve validar em runner Linux.
+
 - P09: k6 e ZAP foram execuções locais (Docker Desktop/Windows), não contínuas. ZAP: 0 FAIL/8 WARN; os WARN foram triados em AUDIT. Não há ZAP/k6 no workflow para não duplicar o custo do P10.
-- P09: o Google real, o role do Postgres gerenciado (Render) e a imagem standalone do web não foram exercitados; o E2E usa `next build`/`next start` e IdP mockado. Ver AUDIT “O que não foi possível testar”.
+- P09: o Google real e o role do Postgres gerenciado (Render) não foram exercitados; a P10 construiu a imagem `runner`, mas o E2E ainda usa `next build`/`next start` e IdP mockado. Ver AUDIT “O que não foi possível testar”.
 - P09: o teste de timing de enumeração é local e usa mediana de 5 amostras; não é um teste estatístico rigoroso. O limite de header depende do default do Uvicorn e não foi testado ponta a ponta.
 - P09: Firefox/WebKit continuam sem execução; o E2E é somente Chromium.
+
+- P10: o GitHub Actions não foi executado (sem runner nesta máquina); `ci.yml`/`deploy.yml` passaram no `actionlint`, mas a execução real, os services e o cache do Docker Buildx não foram validados no runner.
+- P10: não houve deploy real na Vercel/Render. O rewrite externo dos links curtos foi validado em `next build`+`next start` local; a confirmação na Vercel e o `TRUSTED_PROXY_COUNT=2` (Vercel→Render) continuam pendentes no primeiro deploy.
+- P10: o k6 rodou só no Docker Desktop/Windows, com gerador e API no mesmo host; os números não representam o Render nem Linux. Não há k6 no CI para não gastar minutos em todo push.
+- P10: a cobertura do front foi relatada por suíte (91 Vitest) e fluxos E2E, não por percentual de linhas; não foi adicionado `@vitest/coverage-v8`.
+- P10: o cron de limpeza não rodou no Render; o job e o `render.yaml` foram testados localmente. O agendamento, o disco e o custo do cron no Render não foram observados.
+- P10: as imagens Docker foram construídas, mas não foram executadas com Postgres/Redis reais em modo produção; o E2E usa o alvo `dev`.
+- P10: a observabilidade foi validada apenas no Docker Desktop; Prometheus/Grafana não foram executados em produção, e o dashboard não foi inspecionado visualmente.
+- P10: o `render.yaml` foi validado contra o schema, mas o Render Blueprint real (planos free, Key Value `connectionString`, `preDeployCommand`, cron Python) não foi aplicado nem testado.
+
 
 ## Revisão humana pendente
 - Traduções geradas por IA: `es`, `fr`, `de`, `it`, `ja`, `ko`, `zh-CN`, `ru` e `ar` (pt-BR e en são as referências). A P06 adicionou 53 chaves, a P07 outras 69 e a P08 outras 16 (234 no total); revisar especialmente mensagens de erro de auth/limite, estados da lista, diálogos de edição/exclusão, rótulos de conta e os textos de período/estatísticas/vazio (incluindo "bot" e "desconhecido").

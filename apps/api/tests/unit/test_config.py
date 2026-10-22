@@ -35,6 +35,26 @@ def test_settings_parse_environment(monkeypatch: pytest.MonkeyPatch) -> None:
     assert settings.cookie_secure is True
 
 
+def test_postgres_urls_are_normalized_for_asyncpg(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("DATABASE_URL", "postgresql://user:pass@db:5432/app")
+    monkeypatch.setenv("MIGRATION_DATABASE_URL", "postgres://user:pass@db:5432/app")
+
+    settings = Settings.from_env()
+
+    assert settings.database_url == "postgresql+asyncpg://user:pass@db:5432/app"
+    assert settings.migration_database_url == "postgresql+asyncpg://user:pass@db:5432/app"
+
+
+def test_cleanup_retention_is_configurable(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CLICK_RETENTION_DAYS", "30")
+    monkeypatch.setenv("CLEANUP_BATCH_SIZE", "250")
+
+    settings = Settings.from_env()
+
+    assert settings.click_retention_days == 30
+    assert settings.cleanup_batch_size == 250
+
+
 def test_production_requires_real_secrets(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("APP_ENV", "production")
     for name in ("JWT_SECRET", "CSRF_SECRET", "SESSION_SECRET", "METRICS_TOKEN"):

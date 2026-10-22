@@ -33,9 +33,7 @@ class SecurityHeadersMiddleware:
     def __init__(self, app: ASGIApp, *, is_production: bool) -> None:
         self._app = app
         self._headers = (
-            (*_BASE_HEADERS, _HSTS_HEADER, _PRODUCTION_CSP)
-            if is_production
-            else _BASE_HEADERS
+            (*_BASE_HEADERS, _HSTS_HEADER, _PRODUCTION_CSP) if is_production else _BASE_HEADERS
         )
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:

@@ -1,0 +1,119 @@
+services:
+  - type: web
+    name: tricolink-api
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: ./apps/api
+    healthCheckPath: /health/ready
+    preDeployCommand: alembic upgrade head
+    autoDeployTrigger: "off"
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: COOKIE_DOMAIN
+        value: ""
+      # Vercel -> Render: two proxies in front of the API. Confirm the
+      # X-Forwarded-For hop count in staging before changing this.
+      - key: TRUSTED_PROXY_COUNT
+        value: "2"
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: SHORT_BASE_URL
+        sync: false
+      - key: API_PUBLIC_BASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CSRF_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: METRICS_TOKEN
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: MIGRATION_DATABASE_URL
+        fromDatabase:
+          name: tricolink-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: tricolink-redis
+          type: keyvalue
+          property: connectionString
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: CLICK_RETENTION_DAYS
+        value: "365"
+
+  - type: keyvalue
+    name: tricolink-redis
+    plan: free
+    region: oregon
+    ipAllowList: []
+    maxmemoryPolicy: allkeys-lru
+    persistenceMode: "off"
+
+  - type: cron
+    name: tricolink-cleanup
+    runtime: python
+    region: oregon
+    rootDir: apps/api
+    schedule: "0 3 * * *"
+    buildCommand: pip install "poetry==2.4.1" && poetry config virtualenvs.create false && poetry install --only main --no-interaction
+    startCommand: python -m tricolink.jobs.cleanup
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+      - key: MIGRATION_DATABASE_URL
+        fromDatabase:
+          name: tricolink-db
+          property: connectionString
+      # Settings production validation runs for the cron process too; reuse
+      # the API-generated secrets instead of duplicating them.
+      - key: JWT_SECRET
+        fromService:
+          name: tricolink-api
+          type: web
+          envVarKey: JWT_SECRET
+      - key: CSRF_SECRET
+        fromService:
+          name: tricolink-api
+          type: web
+          envVarKey: CSRF_SECRET
+      - key: SESSION_SECRET
+        fromService:
+          name: tricolink-api
+          type: web
+          envVarKey: SESSION_SECRET
+      - key: METRICS_TOKEN
+        fromService:
+          name: tricolink-api
+          type: web
+          envVarKey: METRICS_TOKEN
+      - key: CLICK_RETENTION_DAYS
+        value: "365"
+      - key: CLEANUP_BATCH_SIZE
+        value: "5000"
+
+databases:
+  - name: tricolink-db
+    databaseName: tricolink
+    user: tricolink
+    plan: free
+    region: oregon
+    ipAllowList: []

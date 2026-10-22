@@ -45,7 +45,10 @@ repo/
 │     └─ public/
 ├─ docs/agent/                  # esta pasta (SDD)
 ├─ docs/security/               # AUDIT.md (fase P09)
-├─ docker-compose.yml  Makefile  .env.example  .github/workflows/
+├─ docs/deploy/                 # deploy Vercel/Render + SQL do role
+├─ docs/perf/                   # RESULTS.md (k6 medido)
+├─ loadtest/                    # redirect.js, create.js, seed/cleanup SQL
+├─ docker-compose.yml  render.yaml  Makefile  .env.example  .github/workflows/
 └─ graphify-out/
 ```
 

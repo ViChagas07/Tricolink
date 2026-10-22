@@ -26,10 +26,7 @@ async def test_runtime_role_has_rls_enforced() -> None:
         async with database.read() as session:
             row = (
                 await session.execute(
-                    text(
-                        "SELECT rolsuper, rolbypassrls "
-                        "FROM pg_roles WHERE rolname = current_user"
-                    )
+                    text("SELECT rolsuper, rolbypassrls FROM pg_roles WHERE rolname = current_user")
                 )
             ).one()
         assert row.rolsuper is False, "runtime role must not be a superuser"

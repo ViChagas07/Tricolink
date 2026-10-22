@@ -1,0 +1,79 @@
+﻿name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "O que implantar"
+        required: true
+        type: choice
+        default: all
+        options:
+          - all
+          - api
+          - web
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  api:
+    name: Deploy API (Render)
+    if: github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'api'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Trigger Render deploy hook
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          test -n "$RENDER_DEPLOY_HOOK"
+          curl -fsS -X POST "$RENDER_DEPLOY_HOOK" >/dev/null
+      - name: Wait for API readiness
+        env:
+          API_URL: ${{ secrets.PRODUCTION_API_URL }}
+        run: |
+          test -n "$API_URL"
+          for _ in $(seq 1 60); do
+            if curl -fsS "$API_URL/health/ready" >/dev/null; then
+              echo "API ready"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "API did not become ready in time" >&2
+          exit 1
+
+  web:
+    name: Deploy web (Vercel)
+    if: github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'web'
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Trigger Vercel deploy hook
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          test -n "$VERCEL_DEPLOY_HOOK"
+          curl -fsS -X POST "$VERCEL_DEPLOY_HOOK" >/dev/null
+      - name: Wait for web readiness
+        env:
+          WEB_URL: ${{ secrets.PRODUCTION_WEB_URL }}
+        run: |
+          test -n "$WEB_URL"
+          for _ in $(seq 1 60); do
+            if curl -fsS "$WEB_URL/en" >/dev/null; then
+              echo "Web ready"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Web did not become ready in time" >&2
+          exit 1

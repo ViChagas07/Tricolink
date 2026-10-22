@@ -150,9 +150,7 @@ def seed_link(
     url: str = DESTINATION,
     title: str | None = "Security seed",
 ) -> Link:
-    return asyncio.run(
-        aseed_link(settings, code=code, user_id=user_id, url=url, title=title)
-    )
+    return asyncio.run(aseed_link(settings, code=code, user_id=user_id, url=url, title=title))
 
 
 async def aseed_click(
@@ -186,9 +184,7 @@ async def acleanup(settings: Settings, *, codes: list[str], user_ids: list[UUID]
         async with database.unit_of_work() as session:
             if codes:
                 link_ids = list(
-                    (
-                        await session.scalars(select(LinkRow.id).where(LinkRow.code.in_(codes)))
-                    ).all()
+                    (await session.scalars(select(LinkRow.id).where(LinkRow.code.in_(codes)))).all()
                 )
                 await session.execute(delete(LinkRow).where(LinkRow.code.in_(codes)))
             for user_id in user_ids:

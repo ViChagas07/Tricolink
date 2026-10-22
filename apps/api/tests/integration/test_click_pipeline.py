@@ -161,8 +161,7 @@ async def test_flusher_persists_batch_and_increments_click_count(
         assert processed == 3
         for range_key in ("7d", "30d", "90d"):
             assert (
-                await redis_client.exists(STATS_KEY.format(link_id=link.id, range=range_key))
-                == 0
+                await redis_client.exists(STATS_KEY.format(link_id=link.id, range=range_key)) == 0
             )
 
         async with database.read() as session:
@@ -190,9 +189,7 @@ async def test_flusher_persists_batch_and_increments_click_count(
             await admin.dispose()
         await redis_client.delete(settings.click_stream_key)
         for range_key in ("7d", "30d", "90d"):
-            await redis_client.delete(
-                STATS_KEY.format(link_id=link.id or -1, range=range_key)
-            )
+            await redis_client.delete(STATS_KEY.format(link_id=link.id or -1, range=range_key))
         await database.dispose()
 
 

@@ -20,6 +20,7 @@ from tricolink.core.middleware import (
 )
 from tricolink.core.services import Services, build_services
 from tricolink.infra.observability.http import router as ops_router
+from tricolink.infra.observability.sentry import init_sentry
 from tricolink.modules.analytics.presentation import router as analytics_router
 from tricolink.modules.identity.presentation import router as identity_router
 from tricolink.modules.links.presentation import router as links_router
@@ -32,6 +33,7 @@ def create_app(
     current = settings or get_settings()
     current_services = services or build_services(current)
     configure_logging(current)
+    init_sentry(current)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:

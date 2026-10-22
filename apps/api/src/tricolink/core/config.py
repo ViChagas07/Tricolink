@@ -63,6 +63,14 @@ def _number(name: str, default: float) -> float:
         raise SettingsError(f"{name} must be a number") from exc
 
 
+def _asyncpg_url(value: str) -> str:
+    if value.startswith("postgres://"):
+        return "postgresql+asyncpg://" + value.removeprefix("postgres://")
+    if value.startswith("postgresql://"):
+        return "postgresql+asyncpg://" + value.removeprefix("postgresql://")
+    return value
+
+
 def _boolean(name: str, default: bool) -> bool:
     raw = _env(name)
     if raw is None or not raw.strip():
@@ -130,6 +138,8 @@ class Settings:
     click_flush_block_ms: int = 1_000
     click_publish_timeout_seconds: float = 0.2
     click_flusher_enabled: bool = True
+    click_retention_days: int = 365
+    cleanup_batch_size: int = 5_000
 
     anon_daily_link_limit: int = 5
     user_daily_link_limit: int = 100
@@ -214,6 +224,8 @@ class Settings:
             "CLICK_STREAM_MAXLEN": self.click_stream_maxlen,
             "CLICK_FLUSH_BATCH_SIZE": self.click_flush_batch_size,
             "CLICK_FLUSH_BLOCK_MS": self.click_flush_block_ms,
+            "CLICK_RETENTION_DAYS": self.click_retention_days,
+            "CLEANUP_BATCH_SIZE": self.cleanup_batch_size,
             "ARGON2_TIME_COST": self.argon2_time_cost,
             "ARGON2_MEMORY_KIB": self.argon2_memory_kib,
             "ARGON2_PARALLELISM": self.argon2_parallelism,
@@ -337,8 +349,14 @@ class Settings:
         return cls(
             app_env=_text("APP_ENV", "development") or "development",
             log_level=_text("LOG_LEVEL", "INFO") or "INFO",
-            database_url=_text("DATABASE_URL", DEFAULT_DATABASE_URL) or DEFAULT_DATABASE_URL,
-            migration_database_url=_text("MIGRATION_DATABASE_URL"),
+            database_url=_asyncpg_url(
+                _text("DATABASE_URL", DEFAULT_DATABASE_URL) or DEFAULT_DATABASE_URL
+            ),
+            migration_database_url=(
+                _asyncpg_url(value)
+                if (value := _text("MIGRATION_DATABASE_URL")) is not None
+                else None
+            ),
             redis_url=_text("REDIS_URL", DEFAULT_REDIS_URL) or DEFAULT_REDIS_URL,
             frontend_origin=_text("FRONTEND_ORIGIN", "http://localhost:3000")
             or "http://localhost:3000",
@@ -383,6 +401,8 @@ class Settings:
             click_flush_block_ms=_integer("CLICK_FLUSH_BLOCK_MS", 1_000),
             click_publish_timeout_seconds=_number("CLICK_PUBLISH_TIMEOUT_SECONDS", 0.2),
             click_flusher_enabled=_boolean("CLICK_FLUSHER_ENABLED", True),
+            click_retention_days=_integer("CLICK_RETENTION_DAYS", 365),
+            cleanup_batch_size=_integer("CLEANUP_BATCH_SIZE", 5_000),
             anon_daily_link_limit=_integer("ANON_DAILY_LINK_LIMIT", 5),
             user_daily_link_limit=_integer("USER_DAILY_LINK_LIMIT", 100),
             anon_link_ttl_days=_integer("ANON_LINK_TTL_DAYS", 30),
@@ -428,8 +448,9 @@ def get_settings() -> Settings:
 
 
 def get_migration_database_url() -> str:
-    return (
+    value = (
         _text("MIGRATION_DATABASE_URL")
         or _text("DATABASE_URL", DEFAULT_DATABASE_URL)
         or DEFAULT_DATABASE_URL
     )
+    return _asyncpg_url(value)
