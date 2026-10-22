@@ -33,7 +33,7 @@ class StatsRepository(Protocol):
 class StatsCache(Protocol):
     async def get_or_load(
         self,
-        code: str,
+        link_id: int,
         range_key: str,
         loader: Callable[[], Awaitable[LinkStats]],
     ) -> LinkStats: ...

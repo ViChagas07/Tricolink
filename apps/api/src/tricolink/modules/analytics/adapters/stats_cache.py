@@ -21,8 +21,8 @@ from tricolink.modules.analytics.domain.stats import BreakdownItem, LinkStats, S
 
 T = TypeVar("T")
 
-STATS_KEY = "tl:stats:{code}:{range}"
-STATS_LOCK_KEY = "tl:stats:lock:{code}:{range}"
+STATS_KEY = "tl:stats:{link_id}:{range}"
+STATS_LOCK_KEY = "tl:stats:lock:{link_id}:{range}"
 RELEASE_LOCK_LUA = """
 if redis.call('get', KEYS[1]) == ARGV[1] then
   return redis.call('del', KEYS[1])
@@ -56,18 +56,18 @@ class RedisStatsCache:
 
     async def get_or_load(
         self,
-        code: str,
+        link_id: int,
         range_key: str,
         loader: Callable[[], Awaitable[LinkStats]],
     ) -> LinkStats:
-        key = STATS_KEY.format(code=code, range=range_key)
-        flight = await self._get_or_create_flight(key, code, range_key, loader)
+        key = STATS_KEY.format(link_id=link_id, range=range_key)
+        flight = await self._get_or_create_flight(key, link_id, range_key, loader)
         return await asyncio.shield(flight)
 
     async def _get_or_create_flight(
         self,
         key: str,
-        code: str,
+        link_id: int,
         range_key: str,
         loader: Callable[[], Awaitable[LinkStats]],
     ) -> asyncio.Task[LinkStats]:
@@ -75,7 +75,7 @@ class RedisStatsCache:
             existing = self._flights.get(key)
             if existing is not None:
                 return existing
-            task = asyncio.create_task(self._load_cached(key, code, range_key, loader))
+            task = asyncio.create_task(self._load_cached(key, link_id, range_key, loader))
             self._flights[key] = task
             task.add_done_callback(lambda completed: self._finish_flight(key, completed))
             return task
@@ -89,7 +89,7 @@ class RedisStatsCache:
     async def _load_cached(
         self,
         key: str,
-        code: str,
+        link_id: int,
         range_key: str,
         loader: Callable[[], Awaitable[LinkStats]],
     ) -> LinkStats:
@@ -97,23 +97,23 @@ class RedisStatsCache:
             cached = await self._read(key)
             if cached is not None:
                 return cached
-            return await self._single_flight(key, code, range_key, loader)
+            return await self._single_flight(key, link_id, range_key, loader)
         except (RedisError, TimeoutError, OSError, CircuitOpenError):
             return await loader()
 
     async def _single_flight(
         self,
         key: str,
-        code: str,
+        link_id: int,
         range_key: str,
         loader: Callable[[], Awaitable[LinkStats]],
     ) -> LinkStats:
         token = uuid.uuid4().hex
-        if await self._acquire_lock(code, range_key, token):
+        if await self._acquire_lock(link_id, range_key, token):
             try:
                 return await self._load_and_store(key, loader)
             finally:
-                await self._release_lock(code, range_key, token)
+                await self._release_lock(link_id, range_key, token)
 
         deadline = time.monotonic() + self._wait_timeout
         while time.monotonic() < deadline:
@@ -157,10 +157,10 @@ class RedisStatsCache:
             )
         )
 
-    async def _acquire_lock(self, code: str, range_key: str, token: str) -> bool:
+    async def _acquire_lock(self, link_id: int, range_key: str, token: str) -> bool:
         result = await self._redis_call(
             lambda: self._redis.set(
-                STATS_LOCK_KEY.format(code=code, range=range_key),
+                STATS_LOCK_KEY.format(link_id=link_id, range=range_key),
                 token,
                 nx=True,
                 px=self._lock_ttl_ms,
@@ -168,12 +168,12 @@ class RedisStatsCache:
         )
         return bool(result)
 
-    async def _release_lock(self, code: str, range_key: str, token: str) -> None:
+    async def _release_lock(self, link_id: int, range_key: str, token: str) -> None:
         await self._redis_call(
             lambda: self._redis.eval(
                 RELEASE_LOCK_LUA,
                 1,
-                STATS_LOCK_KEY.format(code=code, range=range_key),
+                STATS_LOCK_KEY.format(link_id=link_id, range=range_key),
                 token,
             )
         )

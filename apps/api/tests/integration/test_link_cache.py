@@ -8,6 +8,7 @@ from redis.asyncio import Redis
 
 from tricolink.core.config import Settings
 from tricolink.modules.links.adapters.cache import (
+    GENERATION_KEY,
     LINK_KEY,
     LOCK_KEY,
     NEGATIVE_KEY,
@@ -57,6 +58,7 @@ async def cleanup(redis: Redis, code: str) -> None:
         LINK_KEY.format(code=code),
         LOCK_KEY.format(code=code),
         NEGATIVE_KEY.format(code=code),
+        GENERATION_KEY.format(code=code),
     )
 
 
@@ -118,6 +120,48 @@ async def test_stale_value_is_served_while_one_refresh_runs(redis_client: Redis)
     finally:
         release.set()
         await cleanup(redis_client, code)
+
+
+@pytest.mark.asyncio
+async def test_invalidation_during_a_stale_refresh_cannot_repopulate_the_cache(
+    redis_client: Redis,
+) -> None:
+    code = unique_code()
+    cache = RedisLinkCache(redis_client, breaker=None, settings=cache_settings())
+    stale = make_link(code, "https://93.184.216.34/old")
+    fresh = make_link(code, "https://1.1.1.1/new")
+    stale_started = asyncio.Event()
+    release_stale = asyncio.Event()
+    stale_calls = 0
+
+    async def stale_loader() -> Link:
+        nonlocal stale_calls
+        stale_calls += 1
+        stale_started.set()
+        await release_stale.wait()
+        return stale
+
+    try:
+        await cache.store(stale, soft_ttl_seconds=0)
+        await asyncio.sleep(0.01)
+        await cache.resolve(ShortCode(code), stale_loader)
+        await asyncio.wait_for(stale_started.wait(), timeout=1)
+
+        await cache.invalidate(ShortCode(code))
+        release_stale.set()
+        await asyncio.sleep(0.1)
+
+        refreshed = await cache.resolve(ShortCode(code), lambda: _async_link(fresh))
+        assert refreshed is not None
+        assert refreshed.original_url == "https://1.1.1.1/new"
+        assert stale_calls == 1
+    finally:
+        release_stale.set()
+        await cleanup(redis_client, code)
+
+
+async def _async_link(link: Link) -> Link:
+    return link
 
 
 @pytest.mark.asyncio

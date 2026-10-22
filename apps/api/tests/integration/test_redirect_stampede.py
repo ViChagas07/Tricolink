@@ -12,6 +12,7 @@ from tricolink.core.config import Settings
 from tricolink.infra.cache import create_redis
 from tricolink.main import create_app
 from tricolink.modules.links.adapters.cache import (
+    GENERATION_KEY,
     LINK_KEY,
     LOCK_KEY,
     NEGATIVE_KEY,
@@ -100,6 +101,7 @@ async def test_200_concurrent_cold_redirects_hit_the_database_once() -> None:
             LINK_KEY.format(code=code),
             LOCK_KEY.format(code=code),
             NEGATIVE_KEY.format(code=code),
+            GENERATION_KEY.format(code=code),
         )
         await redis.aclose()
         await app.state.services.close()

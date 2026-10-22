@@ -64,4 +64,4 @@ class GetLinkStats:
                 window=window,
             )
 
-        return await self._cache.get_or_load(code.value, range_key, load)
+        return await self._cache.get_or_load(link_id, range_key, load)

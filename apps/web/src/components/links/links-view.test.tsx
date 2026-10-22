@@ -93,6 +93,23 @@ describe("LinksView", () => {
     expect(screen.getAllByText("9").length).toBeGreaterThan(0);
   });
 
+  it("renders user-controlled titles and URLs as inert text", () => {
+    const malicious: LinkDto = {
+      ...firstLink,
+      title: '<img src=x onerror="window.__xss=1">',
+      original_url: "javascript:alert(1)",
+    };
+    const { container } = renderView({ items: [malicious], next_cursor: null });
+
+    expect(
+      screen.getByText('<img src=x onerror="window.__xss=1">'),
+    ).toBeInTheDocument();
+    expect(container.querySelector("img")).toBeNull();
+    expect(container.querySelector('script')).toBeNull();
+    expect(container.querySelector('a[href^="javascript:"]')).toBeNull();
+    expect(container.querySelector("iframe")).toBeNull();
+  });
+
   it("copies the short link", async () => {
     const browser = userEvent.setup();
     renderView();

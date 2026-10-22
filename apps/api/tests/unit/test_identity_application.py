@@ -648,6 +648,12 @@ async def test_google_login_creates_links_and_rejects_unverified() -> None:
     with pytest.raises(InvalidGoogleLogin):
         await google.execute(replace(identity, sub="another", email=blocked.email))
 
+    password_account = user(email="password@example.com", password="secret")
+    users.users[password_account.id] = password_account
+    with pytest.raises(InvalidGoogleLogin):
+        await google.execute(replace(identity, sub="pre-hijack", email=password_account.email))
+    assert users.users[password_account.id].google_sub is None
+
 
 @pytest.mark.asyncio
 async def test_authenticate_access_returns_active_user_or_none() -> None:

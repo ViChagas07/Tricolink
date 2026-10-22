@@ -1,0 +1,186 @@
+name: security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  secrets:
+    name: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Scan history for secrets
+        run: |
+          docker run --rm -v "$PWD:/repo" zricethezav/gitleaks:latest \
+            detect --source=/repo --config=/repo/.gitleaks.toml --redact --verbose
+
+  api-security:
+    name: API offensive suite
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: tricolink
+          POSTGRES_PASSWORD: tricolink
+          POSTGRES_DB: tricolink
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U tricolink -d tricolink"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      APP_ENV: test
+      DATABASE_URL: postgresql+asyncpg://tricolink_app:tricolink_app@localhost:5432/tricolink
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://tricolink:tricolink@localhost:5432/tricolink
+      REDIS_URL: redis://localhost:6379/0
+      FRONTEND_ORIGIN: http://localhost:3001
+      API_PUBLIC_BASE_URL: http://localhost:8001
+      SHORT_BASE_URL: http://localhost:3001
+      JWT_SECRET: ci-jwt-secret-0000000000000000000000000000
+      CSRF_SECRET: ci-csrf-secret-000000000000000000000000000
+      SESSION_SECRET: ci-session-secret-000000000000000000000000
+      METRICS_TOKEN: ci-metrics-token-0000000000000000000000000
+      COOKIE_SECURE: "false"
+      TRUSTED_PROXY_COUNT: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Poetry
+        run: pipx install poetry==2.4.1
+      - name: Install API dependencies
+        working-directory: apps/api
+        run: poetry install --with dev --no-interaction
+      - name: Create runtime role
+        run: PGPASSWORD=tricolink psql -h localhost -U tricolink -d tricolink -f docker/postgres/init/01-app-role.sql
+      - name: Apply migrations
+        working-directory: apps/api
+        run: poetry run alembic upgrade head
+      - name: Run security and RLS suite
+        working-directory: apps/api
+        run: |
+          poetry run pytest -q \
+            tests/security \
+            tests/integration/test_rls.py \
+            tests/integration/test_link_cache.py \
+            tests/integration/test_stats_api.py
+
+  web-security:
+    name: Web source and unit security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - name: Install web dependencies
+        working-directory: apps/web
+        run: pnpm install --frozen-lockfile
+      - name: Lint and typecheck
+        working-directory: apps/web
+        run: |
+          pnpm lint
+          pnpm typecheck
+      - name: Unit tests
+        working-directory: apps/web
+        run: pnpm test
+      - name: Production build and bundle scan
+        working-directory: apps/web
+        env:
+          NODE_ENV: production
+          API_INTERNAL_URL: http://localhost:8000
+          NEXT_PUBLIC_SITE_URL: https://tricolink.example
+        run: |
+          pnpm build
+          pnpm scan:bundle
+
+  web-e2e-security:
+    name: Web E2E security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - name: Configure local environment
+        run: |
+          cp .env.example .env
+          sed -i 's/^API_PORT=.*/API_PORT=8001/' .env
+          sed -i 's/^WEB_PORT=.*/WEB_PORT=3001/' .env
+          sed -i 's|^FRONTEND_ORIGIN=.*|FRONTEND_ORIGIN=http://localhost:3001|' .env
+          sed -i 's|^SHORT_BASE_URL=.*|SHORT_BASE_URL=http://localhost:3001|' .env
+          sed -i 's|^API_PUBLIC_BASE_URL=.*|API_PUBLIC_BASE_URL=http://localhost:8001|' .env
+      - name: Start API, Postgres and Redis
+        run: docker compose up -d --build --wait postgres redis api
+      - name: Install web dependencies
+        working-directory: apps/web
+        run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        working-directory: apps/web
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Run Playwright security suite
+        working-directory: apps/web
+        run: pnpm test:e2e
+      - name: Stop containers
+        if: always()
+        run: docker compose down --remove-orphans
+
+  supply-chain:
+    name: Dependency audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Poetry
+        run: pipx install poetry==2.4.1
+      - name: Install API dependencies
+        working-directory: apps/api
+        run: poetry install --with dev --no-interaction
+      - name: pip-audit
+        working-directory: apps/api
+        run: poetry run pip-audit --desc
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.8.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+          cache-dependency-path: apps/web/pnpm-lock.yaml
+      - name: pnpm audit
+        working-directory: apps/web
+        run: pnpm audit --prod --audit-level high

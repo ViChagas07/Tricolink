@@ -10,6 +10,7 @@ from fastapi import Response
 
 from tricolink.core.config import Settings
 from tricolink.infra.resilience import Bulkhead
+from tricolink.modules.identity.adapters.google import GoogleOIDCClient
 from tricolink.modules.identity.adapters.password import Argon2PasswordHasher
 from tricolink.modules.identity.adapters.tokens import PyJwtAccessTokens
 from tricolink.modules.identity.application import AuthSession, InvalidNextPath
@@ -64,6 +65,36 @@ def test_access_jwt_contains_minimal_claims_and_validates() -> None:
 
     other = PyJwtAccessTokens(Settings(jwt_secret="x" * 48, jwt_algorithm="HS256"))
     assert other.decode(issued.token) is None
+
+
+@pytest.mark.asyncio
+async def test_google_exchange_never_decodes_an_unverified_id_token(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    client = GoogleOIDCClient(
+        Settings(google_client_id="client-id", google_client_secret="client-secret")
+    )
+    forged = jwt.encode(
+        {"sub": "attacker", "email": "attacker@example.com", "email_verified": True},
+        "not-the-google-key-but-long-enough-1234",
+        algorithm="HS256",
+    )
+
+    async def fake_exchange(_: object) -> dict[str, object]:
+        return {"id_token": forged}
+
+    monkeypatch.setattr(client._oauth.google, "authorize_access_token", fake_exchange)
+    with pytest.raises(ValueError):
+        await client.exchange(object())
+
+    async def fake_with_userinfo(_: object) -> dict[str, object]:
+        return {"userinfo": {"sub": "verified", "email": "verified@example.com"}}
+
+    monkeypatch.setattr(client._oauth.google, "authorize_access_token", fake_with_userinfo)
+    assert await client.exchange(object()) == {
+        "sub": "verified",
+        "email": "verified@example.com",
+    }
 
 
 def test_expired_access_token_is_rejected() -> None:

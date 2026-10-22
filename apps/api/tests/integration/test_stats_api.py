@@ -9,7 +9,7 @@ from uuid import UUID, uuid4
 import pytest
 from fastapi.testclient import TestClient
 from redis.asyncio import Redis
-from sqlalchemy import delete, insert
+from sqlalchemy import delete, insert, select
 
 from tricolink.core.config import Settings
 from tricolink.core.deps import CurrentUser, get_current_user
@@ -133,9 +133,15 @@ def cleanup(settings: Settings, *, codes: list[str], user_ids: list[UUID]) -> No
 
     async def run() -> None:
         database = Database(admin_settings)
+        link_ids: list[int] = []
         try:
             async with database.unit_of_work() as session:
                 if codes:
+                    link_ids = list(
+                        (
+                            await session.scalars(select(LinkRow.id).where(LinkRow.code.in_(codes)))
+                        ).all()
+                    )
                     await session.execute(delete(LinkRow).where(LinkRow.code.in_(codes)))
                 for user_id in user_ids:
                     await session.execute(delete(UserRow).where(UserRow.id == user_id))
@@ -145,11 +151,12 @@ def cleanup(settings: Settings, *, codes: list[str], user_ids: list[UUID]) -> No
         redis = create_redis(settings)
         try:
             keys: list[str] = []
-            for code in codes:
+            for link_id in link_ids:
                 for range_key in ("7d", "30d", "90d"):
-                    keys.append(STATS_KEY.format(code=code, range=range_key))
-                    keys.append(STATS_LOCK_KEY.format(code=code, range=range_key))
-            await redis.delete(*keys)
+                    keys.append(STATS_KEY.format(link_id=link_id, range=range_key))
+                    keys.append(STATS_LOCK_KEY.format(link_id=link_id, range=range_key))
+            if keys:
+                await redis.delete(*keys)
         finally:
             await redis.aclose()
 
@@ -332,7 +339,7 @@ def test_breakdowns_keep_top_ten_and_use_other_and_direct_sentinels() -> None:
 async def test_stats_cache_single_flight_and_ttl(redis_client: Redis) -> None:
     settings = api_settings(stats_cache_ttl_seconds=30)
     cache = RedisStatsCache(redis_client, breaker=None, settings=settings)
-    code = f"c{uuid4().hex[:8]}"
+    link_id = uuid4().int % 10_000_000
     window = build_window("7d", datetime.now(UTC))
     expected = build_stats(
         total=3,
@@ -352,20 +359,22 @@ async def test_stats_cache_single_flight_and_ttl(redis_client: Redis) -> None:
         return expected
 
     try:
-        results = await asyncio.gather(*(cache.get_or_load(code, "7d", loader) for _ in range(25)))
+        results = await asyncio.gather(
+            *(cache.get_or_load(link_id, "7d", loader) for _ in range(25))
+        )
         assert calls == 1
         assert all(result == expected for result in results)
 
-        cached = await cache.get_or_load(code, "7d", loader)
+        cached = await cache.get_or_load(link_id, "7d", loader)
         assert cached == expected
         assert calls == 1
 
-        ttl = await redis_client.ttl(STATS_KEY.format(code=code, range="7d"))
+        ttl = await redis_client.ttl(STATS_KEY.format(link_id=link_id, range="7d"))
         assert 0 < ttl <= 35
     finally:
         await redis_client.delete(
-            STATS_KEY.format(code=code, range="7d"),
-            STATS_LOCK_KEY.format(code=code, range="7d"),
+            STATS_KEY.format(link_id=link_id, range="7d"),
+            STATS_LOCK_KEY.format(link_id=link_id, range="7d"),
         )
 
 

@@ -3,7 +3,6 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any, cast
 
-import jwt
 from authlib.integrations.starlette_client import OAuth  # type: ignore[import-untyped]
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
@@ -60,14 +59,8 @@ class GoogleOIDCClient:
     async def exchange(self, request: Request) -> Mapping[str, object]:
         token: dict[str, Any] = await self._oauth.google.authorize_access_token(request)
         userinfo = token.get("userinfo")
-        claims: dict[str, object] = dict(userinfo) if userinfo else {}
-        id_token = token.get("id_token")
-        if id_token and "nonce" not in claims:
-            decoded = jwt.decode(
-                str(id_token),
-                options={"verify_signature": False, "verify_aud": False},
-            )
-            claims.update(decoded)
-        if not claims:
-            raise ValueError("Google returned no identity claims")
-        return claims
+        if not isinstance(userinfo, Mapping) or not userinfo:
+            # Never fall back to decoding the id_token without signature
+            # verification: Authlib only trusts claims it has validated.
+            raise ValueError("Google returned no verified identity claims")
+        return dict(userinfo)

@@ -71,7 +71,7 @@ Redirect (público): `GET /r/{code}` → 302 `Location: <original_url>`; 404 (in
 - Alias customizado: regex `^[A-Za-z0-9_-]{3,32}$`; lista reservada (login, account, links, api, r, en, pt-br, es, fr, de, it, ja, ko, zh-cn, ru, ar, admin, static, _next, favicon.ico, robots.txt, sitemap.xml, llms.txt…); 409 se existir.
 - Usar **302** (não 301) para que o navegador não faça cache e os cliques sejam contados. Documentar a decisão no README.
 - Chaves Redis: `tl:link:{code}` (JSON `{id,u,e,s}`), `tl:lock:{code}`, `tl:neg:{code}`, `tl:clicks` (Stream).
-- Estatísticas: `tl:stats:{code}:{range}` (JSON, TTL ≈30 s com jitter) e `tl:stats:lock:{code}:{range}` (single-flight).
+- Estatísticas: `tl:stats:{link_id}:{range}` (JSON, TTL ≈30 s com jitter) e `tl:stats:lock:{link_id}:{range}` (single-flight). A chave usa o `id` imutável do link (nunca o código, que pode ser reutilizado após exclusão) e é invalidada pelo flusher sempre que um lote de cliques é persistido.
 - **Anti cache stampede (três camadas combinadas):**
   1. **Stale-While-Revalidate:** TTL duro `CACHE_HARD_TTL_SECONDS`; TTL macio `CACHE_SOFT_TTL_SECONDS`. Passou do macio → serve o valor em cache e atualiza em background, protegido por lock.
   2. **Jitter** de ±`CACHE_JITTER_PCT` em todos os TTLs (evita expiração simultânea).
@@ -85,7 +85,7 @@ Redirect (público): `GET /r/{code}` → 302 `Location: <original_url>`; 404 (in
 
 ## 7. Roteamento frontend (next-intl, prefixo de locale sempre)
 `/[locale]` (landing) · `/[locale]/login` · `/[locale]/account` · `/[locale]/links` · `/[locale]/links/[code]` (detalhe/estatísticas) · `/[locale]/link-unavailable` (opcional).
-Links curtos ficam na raiz: `/{code}` → como não existe página, `next.config` usa **`rewrites().fallback`** para encaminhar `/:code` → `${API_INTERNAL_URL}/api/v1/r/:code` (o middleware do next-intl **não** pode capturar esses caminhos: `matcher` só para `/` e `/(<locales>)/:path*`). O navegador só fala com o domínio do frontend (`/api/v1/*` também via rewrites).
+Links curtos ficam na raiz: `/{code}` → como não existe página, `next.config` usa **`rewrites().fallback`** para encaminhar `/:code` → `${API_INTERNAL_URL}/api/v1/r/:code` (o middleware do next-intl **não** pode capturar esses caminhos). O `matcher` do proxy cobre `/`, os prefixos reservados `/links`, `/login` e `/account`, os locales conhecidos e qualquer locale de 2 letras (`/xx/...`, para não servir HTML sem CSP); códigos curtos de 7 chars continuam fora do matcher. O navegador só fala com o domínio do frontend (`/api/v1/*` também via rewrites).
 Rotas de `/links*` e `/account` exigem login (redirecionar para `/login?next=...` com `next` validado contra open redirect: só caminhos internos começando com `/` e não `//`).
 
 ## 8. i18n (next-intl)

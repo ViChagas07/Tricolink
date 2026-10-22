@@ -59,5 +59,15 @@ export default function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/(pt-BR|en|es|fr|de|it|ja|ko|zh-CN|ru|ar)/:path*"],
+  matcher: [
+    "/",
+    "/links",
+    "/links/:path*",
+    "/login",
+    "/login/:path*",
+    "/account",
+    "/account/:path*",
+    "/:locale([a-z]{2}(?:-[A-Z]{2})?)/:path*",
+    "/(pt-BR|en|es|fr|de|it|ja|ko|zh-CN|ru|ar)/:path*",
+  ],
 };

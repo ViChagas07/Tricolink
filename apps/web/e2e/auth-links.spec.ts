@@ -82,6 +82,28 @@ test.describe("authenticated pages", () => {
 
     await expect(page.getByTitle(editedDestination)).toBeVisible({ timeout: 20_000 });
 
+    const xssTitle = '<img src=x onerror="window.__xss=1">';
+    await page.getByRole("button", { name: `Edit: ${code}` }).click();
+    await page.getByRole("dialog").getByLabel("Title").fill(xssTitle);
+    await page.getByRole("dialog").getByRole("button", { name: "Save changes" }).click();
+    await expect(page.getByText(xssTitle, { exact: true })).toBeVisible({ timeout: 20_000 });
+    expect(await page.evaluate(() => (window as Window & { __xss?: number }).__xss)).toBeUndefined();
+    await expect(page.locator('img[src="x"]')).toHaveCount(0);
+
+    await page.getByRole("link", { name: `Open details: ${code}` }).click();
+    await expect(page.getByRole("heading", { name: xssTitle })).toBeVisible({ timeout: 20_000 });
+    expect(await page.evaluate(() => (window as Window & { __xss?: number }).__xss)).toBeUndefined();
+    await expect(page.locator('img[src="x"]')).toHaveCount(0);
+
+    const externalAnchors = page.locator('a[target="_blank"]');
+    for (let index = 0; index < (await externalAnchors.count()); index += 1) {
+      const anchor = externalAnchors.nth(index);
+      expect(await anchor.getAttribute("href")).toMatch(/^https?:\/\//);
+      expect(await anchor.getAttribute("rel")).toContain("noopener");
+      expect(await anchor.getAttribute("rel")).toContain("noreferrer");
+    }
+    await page.goto("/en/links");
+
     await page.getByRole("button", { name: `Copy: ${code}` }).click();
     await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toBe(shortHref);
 

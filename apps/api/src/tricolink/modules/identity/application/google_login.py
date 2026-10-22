@@ -38,7 +38,14 @@ class LoginWithGoogle:
     async def _find_or_link_or_create(self, identity: GoogleIdentity) -> User | None:
         existing = await self._users.get_by_email(identity.email)
         if existing is not None:
-            if existing.google_sub and existing.google_sub != identity.sub:
+            if existing.google_sub is not None:
+                if existing.google_sub != identity.sub:
+                    raise InvalidGoogleLogin()
+                return existing
+            if existing.password_hash is not None:
+                # Linking a verified Google e-mail to a password account is a
+                # pre-hijacking vector: the password owner keeps access after
+                # the Google owner signs in. Require an explicit link flow.
                 raise InvalidGoogleLogin()
             try:
                 return await self._users.link_google(

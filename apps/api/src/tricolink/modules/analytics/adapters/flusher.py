@@ -20,12 +20,14 @@ from tricolink.infra.db.models import Link as LinkRow
 from tricolink.infra.db.rls import set_rls_context
 from tricolink.infra.observability.metrics import record_clicks_flushed
 from tricolink.infra.resilience import CircuitBreaker, CircuitOpenError
+from tricolink.modules.analytics.adapters.stats_cache import STATS_KEY
 from tricolink.modules.analytics.domain.click import ClickEvent, normalize_country
 
 T = TypeVar("T")
 logger = logging.getLogger(__name__)
 
 _ALLOWED_DEVICES = frozenset({"desktop", "mobile", "tablet", "bot", "unknown"})
+_STATS_RANGES = ("7d", "30d", "90d")
 
 
 class ClickFlusher:
@@ -88,8 +90,23 @@ class ClickFlusher:
             return 0
         if events:
             await self._persist(events)
+            await self._invalidate_stats(events)
         await self._ack(ids)
         return len(ids)
+
+    async def _invalidate_stats(self, events: list[ClickEvent]) -> None:
+        link_ids = {event.link_id for event in events}
+        keys = [
+            STATS_KEY.format(link_id=link_id, range=range_key)
+            for link_id in link_ids
+            for range_key in _STATS_RANGES
+        ]
+        if not keys:
+            return
+        try:
+            await self._redis_call(lambda: self._redis.delete(*keys))
+        except (RedisError, TimeoutError, OSError, CircuitOpenError):
+            logger.warning("stats_cache_invalidation_failed", exc_info=True)
 
     async def _run(self) -> None:
         while not self._stop.is_set():
@@ -129,15 +146,27 @@ class ClickFlusher:
         *,
         block_ms: int | None,
     ) -> list[tuple[str, list[tuple[str, dict[str, str]]]]]:
-        raw = await self._redis_call(
-            lambda: self._redis.xreadgroup(
-                self._group,
-                self._consumer,
-                {self._stream_key: start_id},
-                count=self._batch_size,
-                block=block_ms,
+        async def read_group() -> Any:
+            return await self._redis_call(
+                lambda: self._redis.xreadgroup(
+                    self._group,
+                    self._consumer,
+                    {self._stream_key: start_id},
+                    count=self._batch_size,
+                    block=block_ms,
+                )
             )
-        )
+
+        try:
+            raw = await read_group()
+        except ResponseError as exc:
+            if "NOGROUP" not in str(exc):
+                raise
+            # A Redis flush, failover or key eviction removes the consumer
+            # group. Recreate it instead of losing clicks forever.
+            self._group_ready = False
+            await self._ensure_group()
+            raw = await read_group()
         return cast(list[tuple[str, list[tuple[str, dict[str, str]]]]], raw or [])
 
     async def _persist(self, events: list[ClickEvent]) -> None:

@@ -17,6 +17,7 @@ from tricolink.infra.db.models import ClickEvent as ClickEventRow
 from tricolink.infra.db.models import Link as LinkRow
 from tricolink.infra.db.rls import set_rls_context
 from tricolink.modules.analytics.adapters import ClickFlusher, RedisClickPublisher
+from tricolink.modules.analytics.adapters.stats_cache import STATS_KEY
 from tricolink.modules.analytics.domain.click import ClickEvent
 from tricolink.modules.links.adapters.repository import SqlAlchemyLinkRepository
 from tricolink.modules.links.domain.entities import Link
@@ -150,9 +151,19 @@ async def test_flusher_persists_batch_and_increments_click_count(
             )
         )
         assert await redis_client.xlen(settings.click_stream_key) == 3
+        for range_key in ("7d", "30d", "90d"):
+            await redis_client.set(
+                STATS_KEY.format(link_id=link.id, range=range_key),
+                "stale",
+            )
 
         processed = await flusher.run_once(block_ms=50)
         assert processed == 3
+        for range_key in ("7d", "30d", "90d"):
+            assert (
+                await redis_client.exists(STATS_KEY.format(link_id=link.id, range=range_key))
+                == 0
+            )
 
         async with database.read() as session:
             await set_rls_context(session, click_flusher=True)
@@ -167,6 +178,61 @@ async def test_flusher_persists_batch_and_increments_click_count(
         assert click_count == 2
         assert {event.device for event in events} == {"mobile", "desktop"}
         assert await redis_client.xlen(settings.click_stream_key) == 0
+    finally:
+        admin = Database(admin_settings(settings))
+        try:
+            async with admin.unit_of_work() as session:
+                await session.execute(
+                    delete(ClickEventRow).where(ClickEventRow.link_id == (link.id or -1))
+                )
+                await session.execute(delete(LinkRow).where(LinkRow.code == code))
+        finally:
+            await admin.dispose()
+        await redis_client.delete(settings.click_stream_key)
+        for range_key in ("7d", "30d", "90d"):
+            await redis_client.delete(
+                STATS_KEY.format(link_id=link.id or -1, range=range_key)
+            )
+        await database.dispose()
+
+
+@pytest.mark.asyncio
+async def test_flusher_recreates_the_group_after_the_stream_is_lost(
+    redis_client: Redis,
+) -> None:
+    settings = pipeline_settings()
+    database = Database(settings)
+    repository = SqlAlchemyLinkRepository(database)
+    publisher = RedisClickPublisher(redis_client, breaker=None, settings=settings)
+    flusher = ClickFlusher(redis_client, database, breaker=None, settings=settings)
+    code = f"r{uuid4().hex[:6]}"
+    link = await repository.create(make_link(code))
+
+    try:
+        assert link.id is not None
+        await flusher._ensure_group()  # noqa: SLF001
+        await redis_client.delete(settings.click_stream_key)
+
+        assert await publisher.publish(
+            ClickEvent(
+                link_id=link.id,
+                clicked_at=datetime.now(UTC),
+                country="BR",
+                device="mobile",
+                browser=None,
+                referrer_host=None,
+            )
+        )
+        processed = await flusher.run_once(block_ms=20)
+        assert processed == 1
+
+        async with database.read() as session:
+            count = await session.scalar(
+                select(func.count())
+                .select_from(ClickEventRow)
+                .where(ClickEventRow.link_id == link.id)
+            )
+        assert count == 1
     finally:
         admin = Database(admin_settings(settings))
         try:

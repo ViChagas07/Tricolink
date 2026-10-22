@@ -27,11 +27,27 @@ T = TypeVar("T")
 LINK_KEY = "tl:link:{code}"
 LOCK_KEY = "tl:lock:{code}"
 NEGATIVE_KEY = "tl:neg:{code}"
+GENERATION_KEY = "tl:link:gen:{code}"
 RELEASE_LOCK_LUA = """
 if redis.call('get', KEYS[1]) == ARGV[1] then
   return redis.call('del', KEYS[1])
 end
 return 0
+"""
+INVALIDATE_LUA = """
+local generation = redis.call('INCR', KEYS[1])
+redis.call('PEXPIRE', KEYS[1], ARGV[1])
+redis.call('DEL', KEYS[2], KEYS[3])
+return generation
+"""
+STORE_IF_UNCHANGED_LUA = """
+local current = tonumber(redis.call('GET', KEYS[2]) or '0')
+if current ~= tonumber(ARGV[1]) then
+  return 0
+end
+redis.call('SET', KEYS[1], ARGV[2])
+redis.call('PEXPIRE', KEYS[1], ARGV[3])
+return 1
 """
 
 
@@ -121,11 +137,16 @@ class RedisLinkCache:
             raise CacheUnavailable() from exc
 
     async def invalidate(self, code: ShortCode) -> None:
+        generation_ttl_ms = (self._hard_ttl + 60) * 1000
         try:
             await self._redis_call(
-                lambda: self._redis.delete(
+                lambda: self._redis.eval(
+                    INVALIDATE_LUA,
+                    3,
+                    GENERATION_KEY.format(code=code.value),
                     LINK_KEY.format(code=code.value),
                     NEGATIVE_KEY.format(code=code.value),
+                    generation_ttl_ms,
                 )
             )
         except (RedisError, TimeoutError, OSError, CircuitOpenError) as exc:
@@ -167,12 +188,13 @@ class RedisLinkCache:
         code: ShortCode,
         loader: Callable[[], Awaitable[Link | None]],
     ) -> CacheEntry | None:
+        generation = await self._current_generation(code)
         link = await loader()
         if link is None:
-            await self._set_negative(code)
+            await self._set_negative(code, generation=generation)
             return None
         entry = _entry_from_link(link)
-        await self._store_link(code, entry)
+        await self._store_link(code, entry, generation=generation)
         return entry
 
     async def _refresh(
@@ -237,7 +259,22 @@ class RedisLinkCache:
         raw = await self._redis_call(lambda: self._redis.get(NEGATIVE_KEY.format(code=code.value)))
         return raw is not None
 
-    async def _store_link(self, code: ShortCode, entry: CacheEntry) -> None:
+    async def _current_generation(self, code: ShortCode) -> int:
+        raw = await self._redis_call(
+            lambda: self._redis.get(GENERATION_KEY.format(code=code.value))
+        )
+        try:
+            return int(raw.decode() if isinstance(raw, bytes) else raw or 0)
+        except (TypeError, ValueError):
+            return 0
+
+    async def _store_link(
+        self,
+        code: ShortCode,
+        entry: CacheEntry,
+        *,
+        generation: int | None = None,
+    ) -> None:
         now = self._clock()
         soft_ttl = jittered_ttl(self._soft_ttl, self._jitter_pct, rng=self._rng)
         hard_ttl = jittered_ttl(self._hard_ttl, self._jitter_pct, rng=self._rng)
@@ -254,12 +291,12 @@ class RedisLinkCache:
             },
             separators=(",", ":"),
         )
-        await self._redis_call(
-            lambda: self._redis.set(
-                LINK_KEY.format(code=code.value),
-                payload,
-                px=hard_ttl * 1000,
-            )
+        await self._store_if_current(
+            code,
+            LINK_KEY.format(code=code.value),
+            payload,
+            ttl_ms=hard_ttl * 1000,
+            generation=generation,
         )
 
     async def _store(
@@ -294,14 +331,43 @@ class RedisLinkCache:
             )
         )
 
-    async def _set_negative(self, code: ShortCode) -> None:
-        ttl = jittered_ttl(self._negative_ttl, self._jitter_pct, rng=self._rng)
+    async def _store_if_current(
+        self,
+        code: ShortCode,
+        target: str,
+        value: str,
+        *,
+        ttl_ms: int,
+        generation: int | None,
+    ) -> None:
+        if generation is None:
+            await self._redis_call(lambda: self._redis.set(target, value, px=ttl_ms))
+            return
         await self._redis_call(
-            lambda: self._redis.set(
-                NEGATIVE_KEY.format(code=code.value),
-                "1",
-                px=ttl * 1000,
+            lambda: self._redis.eval(
+                STORE_IF_UNCHANGED_LUA,
+                2,
+                target,
+                GENERATION_KEY.format(code=code.value),
+                generation,
+                value,
+                ttl_ms,
             )
+        )
+
+    async def _set_negative(
+        self,
+        code: ShortCode,
+        *,
+        generation: int | None = None,
+    ) -> None:
+        ttl = jittered_ttl(self._negative_ttl, self._jitter_pct, rng=self._rng)
+        await self._store_if_current(
+            code,
+            NEGATIVE_KEY.format(code=code.value),
+            "1",
+            ttl_ms=ttl * 1000,
+            generation=generation,
         )
 
     async def _acquire_lock(self, code: str, token: str) -> bool:

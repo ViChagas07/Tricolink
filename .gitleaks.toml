@@ -1,0 +1,17 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Development placeholders, generated graph artifacts and security tests."
+paths = [
+  '''graphify-out/.*''',
+  '''apps/api/tests/.*''',
+  '''apps/web/src/.*\.test\.(ts|tsx)''',
+  '''apps/web/e2e/.*''',
+]
+regexes = [
+  '''dev-insecure-[a-z-]+-[0-9]{4}''',
+  '''change-me[^"'\s]*''',
+  '''not-the-google-key''',
+  '''correct horse battery staple''',
+]
