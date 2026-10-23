@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NextIntlClientProvider, type AbstractIntlMessages } from "next-intl";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -123,5 +123,18 @@ describe("Navbar", () => {
     expect(screen.getByLabelText(/Account/)).toBeInTheDocument();
     expect(screen.getByText("Sign out")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
+  });
+
+  it("keeps language and theme controls below Links in the mobile menu", async () => {
+    const user = userEvent.setup();
+    renderNavbar("en", enMessages);
+
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+
+    const dialog = screen.getByRole("dialog");
+    expect(within(dialog).getByRole("button", { name: /Select language/ })).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "Toggle theme" })).toBeInTheDocument();
+    expect(within(dialog).queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Sign in" })).toBeInTheDocument();
   });
 });

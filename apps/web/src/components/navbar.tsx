@@ -156,32 +156,33 @@ export function Navbar() {
             {t("links")}
           </Link>
           <ThemeToggle />
+        </div>
+
+        <div className="ms-auto flex items-center gap-1 md:ms-1">
           {isLoginPage ? null : status === "loading" ? (
-            <span aria-hidden="true" className="ms-1 size-9 animate-pulse rounded-full bg-muted" />
+            <span aria-hidden="true" className="size-9 animate-pulse rounded-full bg-muted" />
           ) : isAuthenticated && user ? (
-            <div className="ms-1">
-              <AccountMenu user={user} />
-            </div>
+            <AccountMenu user={user} />
           ) : (
             <Link
               href="/login"
               prefetch={false}
-              className={cn(buttonVariants({ variant: "default", size: "lg" }), "ms-1")}
+              className={buttonVariants({ variant: "default", size: "lg" })}
             >
               {t("login")}
             </Link>
           )}
-        </div>
 
-        <button
-          type="button"
-          aria-label={t("openMenu")}
-          aria-expanded={mobileOpen}
-          onClick={() => setMobileOpen(true)}
-          className="ms-auto inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
-        >
-          <Menu className="size-5" aria-hidden="true" />
-        </button>
+          <button
+            type="button"
+            aria-label={t("openMenu")}
+            aria-expanded={mobileOpen}
+            onClick={() => setMobileOpen(true)}
+            className="inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden"
+          >
+            <Menu className="size-5" aria-hidden="true" />
+          </button>
+        </div>
       </nav>
 
       {mobileOpen ? (
@@ -226,6 +227,10 @@ export function Navbar() {
               >
                 {t("links")}
               </Link>
+              <div className="mt-1 flex items-center justify-between gap-2 border-b border-border pb-3">
+                <LanguageSwitcher />
+                <ThemeToggle />
+              </div>
               {isAuthenticated && user ? (
                 <>
                   <Link
@@ -244,22 +249,8 @@ export function Navbar() {
                     {t("logout")}
                   </button>
                 </>
-              ) : isLoginPage ? null : (
-                <Link
-                  href="/login"
-                  prefetch={false}
-                  onClick={closeMobileMenu}
-                  className={cn(buttonVariants({ variant: "default", size: "lg" }), "mt-2 w-full")}
-                >
-                  {t("login")}
-                </Link>
-              )}
+              ) : null}
             </nav>
-
-            <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-4">
-              <LanguageSwitcher />
-              <ThemeToggle />
-            </div>
           </div>
         </dialog>
       ) : null}
