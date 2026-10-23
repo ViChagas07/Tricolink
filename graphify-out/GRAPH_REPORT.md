@@ -1,17 +1,17 @@
 # Graph Report - Tricolink  (2026-10-23)
 
 ## Corpus Check
-- 285 files · ~140,033 words
+- 285 files · ~140,179 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 15 file(s) not represented in the graph (top: (none) 10, .toml 1, .ini 1)
 
 ## Summary
-- 2285 nodes · 6974 edges · 103 communities (91 shown, 12 thin omitted)
+- 2285 nodes · 6977 edges · 103 communities (91 shown, 12 thin omitted)
 - Extraction: 86% EXTRACTED · 14% INFERRED · 0% AMBIGUOUS · INFERRED: 956 edges (avg confidence: 0.91)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `402fb7f0`
+- Built from commit: `882b5559`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -259,7 +259,7 @@ Nodes (26): RedisDailyQuota, CreateLinkCommand, QuotaResult, build_create(), bui
 
 ### Community 31 - "ref_next_intl"
 Cohesion: 0.11
-Nodes (35): AccountPage(), AccountPageProps, generateMetadata(), generateMetadata(), LinkDetailPage(), LinkDetailPageProps, generateMetadata(), LinksPage() (+27 more)
+Nodes (36): AccountPage(), AccountPageProps, generateMetadata(), generateMetadata(), LinkDetailPage(), LinkDetailPageProps, generateMetadata(), LinksPage() (+28 more)
 
 ### Community 32 - "pytest"
 Cohesion: 0.12
@@ -335,7 +335,7 @@ Nodes (41): LinksLoading(), LocaleNotFound(), FinalCta(), CopyLinkButton(), Copy
 
 ### Community 50 - "ref_next_intl"
 Cohesion: 0.11
-Nodes (24): dynamic, generateMetadata(), inter, jakarta, LocaleLayout(), LocaleLayoutProps, LinkDetailError(), BrandLogo() (+16 more)
+Nodes (23): dynamic, generateMetadata(), inter, jakarta, LocaleLayout(), LocaleLayoutProps, LinkDetailError(), BrandLogo() (+15 more)
 
 ### Community 51 - "api.ts"
 Cohesion: 0.15
@@ -519,7 +519,7 @@ Nodes (3): do_run_migrations(), run_async_migrations(), run_migrations_online()
 
 ## Knowledge Gaps
 - **18 isolated node(s):** `tricolink-api`, `Non-Goals`, `Stale-While-Revalidate Caching`, `lucide-react 1.60.0`, `minimumReleaseAgeExclude Policy` (+13 more)
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 502 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 501 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **12 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions

@@ -24,9 +24,9 @@
     "semantic_hash": "aa05b3b82c1a22e91f8cec76cf9be242"
   },
   "docs/agent/PROGRESS.md": {
-    "mtime": 1792725320.1720343,
-    "seen": 1792725484.679467,
-    "ast_hash": "b83ac765923256cea813728c900126ea",
+    "mtime": 1792727402.1138847,
+    "seen": 1792727431.5462,
+    "ast_hash": "bc1e52049a130ece35e4b3dbf0474ca4",
     "semantic_hash": ""
   },
   "docs/agent/RULES.md": {
@@ -42,9 +42,9 @@
     "semantic_hash": ""
   },
   "docs/agent/UI_SPEC.md": {
-    "mtime": 1792715836.5228436,
-    "seen": 1792715997.8653753,
-    "ast_hash": "8c7a4f0c8562090a7e69cf4c6078f833",
+    "mtime": 1792727385.5388596,
+    "seen": 1792727431.5465364,
+    "ast_hash": "f544920225be35b67b73fd19ee83567f",
     "semantic_hash": ""
   },
   "apps/api/alembic/env.py": {
@@ -1044,15 +1044,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/navbar.test.tsx": {
-    "mtime": 1792621868.0624301,
-    "seen": 1792622067.4991908,
-    "ast_hash": "c992df4fd95aac5733e0c80b0b753512",
+    "mtime": 1792727186.6752675,
+    "seen": 1792727431.5369735,
+    "ast_hash": "e633a048d7118aa580af8c19c8708672",
     "semantic_hash": ""
   },
   "apps/web/src/components/navbar.tsx": {
-    "mtime": 1792636569.2336872,
-    "seen": 1792639908.1253552,
-    "ast_hash": "1c96c3b7e141f00615c746fd3d268f2e",
+    "mtime": 1792727151.3248036,
+    "seen": 1792727431.5369763,
+    "ast_hash": "661ad23c455718403cb3a8db48889d6f",
     "semantic_hash": ""
   },
   "apps/web/src/components/theme-toggle.tsx": {
@@ -1380,9 +1380,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/[locale]/login/page.tsx": {
-    "mtime": 1792638857.228984,
-    "seen": 1792639908.1181214,
-    "ast_hash": "49f4f6e4326aff1d6c06173bb50e6931",
+    "mtime": 1792727174.2700405,
+    "seen": 1792727431.5307615,
+    "ast_hash": "3607242f5e83726fd7a067cb34534c60",
     "semantic_hash": ""
   },
   "apps/web/src/components/account/account-form.tsx": {
@@ -1398,9 +1398,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/auth/login-form.tsx": {
-    "mtime": 1792638857.3695903,
-    "seen": 1792639908.119493,
-    "ast_hash": "6a0dd746dedba2a079c6b891480ef825",
+    "mtime": 1792727160.671175,
+    "seen": 1792727431.5322273,
+    "ast_hash": "6372b8502726e055bf6e92a336af22ec",
     "semantic_hash": ""
   },
   "apps/web/src/components/links/copy-link-button.tsx": {

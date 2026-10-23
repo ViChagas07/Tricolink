@@ -127,6 +127,7 @@ export function Navbar() {
     ? "/links"
     : `/login?next=${encodeURIComponent(`/${currentLocale}/links`)}`;
   const isAuthenticated = status === "authenticated" && user !== null;
+  const isLoginPage = pathname === "/login" || pathname.startsWith("/login/");
 
   return (
     <header
@@ -155,7 +156,7 @@ export function Navbar() {
             {t("links")}
           </Link>
           <ThemeToggle />
-          {status === "loading" ? (
+          {isLoginPage ? null : status === "loading" ? (
             <span aria-hidden="true" className="ms-1 size-9 animate-pulse rounded-full bg-muted" />
           ) : isAuthenticated && user ? (
             <div className="ms-1">
@@ -243,7 +244,7 @@ export function Navbar() {
                     {t("logout")}
                   </button>
                 </>
-              ) : (
+              ) : isLoginPage ? null : (
                 <Link
                   href="/login"
                   prefetch={false}

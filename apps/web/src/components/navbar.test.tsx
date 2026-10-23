@@ -64,6 +64,7 @@ function renderNavbar(locale: "en" | "ar", messages: unknown) {
 describe("Navbar", () => {
   beforeEach(() => {
     navigation.replace.mockReset();
+    navigation.pathname = "/links";
     authState.current.user = null;
     authState.current.status = "anonymous";
   });
@@ -80,6 +81,14 @@ describe("Navbar", () => {
     );
     expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
     expect(screen.getByRole("button", { name: /Select language/ })).toBeInTheDocument();
+  });
+
+  it("hides the sign-in action on the login page", () => {
+    navigation.pathname = "/login";
+    renderNavbar("en", enMessages);
+
+    expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Links" })).toBeInTheDocument();
   });
 
   it("renders the Arabic navigation in RTL", () => {

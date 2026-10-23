@@ -14,7 +14,7 @@
 ## Navbar (replicar a do AImaginator)
 > **Anexo obrigatório do dono do projeto:** o componente da navbar do AImaginator (ex.: `Navbar.tsx`) será anexado ao prompt P05. **Se o anexo existir, siga-o à risca** (estrutura, espaçamento, comportamento, mobile). Se não existir, use esta especificação:
 - Esquerda: **logo Tricolink** (ícone de elo/atalho + wordmark) no canto superior esquerdo → ao lado, o **seletor de idiomas** (dropdown com os 11 idiomas, nome nativo, idioma atual destacado, teclado acessível).
-- Direita: item **Links** (leva a `/links`; para deslogado, leva a `/login?next=/links`) e o bloco de conta igual ao do AImaginator (botão **Entrar** quando deslogado; avatar com menu **Account / Sair** quando logado) e demais controles que o AImaginator tiver (ex.: alternador de tema).
+- Direita: item **Links** (leva a `/links`; para deslogado, leva a `/login?next=/links`) e o bloco de conta igual ao do AImaginator (botão **Entrar** quando deslogado, oculto na própria página de login; avatar com menu **Account / Sair** quando logado) e demais controles que o AImaginator tiver (ex.: alternador de tema).
 - **Remover** a rota "Galeria". **Trocar** "Estúdio" por **"Links"**.
 - Mobile: menu hambúrguer (Sheet), mesmo conteúdo. RTL (árabe): espelhar com propriedades lógicas.
 - Sticky no topo, fundo translúcido com blur, item ativo destacado, `aria-current="page"`.
@@ -29,7 +29,7 @@
 Anônimo pode encurtar (com cota menor); ao exceder ou querer histórico → convite para criar conta.
 
 ## Login (`/[locale]/login`)
-Card central; abas **Entrar / Criar conta**; botão **Continuar com o Google**; validação inline; mostrar/ocultar senha; link de volta; tratamento de 429 (mostrar tempo de espera). Respeitar `next` (validado).
+Card central; abas **Entrar / Criar conta**; botão **Continuar com o Google**; validação inline; mostrar/ocultar senha; **Voltar ao início** no canto superior esquerdo da página, fora do card; tratamento de 429 (mostrar tempo de espera). Respeitar `next` (validado).
 
 ## Account (`/[locale]/account`)
 Perfil (nome de exibição, e-mail somente leitura, idioma preferido), preferências (tema), botão Sair. Layout simples em cartões.

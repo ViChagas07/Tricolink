@@ -1,11 +1,11 @@
 "use client";
 
-import { ArrowLeft, Eye, EyeOff, Loader2, LogIn, TriangleAlert, UserPlus } from "lucide-react";
+import { Eye, EyeOff, Loader2, LogIn, TriangleAlert, UserPlus } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { useId, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Link, useRouter } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { api, isApiError } from "@/lib/api";
 import { toNavigationTarget } from "@/lib/next-path";
 import { useRetryCountdown } from "@/lib/use-retry-countdown";
@@ -405,16 +405,6 @@ export function LoginForm({ nextPath, initialError = null }: LoginFormProps) {
             {mode === "login" ? t("register") : t("login")}
           </button>
         </p>
-      </div>
-
-      <div className="mt-6 border-t border-border pt-4">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft aria-hidden="true" className="size-4 rtl:rotate-180" />
-          {t("backHome")}
-        </Link>
       </div>
     </div>
   );
