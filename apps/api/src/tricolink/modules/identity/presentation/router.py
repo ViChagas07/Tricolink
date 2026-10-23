@@ -284,7 +284,7 @@ async def google_callback(
 
     expected_state = request.session.pop("oauth_state", None)
     expected_nonce = request.session.pop("oauth_nonce", None)
-    next_raw = request.session.pop("oauth_next", "/account")
+    next_raw = request.session.pop("oauth_next", "/")
     state = request.query_params.get("state", "")
 
     if (
@@ -298,7 +298,7 @@ async def google_callback(
     try:
         safe_path = safe_next_path(str(next_raw))
     except InvalidNextPath:
-        safe_path = "/account"
+        safe_path = "/"
 
     try:
         claims = await oidc.exchange(request)

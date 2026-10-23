@@ -80,7 +80,7 @@ async def csrf_protect(request: Request) -> None:
         raise CsrfError()
 
 
-def safe_next_path(value: str | None, *, default: str = "/account") -> str:
+def safe_next_path(value: str | None, *, default: str = "/") -> str:
     if value is None or value == "":
         return default
     if not value.startswith("/") or value.startswith("//"):

@@ -24,9 +24,9 @@ describe("next path validation", () => {
     expect(isSafeNextPath("links")).toBe(false);
   });
 
-  it("falls back to the default destination", () => {
-    expect(sanitizeNextPath("https://evil.com")).toBe("/links");
-    expect(sanitizeNextPath(null)).toBe("/links");
+  it("falls back to the home destination", () => {
+    expect(sanitizeNextPath("https://evil.com")).toBe("/");
+    expect(sanitizeNextPath(null)).toBe("/");
     expect(sanitizeNextPath("", "/account")).toBe("/account");
   });
 

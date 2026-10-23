@@ -184,8 +184,8 @@ def test_clear_cookies_deletes_all_session_cookies() -> None:
     [
         ("/links", "/links"),
         ("/pt-BR/account?tab=1", "/pt-BR/account?tab=1"),
-        (None, "/account"),
-        ("", "/account"),
+        (None, "/"),
+        ("", "/"),
     ],
 )
 def test_safe_next_accepts_internal_paths(value: str | None, expected: str) -> None:

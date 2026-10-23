@@ -38,9 +38,9 @@ test.describe("authenticated pages", () => {
     });
     await page.getByRole("button", { name: "Create account" }).click();
 
-    await expect(page).toHaveURL(/\/en\/links$/, { timeout: 30_000 });
-    await expect(page.getByRole("heading", { name: "Your links" })).toBeVisible();
-    await expect(page.getByText("No links yet")).toBeVisible();
+    await expect(page).toHaveURL(/\/en$/, { timeout: 30_000 });
+    await expect(page.getByRole("heading", { name: "Short links, clearly." })).toBeVisible();
+    await expect(page.getByLabel("Long URL")).toBeVisible();
     expect(
       await page.evaluate(
         () => (window as Window & { __tricolinkNoReload?: boolean }).__tricolinkNoReload,
@@ -226,7 +226,7 @@ test.describe("authenticated pages", () => {
     await page.getByLabel("Password", { exact: true }).fill(password);
     await page.getByRole("button", { name: "Sign in" }).click();
 
-    await expect(page).toHaveURL(/\/en\/links$/, { timeout: 30_000 });
+    await expect(page).toHaveURL(/\/en$/, { timeout: 30_000 });
     await expect(page).not.toHaveURL(/evil\.com/);
   });
 

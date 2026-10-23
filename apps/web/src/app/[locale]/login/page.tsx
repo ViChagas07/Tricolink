@@ -38,8 +38,8 @@ export default async function LoginPage({ params, searchParams }: LoginPageProps
   }
 
   const query = await searchParams;
-  const safeNext = sanitizeNextPath(first(query.next), "/links");
-  const nextPath = toLocalizedServerPath(rawLocale, isLoginPath(safeNext) ? "/links" : safeNext);
+  const safeNext = sanitizeNextPath(first(query.next), "/");
+  const nextPath = toLocalizedServerPath(rawLocale, isLoginPath(safeNext) ? "/" : safeNext);
 
   const user = await getServerUser();
   if (user) {

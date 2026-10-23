@@ -46,7 +46,7 @@ const user: UserDto = {
   avatar_source: null,
 };
 
-function renderForm(nextPath = "/en/links") {
+function renderForm(nextPath = "/en") {
   return render(
     <NextIntlClientProvider
       locale="en"
@@ -163,7 +163,7 @@ describe("LoginForm", () => {
 
     await waitFor(() => expect(api.register).toHaveBeenCalledTimes(1));
     await waitFor(() => expect(api.login).toHaveBeenCalledTimes(1));
-    expect(navigation.replace).toHaveBeenCalledWith("/links", { locale: "en" });
+    expect(navigation.replace).toHaveBeenCalledWith("/", { locale: "en" });
   });
 
   it("builds the Google redirect with the validated next path", () => {

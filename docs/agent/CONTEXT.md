@@ -92,7 +92,7 @@ Redirect (público): `GET /r/{code}` → 302 `Location: <original_url>`; 404 (in
 ## 7. Roteamento frontend (next-intl, prefixo de locale sempre)
 `/[locale]` (landing) · `/[locale]/login` · `/[locale]/account` · `/[locale]/links` · `/[locale]/links/[code]` (detalhe/estatísticas) · `/[locale]/link-unavailable` (opcional).
 Links curtos ficam na raiz: `/{code}` → como não existe página, `next.config` usa **`rewrites().fallback`** para encaminhar `/:code` → `${API_INTERNAL_URL}/api/v1/r/:code` (o middleware do next-intl **não** pode capturar esses caminhos). O `matcher` do proxy cobre `/`, os prefixos reservados `/links`, `/login` e `/account`, os locales conhecidos e qualquer locale de 2 letras (`/xx/...`, para não servir HTML sem CSP); códigos curtos de 7 chars continuam fora do matcher. O navegador só fala com o domínio do frontend (`/api/v1/*` também via rewrites).
-Rotas de `/links*` e `/account` exigem login (redirecionar para `/login?next=...` com `next` validado contra open redirect: só caminhos internos começando com `/` e não `//`).
+Rotas de `/links*` e `/account` exigem login (redirecionar para `/login?next=...` com `next` validado contra open redirect: só caminhos internos começando com `/` e não `//`). Depois de login/cadastro (senha ou Google), se não houver `next` válido, o destino padrão é a **home** (`/[locale]`), onde fica o encurtador — não `/links`. Um `next` explícito (por exemplo, ao clicar em Links deslogado) continua sendo respeitado.
 
 ## 8. i18n (next-intl)
 - 11 idiomas: `pt-BR`, `en`, `es`, `fr`, `de`, `it`, `ja`, `ko`, `zh-CN`, `ru`, `ar` (árabe com layout RTL; usar propriedades lógicas do CSS — `ms-*`, `ps-*`, `text-start`).

@@ -29,7 +29,7 @@
 Anônimo pode encurtar (com cota menor); ao exceder ou querer histórico → convite para criar conta.
 
 ## Login (`/[locale]/login`)
-Card central; abas **Entrar / Criar conta**; botão **Continuar com o Google**; validação inline; mostrar/ocultar senha; **Voltar ao início** no canto superior esquerdo da página, fora do card; tratamento de 429 (mostrar tempo de espera). Respeitar `next` (validado).
+Card central; abas **Entrar / Criar conta**; botão **Continuar com o Google**; validação inline; mostrar/ocultar senha; **Voltar ao início** no canto superior esquerdo da página, fora do card; tratamento de 429 (mostrar tempo de espera). Respeitar `next` (validado); sem `next`, após autenticar (senha, cadastro ou Google) ir para a **home** (`/[locale]`), onde está o encurtador, não para `/links`.
 
 ## Account (`/[locale]/account`)
 Perfil com **foto de perfil** (avatar atual, botão **Alterar foto** com upload JPG/PNG/WebP até 5 MB, recorte quadrado no browser e **Remover foto** apenas para avatar personalizado), nome de exibição, e-mail somente leitura e idioma preferido; preferências (tema), botão Sair. Layout simples em cartões. Se o upload falhar, mostrar mensagem clara sem perder os outros campos.

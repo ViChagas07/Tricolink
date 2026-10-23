@@ -1,7 +1,7 @@
 import { defaultLocale, isLocale, locales, type Locale } from "@/i18n/locales";
 
 const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f]/;
-const DEFAULT_NEXT = "/links";
+const DEFAULT_NEXT = "/";
 
 function decodePath(value: string): string | null {
   try {

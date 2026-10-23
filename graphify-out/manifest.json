@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "docs/agent/CONTEXT.md": {
-    "mtime": 1792769616.175797,
-    "seen": 1792770314.9846656,
-    "ast_hash": "c012191703bbfed0b27276e9e237e407",
+    "mtime": 1792771663.4361968,
+    "seen": 1792771837.0810566,
+    "ast_hash": "00f31f6e06c1b261771be94ee0fbd5bc",
     "semantic_hash": ""
   },
   "docs/agent/GRAPHIFY.md": {
@@ -24,9 +24,9 @@
     "semantic_hash": "aa05b3b82c1a22e91f8cec76cf9be242"
   },
   "docs/agent/PROGRESS.md": {
-    "mtime": 1792770622.6746674,
-    "seen": 1792770639.402521,
-    "ast_hash": "d53a8d3f44f4c4d32761abc6134dd34a",
+    "mtime": 1792771819.495872,
+    "seen": 1792771837.081216,
+    "ast_hash": "eccf7efed25fbf6fe57d75e033ae617f",
     "semantic_hash": ""
   },
   "docs/agent/RULES.md": {
@@ -42,9 +42,9 @@
     "semantic_hash": ""
   },
   "docs/agent/UI_SPEC.md": {
-    "mtime": 1792769641.068394,
-    "seen": 1792770314.9851456,
-    "ast_hash": "1123dc4379b254c882e34efea7181821",
+    "mtime": 1792771671.4059114,
+    "seen": 1792771837.081523,
+    "ast_hash": "bede787e81c8e79a40fb371d8b30cd7a",
     "semantic_hash": ""
   },
   "apps/api/alembic/env.py": {
@@ -852,9 +852,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/modules/identity/presentation/router.py": {
-    "mtime": 1792768634.5479493,
-    "seen": 1792770314.95628,
-    "ast_hash": "b472fa391df6376071af72c8a5af493f",
+    "mtime": 1792771357.246907,
+    "seen": 1792771837.048043,
+    "ast_hash": "1afe06a2b1b8674efbc5139b679ad4e9",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/modules/identity/presentation/schemas.py": {
@@ -864,9 +864,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/modules/identity/presentation/security.py": {
-    "mtime": 1792594512.2596653,
-    "seen": 1792596516.4441612,
-    "ast_hash": "f785ff6f089ed9b9b84641c725d45126",
+    "mtime": 1792771343.9878595,
+    "seen": 1792771837.0482104,
+    "ast_hash": "3a513ef8ad6fd1026340b84767300c45",
     "semantic_hash": ""
   },
   "apps/api/tests/integration/test_identity_api.py": {
@@ -882,9 +882,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/unit/test_identity_adapters.py": {
-    "mtime": 1792681240.176992,
-    "seen": 1792681808.139673,
-    "ast_hash": "604402d976953bc584d4d309d089bd09",
+    "mtime": 1792771364.8293846,
+    "seen": 1792771837.0599778,
+    "ast_hash": "6e85da14cb2fdc473dfe1c5112a32a39",
     "semantic_hash": ""
   },
   "apps/api/tests/unit/test_identity_application.py": {
@@ -1344,9 +1344,9 @@
     "semantic_hash": ""
   },
   "apps/web/e2e/auth-links.spec.ts": {
-    "mtime": 1792678700.4624617,
-    "seen": 1792681808.141001,
-    "ast_hash": "7ec7d8e04daadae0379bc484e834bbe6",
+    "mtime": 1792771549.1999767,
+    "seen": 1792771837.0617847,
+    "ast_hash": "d1efaa0b8280bd42c0d6675113fc3033",
     "semantic_hash": ""
   },
   "apps/web/src/app/[locale]/account/loading.tsx": {
@@ -1380,9 +1380,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/[locale]/login/page.tsx": {
-    "mtime": 1792727174.2700405,
-    "seen": 1792727431.5307615,
-    "ast_hash": "3607242f5e83726fd7a067cb34534c60",
+    "mtime": 1792771336.4545875,
+    "seen": 1792771837.0662887,
+    "ast_hash": "0d82185fbf9558cbad71870715760e23",
     "semantic_hash": ""
   },
   "apps/web/src/components/account/account-form.tsx": {
@@ -1392,9 +1392,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/auth/login-form.test.tsx": {
-    "mtime": 1792769347.3754542,
-    "seen": 1792770314.973084,
-    "ast_hash": "93e7fc6744fc0c3066109fd4535cb1a1",
+    "mtime": 1792771468.154739,
+    "seen": 1792771837.067553,
+    "ast_hash": "3ffaadc9400a971600746820fd77b674",
     "semantic_hash": ""
   },
   "apps/web/src/components/auth/login-form.tsx": {
@@ -1452,15 +1452,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/lib/next-path.test.ts": {
-    "mtime": 1792636918.8476212,
-    "seen": 1792639908.1285357,
-    "ast_hash": "d57b3864e2631e29521eb79a9639b6c7",
+    "mtime": 1792771453.7630997,
+    "seen": 1792771837.075614,
+    "ast_hash": "0c782c1c84998be57c6442436a2522b4",
     "semantic_hash": ""
   },
   "apps/web/src/lib/next-path.ts": {
-    "mtime": 1792636330.9751146,
-    "seen": 1792639908.1285393,
-    "ast_hash": "6111a6c9bd8b0431023bddec3cb64e57",
+    "mtime": 1792771325.0900939,
+    "seen": 1792771837.0756164,
+    "ast_hash": "7ac0b4a20b6620cf6e49fb5927a1a035",
     "semantic_hash": ""
   },
   "apps/web/src/lib/server-api.ts": {
