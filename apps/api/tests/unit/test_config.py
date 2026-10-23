@@ -45,6 +45,18 @@ def test_postgres_urls_are_normalized_for_asyncpg(monkeypatch: pytest.MonkeyPatc
     assert settings.migration_database_url == "postgresql+asyncpg://user:pass@db:5432/app"
 
 
+def test_quoted_and_driver_specific_postgres_urls_are_normalized(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("DATABASE_URL", '"postgresql://user:pass@db:5432/app"')
+    monkeypatch.setenv("MIGRATION_DATABASE_URL", "'postgresql+psycopg://user:pass@db:5432/app'")
+
+    settings = Settings.from_env()
+
+    assert settings.database_url == "postgresql+asyncpg://user:pass@db:5432/app"
+    assert settings.migration_database_url == "postgresql+asyncpg://user:pass@db:5432/app"
+
+
 def test_cleanup_retention_is_configurable(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CLICK_RETENTION_DAYS", "30")
     monkeypatch.setenv("CLEANUP_BATCH_SIZE", "250")

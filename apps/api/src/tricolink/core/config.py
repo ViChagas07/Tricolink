@@ -64,11 +64,24 @@ def _number(name: str, default: float) -> float:
 
 
 def _asyncpg_url(value: str) -> str:
-    if value.startswith("postgres://"):
-        return "postgresql+asyncpg://" + value.removeprefix("postgres://")
-    if value.startswith("postgresql://"):
-        return "postgresql+asyncpg://" + value.removeprefix("postgresql://")
-    return value
+    # Render and other providers may hand out ``postgres://``/``postgresql://``
+    # URLs, sometimes pasted with quotes or with another driver in the scheme.
+    # The app is asyncpg-only, so normalize every PostgreSQL variant here.
+    cleaned = value.strip()
+    if len(cleaned) >= 2 and cleaned[0] == cleaned[-1] and cleaned[0] in "\"'":
+        cleaned = cleaned[1:-1].strip()
+    if cleaned.lower().startswith("jdbc:"):
+        cleaned = cleaned[5:].lstrip()
+
+    scheme, separator, rest = cleaned.partition("://")
+    normalized_scheme = scheme.lower()
+    if not separator:
+        return cleaned
+    if normalized_scheme in {"postgres", "postgresql"} or normalized_scheme.startswith(
+        "postgresql+"
+    ):
+        return f"postgresql+asyncpg://{rest}"
+    return cleaned
 
 
 def _boolean(name: str, default: bool) -> bool:
@@ -187,7 +200,12 @@ class Settings:
         if self.app_env not in _VALID_ENVIRONMENTS:
             raise SettingsError(f"APP_ENV must be one of {sorted(_VALID_ENVIRONMENTS)}")
         if not self.database_url.startswith("postgresql+asyncpg://"):
-            raise SettingsError("DATABASE_URL must use the postgresql+asyncpg driver")
+            scheme = (
+                self.database_url.split("://", 1)[0] if "://" in self.database_url else "unknown"
+            )
+            raise SettingsError(
+                f"DATABASE_URL must use the postgresql+asyncpg driver (got scheme '{scheme}')"
+            )
         if not (self.redis_url.startswith("redis://") or self.redis_url.startswith("rediss://")):
             raise SettingsError("REDIS_URL must start with redis:// or rediss://")
         if self.trusted_proxy_count < 0:

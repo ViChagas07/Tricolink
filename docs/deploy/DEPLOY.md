@@ -66,7 +66,9 @@ responde `302` para a URL original. O rewrite externo é suportado pela Vercel; 
    `docs/deploy/render_app_role.sql` com uma senha forte. O role é
    `NOSUPERUSER NOBYPASSRLS`, sem ownership das tabelas. Depois configure
    `DATABASE_URL=postgresql+asyncpg://tricolink_app:<senha>@<host>:5432/tricolink`
-   (o `Settings` também aceita `postgresql://` e normaliza para `+asyncpg`).
+   (o `Settings` também aceita `postgresql://`, `postgres://`, `jdbc:postgresql://`,
+   `postgresql+psycopg://` e valores entre aspas, normalizando todos para `+asyncpg`;
+   cole o valor **sem aspas**).
    - Se as tabelas ainda não existem, rode o SQL antes do primeiro deploy; os
      `ALTER DEFAULT PRIVILEGES` cobrem as tabelas que as migrations criarem.
    - Se preferir criar o role depois do primeiro deploy, use o Shell do Render e

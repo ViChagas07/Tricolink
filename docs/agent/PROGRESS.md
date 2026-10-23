@@ -114,6 +114,7 @@
 - Ajuste de UI (pedido do dono): navbar e rodapé passaram a usar `public/brand/tricolink-transparente-removebg.png`; o rodapé perdeu o rótulo "Language" e o seletor de idiomas; os três blocos de recursos foram mantidos, com "Estatísticas claras" na segunda posição; o botão flutuante de voltar ao topo tem cursor de mão, aparece depois que o título da demonstração sai da viewport, usa `IntersectionObserver` e respeita `prefers-reduced-motion`. A chave `nav.backToTop` foi adicionada aos 11 idiomas e a UI_SPEC foi atualizada.
 - Rodapé: a coluna "Conta" (login/conta) foi removida; o grid ficou com três colunas (marca, produto, recursos) e o copyright ocupa a linha inteira. Login e conta continuam no navbar.
 - Login: o botão "Entrar" do navbar é ocultado na própria página de login (desktop e menu mobile) e o link "Voltar ao início" saiu do fim do formulário para o canto superior esquerdo da página, acima do card.
+- Deploy Render: `_asyncpg_url` agora normaliza URLs Postgres com aspas, prefixo `jdbc:` e drivers alternativos (`postgresql+psycopg`) para `postgresql+asyncpg://`, evitando o `SettingsError` no boot. O `DATABASE_URL` continua sendo a Internal Database URL do Postgres do Render, sem aspas.
 
 ## Validação P00
 - Consultas de fumaça executadas no grafo final: fluxo de redirect; baldes de rate limit (`redirect`, `create`, `auth`, `global`, `stats/list`); rotas do frontend. Os nós e trechos retornados batem com `CONTEXT.md` e `SECURITY.md`.
@@ -238,7 +239,8 @@
 - Cleanup: `test_cleanup.py` cobre 5 cliques antigos + 1 recente + link expirado + link ativo; primeira execução apagou 5/1, segunda apagou 0/0. Job manual: `docker compose run --rm api python -m tricolink.jobs.cleanup`.
 - Deploy: `docs/deploy/DEPLOY.md` com arquitetura, variáveis por serviço, role de runtime, Vercel/Render, migrations no pre-deploy, callback OAuth no domínio do web, confirmação de rewrite de links curtos, cron, rollback e checklist. **Não houve deploy real** (sem credenciais novas/autorização); o workflow e o blueprint estão prontos.
 
-## Validação (ajustes de UI 2026-10-23)
+## Validação (ajustes de UI e deploy 2026-10-23)
+- API: **283 testes unitários passando** (13 em `test_config.py`, incluindo URLs entre aspas e com driver alternativo); `ruff check`, `ruff format --check` e `mypy` limpos no arquivo alterado.
 - `pnpm test`: **93 testes Vitest passando** (2 novos para o botão de voltar ao topo); `pnpm lint`, `pnpm typecheck`, `pnpm i18n:check` (**11 locales, 235 chaves**) e `pnpm build` limpos. `pnpm format:check` continua apontando 4 arquivos anteriores não tocados (`e2e/auth-links.spec.ts`, `e2e/security.spec.ts`, `links-view.test.tsx`, `bundle-safety.test.ts`).
 - Inspeção com Playwright no build de produção: logo nova no `header` e no `footer`, rodapé sem "Language"/seletor e sem a coluna "Conta", três blocos de recursos com "Estatísticas claras" na segunda posição, botão oculto antes do título da demonstração, visível depois, com `cursor: pointer`, e `window.scrollTo({ top: 0 })` ao clicar. Em `/pt-BR/login`, o navbar não exibe "Entrar" e o link "Voltar ao início" fica no topo esquerdo, acima do card.
 
