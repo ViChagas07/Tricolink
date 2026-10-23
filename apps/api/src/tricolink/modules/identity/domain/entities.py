@@ -17,6 +17,8 @@ class User:
     locale: str | None
     is_active: bool
     created_at: datetime
+    google_avatar_url: str | None = None
+    avatar_updated_at: datetime | None = None
 
     @property
     def has_password(self) -> bool:
@@ -25,6 +27,10 @@ class User:
     @property
     def is_google_linked(self) -> bool:
         return bool(self.google_sub)
+
+    @property
+    def has_custom_avatar(self) -> bool:
+        return self.avatar_updated_at is not None
 
     def link_google(self, google_sub: str, display_name: str | None) -> User:
         return replace(
@@ -40,6 +46,12 @@ class User:
         locale: str | None,
     ) -> User:
         return replace(self, display_name=display_name, locale=locale)
+
+
+@dataclass(frozen=True, slots=True)
+class AvatarImage:
+    content_type: str
+    content: bytes
 
 
 @dataclass(frozen=True, slots=True)

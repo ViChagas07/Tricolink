@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import base64
 from dataclasses import replace
 from typing import Any
 from urllib.parse import parse_qs, urlsplit
@@ -443,6 +444,7 @@ def google_claims(*, nonce: str, email: str, sub: str) -> dict[str, object]:
         "email": email,
         "sub": sub,
         "name": "Google User",
+        "picture": "https://lh3.googleusercontent.com/a/test-avatar=s96-c",
     }
 
 
@@ -499,6 +501,67 @@ def test_google_callback_success_links_user_and_rejects_bad_nonce() -> None:
             assert me.status_code == 200
             assert me.json()["email"] == email
             assert me.json()["display_name"] == "Google User"
+            assert me.json()["avatar_url"] == (
+                "https://lh3.googleusercontent.com/a/test-avatar=s96-c"
+            )
+            assert me.json()["avatar_source"] == "google"
+    finally:
+        cleanup(settings, email=email, codes=[])
+
+
+def test_avatar_upload_get_and_delete() -> None:
+    settings = identity_settings()
+    email = f"avatar-{uuid4()}@example.com"
+    password = "correct horse battery staple"
+    png = b"\x89PNG\r\n\x1a\n" + b"\x00" * 16
+    try:
+        with make_client(create_app(settings)) as client:
+            registered = client.post(
+                "/api/v1/auth/register",
+                json={"email": email, "password": password},
+                headers={"Origin": "http://frontend.test"},
+            )
+            assert registered.status_code == 202, registered.text
+            signed_in = login(client, email, password)
+            assert signed_in.status_code == 200, signed_in.text
+            csrf = client.cookies.get("tl_csrf")
+            assert csrf
+            headers = {"Origin": "http://frontend.test", "X-CSRF-Token": csrf}
+
+            uploaded = client.put(
+                "/api/v1/auth/me/avatar",
+                json={
+                    "content_type": "image/png",
+                    "data": base64.b64encode(png).decode("ascii"),
+                },
+                headers=headers,
+            )
+            assert uploaded.status_code == 200, uploaded.text
+            payload = uploaded.json()
+            assert payload["avatar_source"] == "custom"
+            assert payload["avatar_url"].startswith("/api/v1/auth/me/avatar?v=")
+
+            image = client.get(payload["avatar_url"])
+            assert image.status_code == 200
+            assert image.headers["content-type"] == "image/png"
+            assert image.content == png
+
+            invalid = client.put(
+                "/api/v1/auth/me/avatar",
+                json={
+                    "content_type": "image/png",
+                    "data": base64.b64encode(b"not-an-image").decode("ascii"),
+                },
+                headers=headers,
+            )
+            assert invalid.status_code == 400
+            assert invalid.json()["error"]["code"] == "invalid_profile"
+
+            deleted = client.delete("/api/v1/auth/me/avatar", headers=headers)
+            assert deleted.status_code == 200, deleted.text
+            assert deleted.json()["avatar_source"] is None
+            assert deleted.json()["avatar_url"] is None
+            assert client.get("/api/v1/auth/me/avatar").status_code == 404
     finally:
         cleanup(settings, email=email, codes=[])
 

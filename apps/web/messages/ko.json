@@ -214,6 +214,12 @@
   "account": {
     "title": "계정",
     "profile": "프로필",
+    "photo": "프로필 사진",
+    "photoHint": "JPG, PNG 또는 WebP, 최대 5MB. 이미지는 정사각형으로 잘립니다.",
+    "changePhoto": "사진 변경",
+    "uploadingPhoto": "업로드 중…",
+    "removePhoto": "사진 삭제",
+    "avatarError": "이 이미지를 사용할 수 없습니다. 최대 5MB의 JPG, PNG 또는 WebP를 선택하세요.",
     "preferences": "환경설정",
     "displayName": "표시 이름",
     "email": "이메일",

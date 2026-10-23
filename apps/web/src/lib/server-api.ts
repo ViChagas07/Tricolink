@@ -46,6 +46,8 @@ function toAuthUser(user: UserDto): AuthUser {
     locale: user.locale,
     isActive: user.is_active,
     createdAt: user.created_at,
+    avatarUrl: user.avatar_url,
+    avatarSource: user.avatar_source,
   };
 }
 

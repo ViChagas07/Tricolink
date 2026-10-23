@@ -4,6 +4,7 @@ from tricolink.infra.db.models import Base, ClickEvent, Link, RefreshToken, User
 def test_all_context_tables_are_declared() -> None:
     assert set(Base.metadata.tables) == {
         "users",
+        "user_avatars",
         "refresh_tokens",
         "links",
         "click_events",

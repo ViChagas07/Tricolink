@@ -28,6 +28,13 @@ class UpdateMeRequest(BaseModel):
     locale: Annotated[str | None, Field(default=None, max_length=8)] = None
 
 
+class AvatarUploadRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    content_type: Literal["image/jpeg", "image/png", "image/webp"]
+    data: Annotated[str, Field(min_length=1, max_length=12_000)]
+
+
 class UserResponse(BaseModel):
     id: UUID
     email: str
@@ -35,6 +42,8 @@ class UserResponse(BaseModel):
     locale: str | None
     is_active: bool
     created_at: datetime
+    avatar_url: str | None = None
+    avatar_source: Literal["google", "custom"] | None = None
 
 
 class AuthResponse(BaseModel):

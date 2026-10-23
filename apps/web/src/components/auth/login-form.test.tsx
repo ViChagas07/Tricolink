@@ -42,6 +42,8 @@ const user: UserDto = {
   locale: "en",
   is_active: true,
   created_at: "2026-01-01T00:00:00Z",
+  avatar_url: null,
+  avatar_source: null,
 };
 
 function renderForm(nextPath = "/en/links") {

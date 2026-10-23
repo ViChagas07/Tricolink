@@ -35,13 +35,16 @@ from tricolink.modules.identity.adapters import (
 )
 from tricolink.modules.identity.application import (
     AuthenticateAccess,
+    GetAvatar,
     GetMe,
     Login,
     LoginWithGoogle,
     Logout,
     RefreshSession,
     Register,
+    RemoveAvatar,
     SessionIssuer,
+    SetAvatar,
     UpdateMe,
 )
 from tricolink.modules.identity.domain import PasswordPolicy
@@ -101,6 +104,9 @@ class IdentityServices:
     logout: Logout
     get_me: GetMe
     update_me: UpdateMe
+    get_avatar: GetAvatar
+    set_avatar: SetAvatar
+    remove_avatar: RemoveAvatar
     google_login: LoginWithGoogle
     authenticate_access: AuthenticateAccess
 
@@ -259,6 +265,9 @@ def build_services(settings: Settings) -> Services:
         logout=Logout(sessions=sessions, clock=clock),
         get_me=GetMe(users=users),
         update_me=UpdateMe(users=users),
+        get_avatar=GetAvatar(users=users),
+        set_avatar=SetAvatar(users=users, clock=clock),
+        remove_avatar=RemoveAvatar(users=users),
         google_login=LoginWithGoogle(
             users=users,
             session_issuer=session_issuer,

@@ -38,7 +38,13 @@ vi.mock("@/i18n/navigation", () => ({
 
 const authState = vi.hoisted(() => ({
   current: {
-    user: null as { id: string; email: string; displayName: string | null } | null,
+    user: null as {
+      id: string;
+      email: string;
+      displayName: string | null;
+      avatarUrl?: string | null;
+      avatarSource?: "google" | "custom" | null;
+    } | null,
     status: "anonymous" as "anonymous" | "authenticated" | "idle" | "loading",
     load: vi.fn(),
   },
@@ -131,6 +137,21 @@ describe("Navbar", () => {
     expect(screen.getByLabelText(/Account/)).toBeInTheDocument();
     expect(screen.getByText("Sign out")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
+  });
+
+  it("renders the Google profile picture in the account menu", () => {
+    authState.current.user = {
+      id: "1",
+      email: "ada@example.com",
+      displayName: "Ada",
+      avatarUrl: "https://lh3.googleusercontent.com/a/photo=s96-c",
+    };
+    authState.current.status = "authenticated";
+    renderNavbar("en", enMessages);
+
+    const image = screen.getByRole("banner").querySelector("summary img");
+    expect(image).toHaveAttribute("src", "https://lh3.googleusercontent.com/a/photo=s96-c");
+    expect(image).toHaveAttribute("alt", "");
   });
 
   it("keeps language and theme controls below Links in the mobile menu", async () => {

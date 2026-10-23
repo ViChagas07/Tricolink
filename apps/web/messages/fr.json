@@ -214,6 +214,12 @@
   "account": {
     "title": "Compte",
     "profile": "Profil",
+    "photo": "Photo de profil",
+    "photoHint": "JPG, PNG ou WebP, jusqu'à 5 Mo. L'image est recadrée en carré.",
+    "changePhoto": "Changer la photo",
+    "uploadingPhoto": "Envoi…",
+    "removePhoto": "Supprimer la photo",
+    "avatarError": "Impossible d'utiliser cette image. Choisissez un JPG, PNG ou WebP de 5 Mo maximum.",
     "preferences": "Préférences",
     "displayName": "Nom affiché",
     "email": "E-mail",

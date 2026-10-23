@@ -55,4 +55,8 @@ def build_policies(settings: Settings) -> dict[str, BucketPolicy]:
             capacity=settings.rl_list_capacity,
             refill_per_sec=settings.rl_list_refill_per_sec,
         ),
+        "avatar": BucketPolicy(
+            capacity=settings.rl_avatar_capacity,
+            refill_per_sec=settings.rl_avatar_refill_per_sec,
+        ),
     }

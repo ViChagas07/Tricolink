@@ -26,6 +26,8 @@ export type UserDto = {
   locale: string | null;
   is_active: boolean;
   created_at: string;
+  avatar_url: string | null;
+  avatar_source: "google" | "custom" | null;
 };
 
 export type AuthResponseDto = {
@@ -325,6 +327,12 @@ export const api = {
   },
   updateMe(body: { display_name?: string | null; locale?: string | null }) {
     return request<UserDto>("/auth/me", { method: "PATCH", body });
+  },
+  updateAvatar(body: { content_type: "image/jpeg" | "image/png" | "image/webp"; data: string }) {
+    return request<UserDto>("/auth/me/avatar", { method: "PUT", body });
+  },
+  deleteAvatar() {
+    return request<UserDto>("/auth/me/avatar", { method: "DELETE" });
   },
   logout() {
     return request<void>("/auth/logout", { method: "POST", skipAuthRefresh: true });

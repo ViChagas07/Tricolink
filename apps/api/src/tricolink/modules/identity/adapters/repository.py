@@ -3,17 +3,19 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
+from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from tricolink.infra.db import Database
 from tricolink.infra.db.models import RefreshToken as RefreshTokenRow
 from tricolink.infra.db.models import User as UserRow
+from tricolink.infra.db.models import UserAvatar as UserAvatarRow
 from tricolink.infra.db.rls import set_rls_context
 from tricolink.modules.identity.application.ports import RotationResult, RotationStatus
 from tricolink.modules.identity.domain.email import Email
-from tricolink.modules.identity.domain.entities import User
+from tricolink.modules.identity.domain.entities import AvatarImage, User
 from tricolink.modules.identity.domain.errors import DuplicateUserError
 
 
@@ -44,6 +46,8 @@ class SqlAlchemyUserRepository:
             google_sub=user.google_sub,
             display_name=user.display_name,
             locale=user.locale,
+            google_avatar_url=user.google_avatar_url,
+            avatar_updated_at=user.avatar_updated_at,
             is_active=user.is_active,
             created_at=user.created_at,
         )
@@ -96,6 +100,82 @@ class SqlAlchemyUserRepository:
             await session.flush()
             await session.refresh(row)
         return _to_user(row)
+
+    async def update_google_avatar(
+        self,
+        user_id: UUID,
+        *,
+        google_avatar_url: str,
+    ) -> User | None:
+        async with self._database.unit_of_work() as session:
+            row = await session.scalar(
+                select(UserRow).where(UserRow.id == user_id).with_for_update()
+            )
+            if row is None:
+                return None
+            row.google_avatar_url = google_avatar_url
+            await session.flush()
+            await session.refresh(row)
+        return _to_user(row)
+
+    async def set_avatar(
+        self,
+        user_id: UUID,
+        *,
+        content_type: str,
+        content: bytes,
+        updated_at: datetime,
+    ) -> User | None:
+        async with self._database.unit_of_work() as session:
+            await set_rls_context(session, user_id=user_id)
+            await session.execute(
+                pg_insert(UserAvatarRow)
+                .values(
+                    user_id=user_id,
+                    content_type=content_type,
+                    content=content,
+                    updated_at=updated_at,
+                )
+                .on_conflict_do_update(
+                    index_elements=[UserAvatarRow.user_id],
+                    set_={
+                        "content_type": content_type,
+                        "content": content,
+                        "updated_at": updated_at,
+                    },
+                )
+            )
+            row = await session.scalar(
+                select(UserRow).where(UserRow.id == user_id).with_for_update()
+            )
+            if row is None:
+                return None
+            row.avatar_updated_at = updated_at
+            await session.flush()
+            await session.refresh(row)
+        return _to_user(row)
+
+    async def delete_avatar(self, user_id: UUID) -> User | None:
+        async with self._database.unit_of_work() as session:
+            await set_rls_context(session, user_id=user_id)
+            await session.execute(delete(UserAvatarRow).where(UserAvatarRow.user_id == user_id))
+            row = await session.scalar(
+                select(UserRow).where(UserRow.id == user_id).with_for_update()
+            )
+            if row is None:
+                return None
+            row.avatar_updated_at = None
+            await session.flush()
+            await session.refresh(row)
+        return _to_user(row)
+
+    async def get_avatar(self, user_id: UUID) -> AvatarImage | None:
+        async with self._database.read() as session:
+            await set_rls_context(session, user_id=user_id)
+            row = await session.get(UserAvatarRow, user_id)
+        if row is None:
+            return None
+        return AvatarImage(content_type=row.content_type, content=row.content)
 
 
 class SqlAlchemySessionRepository:
@@ -233,4 +313,6 @@ def _to_user(row: UserRow) -> User:
         locale=row.locale,
         is_active=row.is_active,
         created_at=row.created_at,
+        google_avatar_url=row.google_avatar_url,
+        avatar_updated_at=row.avatar_updated_at,
     )

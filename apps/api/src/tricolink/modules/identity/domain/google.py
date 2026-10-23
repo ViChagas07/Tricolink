@@ -5,6 +5,7 @@ import unicodedata
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from urllib.parse import urlsplit
 
 from tricolink.modules.identity.domain.email import Email
 from tricolink.modules.identity.domain.errors import (
@@ -22,6 +23,7 @@ class GoogleIdentity:
     email: Email
     email_verified: bool
     display_name: str | None
+    picture_url: str | None = None
 
 
 def validate_google_claims(
@@ -73,6 +75,7 @@ def validate_google_claims(
         email=email,
         email_verified=True,
         display_name=display_name,
+        picture_url=_picture_url(claims.get("picture")),
     )
 
 
@@ -98,4 +101,18 @@ def _display_name(value: object) -> str | None:
         raise InvalidGoogleIdentityError("Display name is too long")
     if any(unicodedata.category(char)[0] == "C" for char in candidate):
         raise InvalidGoogleIdentityError("Display name is invalid")
+    return candidate
+
+
+def _picture_url(value: object) -> str | None:
+    if not isinstance(value, str):
+        return None
+    candidate = value.strip()
+    if not candidate or len(candidate) > 2048:
+        return None
+    if any(unicodedata.category(char)[0] == "C" for char in candidate):
+        return None
+    parsed = urlsplit(candidate)
+    if parsed.scheme != "https" or not parsed.netloc:
+        return None
     return candidate

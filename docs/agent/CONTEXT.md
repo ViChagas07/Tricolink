@@ -53,7 +53,8 @@ repo/
 ```
 
 ## 4. Modelo de dados (PostgreSQL)
-- `users`: id UUID PK, email CITEXT UNIQUE NOT NULL, password_hash TEXT NULL (NULL se só Google), google_sub TEXT UNIQUE NULL, display_name VARCHAR(80), locale VARCHAR(8), is_active BOOL default true, created_at TIMESTAMPTZ.
+- `users`: id UUID PK, email CITEXT UNIQUE NOT NULL, password_hash TEXT NULL (NULL se só Google), google_sub TEXT UNIQUE NULL, display_name VARCHAR(80), locale VARCHAR(8), google_avatar_url TEXT NULL (foto do claim `picture` do Google, HTTPS, ≤2048), avatar_updated_at TIMESTAMPTZ NULL (marca/versão do avatar personalizado), is_active BOOL default true, created_at TIMESTAMPTZ.
+- `user_avatars`: user_id UUID PK FK `users` ON DELETE CASCADE, content_type VARCHAR(16) CHECK (`image/jpeg`/`image/png`/`image/webp`), content BYTEA CHECK (1–8192 bytes), updated_at TIMESTAMPTZ. RLS ENABLE/FORCE com policies por `app.current_user_id` (select/insert/update/delete). O upload é normalizado no browser para JPEG 128×128 e enviado em base64; o avatar personalizado tem precedência sobre `google_avatar_url`.
 - `refresh_tokens`: id UUID PK, user_id FK, family_id UUID, token_hash TEXT UNIQUE (SHA-256), expires_at, revoked_at NULL, created_at. (rotação + detecção de reuso por família)
 - `links`: id BIGSERIAL PK, code VARCHAR(32) UNIQUE NOT NULL (case-sensitive), original_url TEXT NOT NULL CHECK(char_length<=2048), title VARCHAR(120) NULL, user_id UUID NULL FK (NULL = anônimo), is_custom_alias BOOL, is_active BOOL default true, expires_at TIMESTAMPTZ NULL, click_count BIGINT default 0, created_at, updated_at. CHECK `code ~ '^[A-Za-z0-9_-]{3,32}$'`. Índices: UNIQUE(code), (user_id, created_at DESC), (expires_at) parcial.
 - `click_events`: id BIGSERIAL PK, link_id FK, clicked_at TIMESTAMPTZ, country CHAR(2) NULL, device VARCHAR(10) (desktop|mobile|tablet|bot|unknown), browser VARCHAR(30) NULL, referrer_host VARCHAR(255) NULL. Índice (link_id, clicked_at). **Não armazenar IP** (privacidade/LGPD). País vem de header do edge (`X-Vercel-IP-Country` / `CF-IPCountry`) quando existir; senão NULL. Sem consulta a serviço externo.
@@ -65,7 +66,9 @@ Links:
 - `GET /links/overview?range=7d|30d|90d` — `{ total_clicks, total_links, range }` do usuário (cabeçalho de `/links`)
 - `GET /links/{code}` · `PATCH /links/{code}` (title, original_url, expires_at, is_active) · `DELETE /links/{code}` — só o dono (404 se não for dono, para não vazar existência)
 - `GET /links/{code}/stats?range=7d|30d|90d` — `{ total, series[{date,clicks}], countries[], devices[], referrers[] }` (só o dono; série em dias UTC com buracos preenchidos com 0; países/origens = top 10 + `other`; origem nula vira `direct` (linha própria, mesmo fora do top 10); dispositivos sem corte; `pct` de 0 a 100)
-Auth: `POST /auth/register` · `POST /auth/login` · `POST /auth/refresh` · `POST /auth/logout` · `GET /auth/me` · `PATCH /auth/me` · `GET /auth/google/login` · `GET /auth/google/callback`
+Auth: `POST /auth/register` · `POST /auth/login` · `POST /auth/refresh` · `POST /auth/logout` · `GET /auth/me` · `PATCH /auth/me` · `GET /auth/me/avatar` · `PUT /auth/me/avatar` · `DELETE /auth/me/avatar` · `GET /auth/google/login` · `GET /auth/google/callback`
+- `GET /auth/me/avatar` — bytes do avatar personalizado do usuário logado (`image/jpeg|png|webp`, 8 KB máx.), `Cache-Control: private, immutable` com versão na URL. `PUT /auth/me/avatar` — body `{ content_type, data }` (base64), valida assinatura/tamanho e devolve `UserResponse`. `DELETE /auth/me/avatar` — remove o avatar personalizado; a resposta volta para a foto do Google ou iniciais.
+- `UserResponse` inclui `avatar_url` e `avatar_source` (`google` | `custom` | null); o login Google atualiza `google_avatar_url` a cada OAuth e usa a foto do Gmail por padrão.
 Ops: `GET /health/live` · `GET /health/ready` · `GET /metrics` (token)
 Redirect (público): `GET /r/{code}` → 302 `Location: <original_url>`; 404 (inexistente) / 410 (expirado/inativo) com HTML estático mínimo, `X-Robots-Tag: noindex`.
 
@@ -100,7 +103,7 @@ Rotas de `/links*` e `/account` exigem login (redirecionar para `/login?next=...
 - Datas/números com `Intl` via next-intl. Metadados (title/description/OG), `hreflang` e sitemap por idioma.
 
 ## 9. UI/UX (resumo — detalhes em UI_SPEC.md)
-Navbar: igual à do AImaginator (logo no canto superior esquerdo, seletor de idiomas ao lado, itens à direita), **sem a rota Galeria** e com **"Links"** no lugar de "Estúdio". Landing: navbar → hero com barra de URL → demonstração do painel → blocos de recursos → FAQ → CTA → rodapé. Login e Account semelhantes aos do Bitly.
+Navbar: igual à do AImaginator (logo no canto superior esquerdo, seletor de idiomas ao lado, itens à direita), **sem a rota Galeria** e com **"Links"** no lugar de "Estúdio". O avatar do usuário logado mostra a foto do Google (ou o avatar personalizado) e cai para as iniciais se a imagem falhar. Landing: navbar → hero com barra de URL → demonstração do painel → blocos de recursos → FAQ → CTA → rodapé. Login e Account semelhantes aos do Bitly; a rota Account tem a seção de foto de perfil (alterar/remover, JPG/PNG/WebP até 5 MB).
 
 ## 10. Não-objetivos (não implementar)
 QR Code, Pages/link-na-bio, UTM, domínios customizados, planos pagos, IA, extensão de navegador, app mobile, equipes/workspaces.

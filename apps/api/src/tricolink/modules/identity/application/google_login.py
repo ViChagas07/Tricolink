@@ -33,6 +33,15 @@ class LoginWithGoogle:
 
         if user is None or not user.is_active:
             raise InvalidGoogleLogin()
+
+        if identity.picture_url and user.google_avatar_url != identity.picture_url:
+            refreshed = await self._users.update_google_avatar(
+                user.id,
+                google_avatar_url=identity.picture_url,
+            )
+            if refreshed is not None:
+                user = refreshed
+
         return await self._session_issuer.issue(user)
 
     async def _find_or_link_or_create(self, identity: GoogleIdentity) -> User | None:
@@ -65,6 +74,7 @@ class LoginWithGoogle:
             locale=None,
             is_active=True,
             created_at=self._clock.now(),
+            google_avatar_url=identity.picture_url,
         )
         try:
             return await self._users.create(new_user)

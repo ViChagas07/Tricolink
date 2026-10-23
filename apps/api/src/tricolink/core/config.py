@@ -177,6 +177,8 @@ class Settings:
     rl_global_refill_per_sec: float = 1_000.0
     rl_list_capacity: int = 60
     rl_list_refill_per_sec: float = 1.0
+    rl_avatar_capacity: int = 10
+    rl_avatar_refill_per_sec: float = 0.1
 
     max_body_bytes: int = 16_384
     request_timeout_seconds: float = 10.0

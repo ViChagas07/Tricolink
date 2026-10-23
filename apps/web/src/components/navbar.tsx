@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { ProfileAvatar, initialsFor } from "@/components/profile-avatar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { usePathname, useRouter, Link } from "@/i18n/navigation";
 import { defaultLocale, getDirection, isLocale } from "@/i18n/locales";
@@ -13,15 +14,6 @@ import { buttonVariants } from "@/components/ui/button";
 import type { AuthUser } from "@/stores/auth-store";
 import { useAuthStore } from "@/stores/auth-store";
 import { cn } from "@/lib/utils";
-
-function initialsFor(user: AuthUser): string {
-  const source = user.displayName?.trim() || user.email;
-  return source
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part.charAt(0).toUpperCase())
-    .join("");
-}
 
 function AccountMenu({ user }: { user: AuthUser }) {
   const t = useTranslations("nav");
@@ -37,10 +29,15 @@ function AccountMenu({ user }: { user: AuthUser }) {
   return (
     <details className="group relative">
       <summary
-        aria-label={`${t("account")} (${initialsFor(user)})`}
-        className="flex size-9 cursor-pointer list-none items-center justify-center rounded-full bg-tc-blue-700 text-xs font-semibold text-tc-white transition-colors hover:bg-tc-blue-800 [&::-webkit-details-marker]:hidden"
+        aria-label={`${t("account")} (${initialsFor(user.displayName, user.email)})`}
+        className="flex size-9 cursor-pointer list-none items-center justify-center rounded-full transition-opacity hover:opacity-90 [&::-webkit-details-marker]:hidden"
       >
-        <span aria-hidden="true">{initialsFor(user)}</span>
+        <ProfileAvatar
+          displayName={user.displayName}
+          email={user.email}
+          avatarUrl={user.avatarUrl}
+          className="size-9"
+        />
       </summary>
       <div className="absolute end-0 top-full z-50 mt-2 w-60 rounded-xl border border-border bg-popover p-1 text-popover-foreground shadow-lg">
         <div className="border-b border-border px-3 py-2.5">

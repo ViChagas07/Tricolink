@@ -1,4 +1,10 @@
 from tricolink.modules.identity.application.authenticate import AuthenticateAccess
+from tricolink.modules.identity.application.avatar import (
+    GetAvatar,
+    RemoveAvatar,
+    SetAvatar,
+    validate_avatar_image,
+)
 from tricolink.modules.identity.application.dto import (
     AuthSession,
     LoginCommand,
@@ -7,6 +13,7 @@ from tricolink.modules.identity.application.dto import (
 )
 from tricolink.modules.identity.application.errors import (
     AuthLocked,
+    AvatarNotFound,
     GoogleNotConfigured,
     InvalidCredentials,
     InvalidEmail,
@@ -50,7 +57,9 @@ __all__ = [
     "AuthSession",
     "AuthThrottle",
     "AuthenticateAccess",
+    "AvatarNotFound",
     "Clock",
+    "GetAvatar",
     "GetMe",
     "GoogleNotConfigured",
     "InvalidCredentials",
@@ -67,11 +76,13 @@ __all__ = [
     "RefreshSession",
     "Register",
     "RegisterCommand",
+    "RemoveAvatar",
     "RotationResult",
     "RotationStatus",
     "SessionExpired",
     "SessionIssuer",
     "SessionRepository",
+    "SetAvatar",
     "ThrottleResult",
     "UpdateMe",
     "UpdateMeCommand",
@@ -80,4 +91,5 @@ __all__ = [
     "generate_csrf_token",
     "generate_refresh_token",
     "hash_refresh_token",
+    "validate_avatar_image",
 ]

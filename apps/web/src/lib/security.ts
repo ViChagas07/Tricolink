@@ -19,7 +19,7 @@ export function buildCspHeader({ nonce, isDev }: CspOptions): string {
     `script-src ${scriptSrc.join(" ")}`,
     `style-src ${styleSrc.join(" ")}`,
     "style-src-attr 'unsafe-inline'",
-    "img-src 'self' data:",
+    "img-src 'self' data: https://*.googleusercontent.com",
     "font-src 'self'",
     `connect-src ${connectSrc.join(" ")}`,
     "frame-ancestors 'none'",

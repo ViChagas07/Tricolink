@@ -7,7 +7,7 @@ from typing import Protocol
 from uuid import UUID
 
 from tricolink.modules.identity.domain.email import Email
-from tricolink.modules.identity.domain.entities import User
+from tricolink.modules.identity.domain.entities import AvatarImage, User
 
 
 @dataclass(frozen=True, slots=True)
@@ -86,6 +86,26 @@ class UserRepository(Protocol):
         display_name: str | None,
         locale: str | None,
     ) -> User | None: ...
+
+    async def update_google_avatar(
+        self,
+        user_id: UUID,
+        *,
+        google_avatar_url: str,
+    ) -> User | None: ...
+
+    async def set_avatar(
+        self,
+        user_id: UUID,
+        *,
+        content_type: str,
+        content: bytes,
+        updated_at: datetime,
+    ) -> User | None: ...
+
+    async def delete_avatar(self, user_id: UUID) -> User | None: ...
+
+    async def get_avatar(self, user_id: UUID) -> AvatarImage | None: ...
 
 
 class SessionRepository(Protocol):

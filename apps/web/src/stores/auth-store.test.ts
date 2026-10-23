@@ -16,6 +16,8 @@ const dto = {
   locale: "pt-BR",
   is_active: true,
   created_at: "2026-01-01T00:00:00Z",
+  avatar_url: "https://lh3.googleusercontent.com/a/photo=s96-c",
+  avatar_source: "google" as const,
 };
 
 describe("useAuthStore", () => {
@@ -39,6 +41,8 @@ describe("useAuthStore", () => {
         displayName: "Ada",
         locale: "pt-BR",
         isActive: true,
+        avatarUrl: dto.avatar_url,
+        avatarSource: "google",
       },
     });
   });

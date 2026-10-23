@@ -1,13 +1,22 @@
 "use client";
 
-import { Check, Loader2, LogOut, Moon, Sun } from "lucide-react";
+import { Check, ImageUp, Loader2, LogOut, Moon, Sun } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useId, useState, type FormEvent } from "react";
+import {
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 
+import { ProfileAvatar } from "@/components/profile-avatar";
 import { Button } from "@/components/ui/button";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { isLocale, localeLabels, locales, type Locale } from "@/i18n/locales";
 import { api, isApiError } from "@/lib/api";
+import { AvatarError, prepareAvatar } from "@/lib/avatar";
 import { readTheme, storeTheme, type Theme } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 import { mapUserDto, useAuthStore, type AuthUser } from "@/stores/auth-store";
@@ -16,7 +25,7 @@ type AccountFormProps = {
   initialUser: AuthUser;
 };
 
-type Notice = "saved" | "error" | "network" | null;
+type Notice = "saved" | "error" | "network" | "avatar" | null;
 
 export function AccountForm({ initialUser }: AccountFormProps) {
   const t = useTranslations("account");
@@ -30,13 +39,18 @@ export function AccountForm({ initialUser }: AccountFormProps) {
   const nameId = useId();
   const emailId = useId();
   const languageId = useId();
+  const avatarInputId = useId();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
   const [displayName, setDisplayName] = useState(initialUser.displayName ?? "");
   const [preferredLocale, setPreferredLocale] = useState<Locale>(() =>
     isLocale(initialUser.locale) ? initialUser.locale : isLocale(locale) ? locale : "en",
   );
+  const [avatarUrl, setAvatarUrl] = useState(initialUser.avatarUrl);
+  const [avatarSource, setAvatarSource] = useState(initialUser.avatarSource);
   const [theme, setTheme] = useState<Theme>("light");
   const [savingName, setSavingName] = useState(false);
   const [savingLocale, setSavingLocale] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [notice, setNotice] = useState<Notice>(null);
 
@@ -70,6 +84,53 @@ export function AccountForm({ initialUser }: AccountFormProps) {
       handleError(error);
     } finally {
       setSavingName(false);
+    }
+  }
+
+  async function handleAvatarSelected(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || uploadingAvatar) {
+      return;
+    }
+
+    setUploadingAvatar(true);
+    setNotice(null);
+    try {
+      const prepared = await prepareAvatar(file);
+      const updated = await api.updateAvatar(prepared);
+      setUser(mapUserDto(updated));
+      setAvatarUrl(updated.avatar_url);
+      setAvatarSource(updated.avatar_source);
+      setNotice("saved");
+    } catch (error) {
+      if (error instanceof AvatarError) {
+        setNotice("avatar");
+      } else {
+        handleError(error);
+      }
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
+
+  async function handleAvatarRemove() {
+    if (uploadingAvatar || avatarSource !== "custom") {
+      return;
+    }
+
+    setUploadingAvatar(true);
+    setNotice(null);
+    try {
+      const updated = await api.deleteAvatar();
+      setUser(mapUserDto(updated));
+      setAvatarUrl(updated.avatar_url);
+      setAvatarSource(updated.avatar_source);
+      setNotice("saved");
+    } catch (error) {
+      handleError(error);
+    } finally {
+      setUploadingAvatar(false);
     }
   }
 
@@ -134,9 +195,11 @@ export function AccountForm({ initialUser }: AccountFormProps) {
           <p>
             {notice === "saved"
               ? t("saved")
-              : notice === "network"
-                ? errors("network")
-                : errors("generic")}
+              : notice === "avatar"
+                ? t("avatarError")
+                : notice === "network"
+                  ? errors("network")
+                  : errors("generic")}
           </p>
         </div>
       ) : null}
@@ -150,7 +213,56 @@ export function AccountForm({ initialUser }: AccountFormProps) {
             {t("profile")}
           </h2>
 
-          <form onSubmit={handleProfileSubmit} className="mt-5 space-y-4">
+          <div className="mt-5 flex items-center gap-4">
+            <ProfileAvatar
+              displayName={displayName || initialUser.displayName}
+              email={initialUser.email}
+              avatarUrl={avatarUrl}
+              className="size-20 text-xl"
+            />
+            <div className="min-w-0">
+              <p className="text-sm font-medium">{t("photo")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("photoHint")}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={uploadingAvatar}
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="h-9 px-3"
+                >
+                  {uploadingAvatar ? (
+                    <Loader2 aria-hidden="true" className="size-4 animate-spin" />
+                  ) : (
+                    <ImageUp aria-hidden="true" className="size-4" />
+                  )}
+                  {uploadingAvatar ? t("uploadingPhoto") : t("changePhoto")}
+                </Button>
+                {avatarSource === "custom" ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={uploadingAvatar}
+                    onClick={() => void handleAvatarRemove()}
+                    className="h-9 px-3"
+                  >
+                    {t("removePhoto")}
+                  </Button>
+                ) : null}
+              </div>
+              <input
+                ref={avatarInputRef}
+                id={avatarInputId}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="sr-only"
+                aria-label={t("changePhoto")}
+                onChange={(event) => void handleAvatarSelected(event)}
+              />
+            </div>
+          </div>
+
+          <form onSubmit={handleProfileSubmit} className="mt-6 space-y-4">
             <div>
               <label htmlFor={nameId} className="text-sm font-medium">
                 {t("displayName")}

@@ -69,3 +69,12 @@ class InvalidNextPath(AppError):
 class InvalidProfile(AppError):
     def __init__(self, message: str = "Profile is invalid") -> None:
         super().__init__(code="invalid_profile", message=message, status_code=400)
+
+
+class AvatarNotFound(AppError):
+    def __init__(self) -> None:
+        super().__init__(
+            code="avatar_not_found",
+            message="Avatar not found",
+            status_code=404,
+        )

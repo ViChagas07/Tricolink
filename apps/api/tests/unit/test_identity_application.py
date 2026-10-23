@@ -9,6 +9,8 @@ import pytest
 from tricolink.modules.identity.application import (
     AuthenticateAccess,
     AuthLocked,
+    AvatarNotFound,
+    GetAvatar,
     GetMe,
     InvalidCredentials,
     InvalidEmail,
@@ -21,17 +23,21 @@ from tricolink.modules.identity.application import (
     RefreshSession,
     Register,
     RegisterCommand,
+    RemoveAvatar,
     RotationResult,
     RotationStatus,
     SessionExpired,
     SessionIssuer,
+    SetAvatar,
     UpdateMe,
     UpdateMeCommand,
     WeakPassword,
     hash_refresh_token,
+    validate_avatar_image,
 )
 from tricolink.modules.identity.application.ports import IssuedAccessToken, ThrottleResult
 from tricolink.modules.identity.domain import (
+    AvatarImage,
     Email,
     GoogleIdentity,
     PasswordPolicy,
@@ -52,6 +58,7 @@ class FakeClock:
 class FakeUserRepository:
     def __init__(self) -> None:
         self.users: dict[UUID, User] = {}
+        self.avatars: dict[UUID, AvatarImage] = {}
         self.duplicate = False
         self.create_calls = 0
         self.link_calls = 0
@@ -106,6 +113,47 @@ class FakeUserRepository:
         updated = user.with_profile(display_name=display_name, locale=locale)
         self.users[user_id] = updated
         return updated
+
+    async def update_google_avatar(
+        self,
+        user_id: UUID,
+        *,
+        google_avatar_url: str,
+    ) -> User | None:
+        user = self.users.get(user_id)
+        if user is None:
+            return None
+        updated = replace(user, google_avatar_url=google_avatar_url)
+        self.users[user_id] = updated
+        return updated
+
+    async def set_avatar(
+        self,
+        user_id: UUID,
+        *,
+        content_type: str,
+        content: bytes,
+        updated_at: datetime,
+    ) -> User | None:
+        user = self.users.get(user_id)
+        if user is None:
+            return None
+        self.avatars[user_id] = AvatarImage(content_type=content_type, content=content)
+        updated = replace(user, avatar_updated_at=updated_at)
+        self.users[user_id] = updated
+        return updated
+
+    async def delete_avatar(self, user_id: UUID) -> User | None:
+        user = self.users.get(user_id)
+        if user is None:
+            return None
+        self.avatars.pop(user_id, None)
+        updated = replace(user, avatar_updated_at=None)
+        self.users[user_id] = updated
+        return updated
+
+    async def get_avatar(self, user_id: UUID) -> AvatarImage | None:
+        return self.avatars.get(user_id)
 
 
 class FakeSessionRepository:
@@ -653,6 +701,71 @@ async def test_google_login_creates_links_and_rejects_unverified() -> None:
     with pytest.raises(InvalidGoogleLogin):
         await google.execute(replace(identity, sub="pre-hijack", email=password_account.email))
     assert users.users[password_account.id].google_sub is None
+
+
+@pytest.mark.asyncio
+async def test_google_login_persists_picture_and_keeps_custom_avatar() -> None:
+    users = FakeUserRepository()
+    sessions = FakeSessionRepository()
+    tokens = FakeAccessTokens()
+    clock = FakeClock()
+    issuer = build_issuer(users, sessions, tokens, clock)
+    google = LoginWithGoogle(users=users, session_issuer=issuer, clock=clock)
+    identity = GoogleIdentity(
+        sub="google-sub",
+        email=Email.parse("google-picture@example.com"),
+        email_verified=True,
+        display_name="Google User",
+        picture_url="https://lh3.googleusercontent.com/a/photo=s96-c",
+    )
+
+    session = await google.execute(identity)
+    assert session.user.google_avatar_url == identity.picture_url
+
+    custom = await users.set_avatar(
+        session.user.id,
+        content_type="image/png",
+        content=b"\x89PNG\r\n\x1a\ncustom",
+        updated_at=NOW,
+    )
+    assert custom is not None and custom.has_custom_avatar
+
+    refreshed = await google.execute(
+        replace(identity, picture_url="https://lh3.googleusercontent.com/a/new=s96-c")
+    )
+    assert refreshed.user.has_custom_avatar
+    assert refreshed.user.google_avatar_url == "https://lh3.googleusercontent.com/a/new=s96-c"
+
+
+@pytest.mark.asyncio
+async def test_avatar_set_get_remove_flow_and_validation() -> None:
+    users = FakeUserRepository()
+    account = user()
+    users.users[account.id] = account
+    clock = FakeClock()
+    set_avatar = SetAvatar(users=users, clock=clock)
+    get_avatar = GetAvatar(users=users)
+    remove_avatar = RemoveAvatar(users=users)
+    png = b"\x89PNG\r\n\x1a\n" + b"\x00" * 8
+
+    updated = await set_avatar.execute(account.id, content_type="image/png", content=png)
+    assert updated.has_custom_avatar
+    image = await get_avatar.execute(account.id)
+    assert image == AvatarImage(content_type="image/png", content=png)
+
+    removed = await remove_avatar.execute(account.id)
+    assert not removed.has_custom_avatar
+    with pytest.raises(AvatarNotFound):
+        await get_avatar.execute(account.id)
+
+    with pytest.raises(InvalidProfile):
+        await set_avatar.execute(account.id, content_type="image/svg+xml", content=png)
+    with pytest.raises(InvalidProfile):
+        await set_avatar.execute(account.id, content_type="image/png", content=b"not-a-png")
+    with pytest.raises(InvalidProfile):
+        await set_avatar.execute(account.id, content_type="image/png", content=png + b"x" * 8_192)
+    validate_avatar_image("image/jpeg", b"\xff\xd8\xff\xe0")
+    validate_avatar_image("image/webp", b"RIFF\x00\x00\x00\x00WEBP")
 
 
 @pytest.mark.asyncio

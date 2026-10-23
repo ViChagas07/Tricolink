@@ -9,6 +9,8 @@ export type AuthUser = {
   locale: string | null;
   isActive: boolean;
   createdAt: string;
+  avatarUrl: string | null;
+  avatarSource: "google" | "custom" | null;
 };
 
 export type AuthStatus = "idle" | "loading" | "authenticated" | "anonymous";
@@ -30,6 +32,8 @@ export function mapUserDto(dto: UserDto): AuthUser {
     locale: dto.locale,
     isActive: dto.is_active,
     createdAt: dto.created_at,
+    avatarUrl: dto.avatar_url,
+    avatarSource: dto.avatar_source,
   };
 }
 

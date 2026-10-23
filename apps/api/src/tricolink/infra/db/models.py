@@ -11,6 +11,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    LargeBinary,
     String,
     Text,
     func,
@@ -25,7 +26,13 @@ from tricolink.infra.db.base import Base
 
 class User(Base):
     __tablename__ = "users"
-    __table_args__ = (CheckConstraint("char_length(email) <= 254", name="email_length"),)
+    __table_args__ = (
+        CheckConstraint("char_length(email) <= 254", name="email_length"),
+        CheckConstraint(
+            "google_avatar_url IS NULL OR char_length(google_avatar_url) <= 2048",
+            name="google_avatar_url_length",
+        ),
+    )
 
     id: Mapped[uuid.UUID] = mapped_column(
         PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
@@ -35,10 +42,37 @@ class User(Base):
     google_sub: Mapped[str | None] = mapped_column(Text, nullable=True, unique=True)
     display_name: Mapped[str | None] = mapped_column(String(80), nullable=True)
     locale: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    google_avatar_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    avatar_updated_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default=text("true"))
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
+
+
+class UserAvatar(Base):
+    __tablename__ = "user_avatars"
+    __table_args__ = (
+        CheckConstraint(
+            "content_type IN ('image/jpeg', 'image/png', 'image/webp')",
+            name="avatar_content_type",
+        ),
+        CheckConstraint(
+            "octet_length(content) BETWEEN 1 AND 8192",
+            name="avatar_content_size",
+        ),
+    )
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    content_type: Mapped[str] = mapped_column(String(16), nullable=False)
+    content: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
 class RefreshToken(Base):

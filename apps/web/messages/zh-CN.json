@@ -214,6 +214,12 @@
   "account": {
     "title": "账户",
     "profile": "个人资料",
+    "photo": "个人资料照片",
+    "photoHint": "JPG、PNG 或 WebP，最大 5 MB。图片会被裁剪成正方形。",
+    "changePhoto": "更换照片",
+    "uploadingPhoto": "上传中…",
+    "removePhoto": "移除照片",
+    "avatarError": "无法使用此图片。请选择不超过 5 MB 的 JPG、PNG 或 WebP。",
     "preferences": "偏好设置",
     "displayName": "显示名称",
     "email": "电子邮件",

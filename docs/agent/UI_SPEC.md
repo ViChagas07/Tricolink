@@ -14,7 +14,7 @@
 ## Navbar (replicar a do AImaginator)
 > **Anexo obrigatório do dono do projeto:** o componente da navbar do AImaginator (ex.: `Navbar.tsx`) será anexado ao prompt P05. **Se o anexo existir, siga-o à risca** (estrutura, espaçamento, comportamento, mobile). Se não existir, use esta especificação:
 - Esquerda: **logo Tricolink** (ícone de elo/atalho + wordmark) no canto superior esquerdo → ao lado, o **seletor de idiomas** (dropdown com os 11 idiomas, nome nativo, idioma atual destacado, teclado acessível).
-- Direita: item **Links** (leva a `/links`; para deslogado, leva a `/login?next=/links`) e o bloco de conta igual ao do AImaginator (botão **Entrar** quando deslogado, oculto na própria página de login; avatar com menu **Account / Sair** quando logado) e demais controles que o AImaginator tiver (ex.: alternador de tema).
+- Direita: item **Links** (leva a `/links`; para deslogado, leva a `/login?next=/links`) e o bloco de conta igual ao do AImaginator (botão **Entrar** quando deslogado, oculto na própria página de login; avatar com menu **Account / Sair** quando logado) e demais controles que o AImaginator tiver (ex.: alternador de tema). O avatar usa a foto do Google (ou o avatar personalizado) com `object-cover`; se a imagem falhar, cai para as iniciais sobre o azul Tricolink.
 - **Remover** a rota "Galeria". **Trocar** "Estúdio" por **"Links"**.
 - Mobile: menu hambúrguer (Sheet), mesmo conteúdo. RTL (árabe): espelhar com propriedades lógicas.
 - Sticky no topo, fundo translúcido com blur, item ativo destacado, `aria-current="page"`.
@@ -32,7 +32,7 @@ Anônimo pode encurtar (com cota menor); ao exceder ou querer histórico → con
 Card central; abas **Entrar / Criar conta**; botão **Continuar com o Google**; validação inline; mostrar/ocultar senha; **Voltar ao início** no canto superior esquerdo da página, fora do card; tratamento de 429 (mostrar tempo de espera). Respeitar `next` (validado).
 
 ## Account (`/[locale]/account`)
-Perfil (nome de exibição, e-mail somente leitura, idioma preferido), preferências (tema), botão Sair. Layout simples em cartões.
+Perfil com **foto de perfil** (avatar atual, botão **Alterar foto** com upload JPG/PNG/WebP até 5 MB, recorte quadrado no browser e **Remover foto** apenas para avatar personalizado), nome de exibição, e-mail somente leitura e idioma preferido; preferências (tema), botão Sair. Layout simples em cartões. Se o upload falhar, mostrar mensagem clara sem perder os outros campos.
 
 ## Links (`/[locale]/links`) — substitui "Estúdio"
 - Lista do usuário: **código gerado + link curto** ao lado da **URL original** (truncada com tooltip), cliques, data, ações (copiar, abrir, editar, excluir).

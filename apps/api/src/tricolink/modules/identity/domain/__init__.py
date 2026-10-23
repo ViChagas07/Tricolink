@@ -1,5 +1,10 @@
 from tricolink.modules.identity.domain.email import Email
-from tricolink.modules.identity.domain.entities import RefreshTokenRecord, TokenFamily, User
+from tricolink.modules.identity.domain.entities import (
+    AvatarImage,
+    RefreshTokenRecord,
+    TokenFamily,
+    User,
+)
 from tricolink.modules.identity.domain.errors import (
     InvalidEmailError,
     InvalidGoogleIdentityError,
@@ -20,6 +25,7 @@ __all__ = [
     "COMMON_PASSWORDS",
     "MAX_PASSWORD_LENGTH",
     "MIN_PASSWORD_LENGTH",
+    "AvatarImage",
     "Email",
     "GoogleIdentity",
     "InvalidEmailError",

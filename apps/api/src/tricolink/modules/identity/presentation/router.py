@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import base64
+import binascii
 import secrets
+from typing import Literal
 from urllib.parse import parse_qs, urlsplit
 
 from fastapi import APIRouter, Depends, Query, Request, Response, status
@@ -12,6 +15,7 @@ from tricolink.core.logging import get_logger
 from tricolink.infra.ratelimit import rate_limit
 from tricolink.modules.identity.adapters.google import GoogleOIDCClient
 from tricolink.modules.identity.application import (
+    GetAvatar,
     GetMe,
     Login,
     LoginCommand,
@@ -20,6 +24,8 @@ from tricolink.modules.identity.application import (
     RefreshSession,
     Register,
     RegisterCommand,
+    RemoveAvatar,
+    SetAvatar,
     UpdateMe,
     UpdateMeCommand,
 )
@@ -27,6 +33,7 @@ from tricolink.modules.identity.application.errors import (
     GoogleNotConfigured,
     InvalidGoogleLogin,
     InvalidNextPath,
+    InvalidProfile,
 )
 from tricolink.modules.identity.domain.entities import User
 from tricolink.modules.identity.domain.google import validate_google_claims
@@ -36,6 +43,7 @@ from tricolink.modules.identity.presentation.cookies import (
     set_session_cookies,
 )
 from tricolink.modules.identity.presentation.dependencies import (
+    get_get_avatar,
     get_get_me,
     get_google_login,
     get_google_oidc,
@@ -43,10 +51,13 @@ from tricolink.modules.identity.presentation.dependencies import (
     get_logout,
     get_refresh_session,
     get_register,
+    get_remove_avatar,
+    get_set_avatar,
     get_update_me,
 )
 from tricolink.modules.identity.presentation.schemas import (
     AuthResponse,
+    AvatarUploadRequest,
     CsrfResponse,
     LoginRequest,
     RegisterRequest,
@@ -188,6 +199,56 @@ async def update_me(
     return _user_response(updated)
 
 
+@router.get("/me/avatar")
+async def get_my_avatar(
+    user: CurrentUser = Depends(get_current_user),
+    use_case: GetAvatar = Depends(get_get_avatar),
+) -> Response:
+    image = await use_case.execute(user.id)
+    return Response(
+        content=image.content,
+        media_type=image.content_type,
+        headers={
+            "Cache-Control": "private, max-age=31536000, immutable",
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
+
+
+@router.put(
+    "/me/avatar",
+    response_model=UserResponse,
+    dependencies=[Depends(csrf_protect), Depends(user_rate_limit("avatar"))],
+)
+async def update_my_avatar(
+    payload: AvatarUploadRequest,
+    user: CurrentUser = Depends(get_current_user),
+    use_case: SetAvatar = Depends(get_set_avatar),
+) -> UserResponse:
+    try:
+        content = base64.b64decode(payload.data, validate=True)
+    except (binascii.Error, ValueError):
+        raise InvalidProfile("Avatar data is not valid base64") from None
+    updated = await use_case.execute(
+        user.id,
+        content_type=payload.content_type,
+        content=content,
+    )
+    return _user_response(updated)
+
+
+@router.delete(
+    "/me/avatar",
+    response_model=UserResponse,
+    dependencies=[Depends(csrf_protect), Depends(user_rate_limit("avatar"))],
+)
+async def delete_my_avatar(
+    user: CurrentUser = Depends(get_current_user),
+    use_case: RemoveAvatar = Depends(get_remove_avatar),
+) -> UserResponse:
+    return _user_response(await use_case.execute(user.id))
+
+
 @router.get("/google/login", dependencies=[Depends(rate_limit("auth"))])
 async def google_login(
     request: Request,
@@ -272,6 +333,12 @@ def _google_error_redirect(settings: Settings) -> RedirectResponse:
 
 
 def _user_response(user: User) -> UserResponse:
+    avatar_url = user.google_avatar_url
+    avatar_source: Literal["google", "custom"] | None = "google" if avatar_url else None
+    if user.avatar_updated_at is not None:
+        version = int(user.avatar_updated_at.timestamp() * 1000)
+        avatar_url = f"/api/v1/auth/me/avatar?v={version}"
+        avatar_source = "custom"
     return UserResponse(
         id=user.id,
         email=user.email.value,
@@ -279,6 +346,8 @@ def _user_response(user: User) -> UserResponse:
         locale=user.locale,
         is_active=user.is_active,
         created_at=user.created_at,
+        avatar_url=avatar_url,
+        avatar_source=avatar_source,
     )
 
 
