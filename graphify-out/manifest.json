@@ -24,9 +24,9 @@
     "semantic_hash": "aa05b3b82c1a22e91f8cec76cf9be242"
   },
   "docs/agent/PROGRESS.md": {
-    "mtime": 1792721346.6732686,
-    "seen": 1792721611.0148628,
-    "ast_hash": "edadc83364eee5b5936c71fa769cc9e3",
+    "mtime": 1792725320.1720343,
+    "seen": 1792725484.679467,
+    "ast_hash": "b83ac765923256cea813728c900126ea",
     "semantic_hash": ""
   },
   "docs/agent/RULES.md": {
@@ -1032,9 +1032,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/footer.tsx": {
-    "mtime": 1792714081.253588,
-    "seen": 1792714853.9680588,
-    "ast_hash": "35c40fc7e0cf0d21d3b54c04d1edffdc",
+    "mtime": 1792725293.1510885,
+    "seen": 1792725484.6639805,
+    "ast_hash": "63c490bb39d11ffc391c64e43b87ecd5",
     "semantic_hash": ""
   },
   "apps/web/src/components/language-switcher.tsx": {

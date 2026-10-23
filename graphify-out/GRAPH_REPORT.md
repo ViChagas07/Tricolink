@@ -1,7 +1,7 @@
-# Graph Report - Tricolink  (2026-10-22)
+# Graph Report - Tricolink  (2026-10-23)
 
 ## Corpus Check
-- 285 files · ~167,172 words
+- 285 files · ~140,033 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 15 file(s) not represented in the graph (top: (none) 10, .toml 1, .ini 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3f595eea`
+- Built from commit: `402fb7f0`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -526,7 +526,7 @@ Nodes (3): do_run_migrations(), run_async_migrations(), run_migrations_online()
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Settings` connect `Settings` to `datetime`, `database.py`, `pytest`, `stats_cache.py`, `http.py`, `ShortCode`, `create_link`, `create_app`, `links/adapters/repository.py`, `identity/presentation/router.py`, `ClickFlusher`, `build_services`, `config.py`, `helpers.py`, `test_identity_adapters.py`, `google_callback`, `config.py`, `error_handlers.py`, `BucketPolicy`, `test_click_pipeline.py`, `test_links_api.py`, `helpers.py`, `test_redirect_click_failure.py`, `security.py`, `test_link_cache.py`, `deps.py`, `test_stats_api.py`, `LinkRepository`, `Database`, `Bulkhead`, `Deploy — Vercel (web) + Render (API/Postgres/Redis)`, `.from_env`, `main.py`, `test_sqli_offensive.py`, `test_sentry.py`, `Auditoria de segurança — P09`, `test_database.py`?**
-  _High betweenness centrality (0.240) - this node is a cross-community bridge._
+  _High betweenness centrality (0.238) - this node is a cross-community bridge._
 - **Are the 105 inferred relationships involving `Settings` (e.g. with `settings_dependency()` and `configure_logging()`) actually correct?**
   _`Settings` has 105 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `tricolink-api`, `Non-Goals`, `Stale-While-Revalidate Caching` to the rest of the system?**
@@ -534,7 +534,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `AppError` be split into smaller, more focused modules?**
   _Cohesion score 0.06504065040650407 - nodes in this community are weakly interconnected._
 - **Why does `§4 Anti XSS / injeção no front` connect `Auditoria de segurança — P09` to `proxy.ts`, `helpers.py`?**
-  _High betweenness centrality (0.157) - this node is a cross-community bridge._
+  _High betweenness centrality (0.152) - this node is a cross-community bridge._
 - **Are the 42 inferred relationships involving `ShortCode` (e.g. with `GetLinkStats` and `RedisLinkCache`) actually correct?**
   _`ShortCode` has 42 INFERRED edges - model-reasoned connections that need verification._
 - **Should `datetime` be split into smaller, more focused modules?**

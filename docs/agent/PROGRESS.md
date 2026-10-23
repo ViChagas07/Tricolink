@@ -112,6 +112,7 @@
 - P10: job de limpeza `python -m tricolink.jobs.cleanup` apaga `click_events` além de `CLICK_RETENTION_DAYS` (365) em lotes e links expirados; é idempotente e coberto por `test_cleanup.py`. O cron do Render usa `MIGRATION_DATABASE_URL` e os secrets da API por `fromService` para satisfazer a validação de produção.
 - P10: as imagens Docker `runtime` (API) e `runner` (web standalone) foram construídas localmente com sucesso; o aviso de `next start` vs standalone continua no E2E, mas a imagem runner agora foi validada.
 - Ajuste de UI (pedido do dono): navbar e rodapé passaram a usar `public/brand/tricolink-transparente-removebg.png`; o rodapé perdeu o rótulo "Language" e o seletor de idiomas; os três blocos de recursos foram mantidos, com "Estatísticas claras" na segunda posição; o botão flutuante de voltar ao topo tem cursor de mão, aparece depois que o título da demonstração sai da viewport, usa `IntersectionObserver` e respeita `prefers-reduced-motion`. A chave `nav.backToTop` foi adicionada aos 11 idiomas e a UI_SPEC foi atualizada.
+- Rodapé: a coluna "Conta" (login/conta) foi removida; o grid ficou com três colunas (marca, produto, recursos) e o copyright ocupa a linha inteira. Login e conta continuam no navbar.
 
 ## Validação P00
 - Consultas de fumaça executadas no grafo final: fluxo de redirect; baldes de rate limit (`redirect`, `create`, `auth`, `global`, `stats/list`); rotas do frontend. Os nós e trechos retornados batem com `CONTEXT.md` e `SECURITY.md`.
@@ -238,7 +239,7 @@
 
 ## Validação (ajustes de UI 2026-10-23)
 - `pnpm test`: **93 testes Vitest passando** (2 novos para o botão de voltar ao topo); `pnpm lint`, `pnpm typecheck`, `pnpm i18n:check` (**11 locales, 235 chaves**) e `pnpm build` limpos. `pnpm format:check` continua apontando 4 arquivos anteriores não tocados (`e2e/auth-links.spec.ts`, `e2e/security.spec.ts`, `links-view.test.tsx`, `bundle-safety.test.ts`).
-- Inspeção com Playwright no build de produção: logo nova no `header` e no `footer`, rodapé sem "Language"/seletor, três blocos de recursos com "Estatísticas claras" na segunda posição, botão oculto antes do título da demonstração, visível depois, com `cursor: pointer`, e `window.scrollTo({ top: 0 })` ao clicar.
+- Inspeção com Playwright no build de produção: logo nova no `header` e no `footer`, rodapé sem "Language"/seletor e sem a coluna "Conta", três blocos de recursos com "Estatísticas claras" na segunda posição, botão oculto antes do título da demonstração, visível depois, com `cursor: pointer`, e `window.scrollTo({ top: 0 })` ao clicar.
 
 ## Bloqueios
 (nenhum)
