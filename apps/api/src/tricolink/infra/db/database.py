@@ -49,6 +49,25 @@ class Database:
                 async with self._engine.connect() as connection:
                     await connection.execute(text("SELECT 1"))
 
+    async def check_ready(self) -> None:
+        async with AsyncExitStack() as stack:
+            if self._read_bulkhead is not None:
+                await stack.enter_async_context(self._read_bulkhead.acquire())
+            if self._breaker is not None:
+                await stack.enter_async_context(self._breaker.guard())
+            async with asyncio.timeout(self._settings.db_connect_timeout_seconds):
+                async with self._engine.connect() as connection:
+                    migrated = await connection.scalar(
+                        text(
+                            "SELECT "
+                            "to_regclass('public.users') IS NOT NULL "
+                            "AND to_regclass('public.links') IS NOT NULL "
+                            "AND to_regclass('public.refresh_tokens') IS NOT NULL"
+                        )
+                    )
+        if not migrated:
+            raise RuntimeError("database schema is not migrated")
+
     @asynccontextmanager
     async def read(self) -> AsyncIterator[AsyncSession]:
         async with AsyncExitStack() as stack:

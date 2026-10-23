@@ -74,9 +74,13 @@ def _authorized(request: Request, expected_token: str | None) -> bool:
 async def _check_database(services: Services) -> bool:
     try:
         async with asyncio.timeout(services.settings.db_connect_timeout_seconds):
-            await services.database.ping()
+            await services.database.check_ready()
     except Exception as exc:
-        logger.warning("readiness_database_failed", error_type=type(exc).__name__)
+        logger.warning(
+            "readiness_database_failed",
+            error_type=type(exc).__name__,
+            error=str(exc)[:300],
+        )
         return False
     return True
 

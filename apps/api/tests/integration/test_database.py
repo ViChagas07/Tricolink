@@ -12,6 +12,7 @@ async def test_database_ping_and_unit_of_work() -> None:
     database = Database(Settings.from_env())
     try:
         await database.ping()
+        await database.check_ready()
         async with database.unit_of_work() as session:
             value = (await session.execute(text("SELECT 1"))).scalar_one()
         assert value == 1

@@ -24,9 +24,9 @@
     "semantic_hash": "aa05b3b82c1a22e91f8cec76cf9be242"
   },
   "docs/agent/PROGRESS.md": {
-    "mtime": 1792763707.0052164,
-    "seen": 1792763726.4971957,
-    "ast_hash": "7cfce42d74173f8f8cfbb6a2f7fababb",
+    "mtime": 1792767015.817421,
+    "seen": 1792767032.1669662,
+    "ast_hash": "7302af6272bff2417b64e86461db686d",
     "semantic_hash": ""
   },
   "docs/agent/RULES.md": {
@@ -246,9 +246,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/infra/db/database.py": {
-    "mtime": 1792585821.3511772,
-    "seen": 1792587518.2641227,
-    "ast_hash": "c4230e80f819ebb83dc4260164365a0a",
+    "mtime": 1792766665.9780076,
+    "seen": 1792766973.4919198,
+    "ast_hash": "70307ac0c1823fb591171c4ac112015a",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/infra/db/engine.py": {
@@ -270,9 +270,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/infra/observability/http.py": {
-    "mtime": 1792763569.053871,
-    "seen": 1792763726.455095,
-    "ast_hash": "d234a92517d183f1d151781f8ad1eee0",
+    "mtime": 1792766911.6097379,
+    "seen": 1792766973.4927895,
+    "ast_hash": "dc6dc9fbd7c51ebae29abc227358ed0c",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/infra/observability/metrics.py": {
@@ -336,9 +336,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/integration/test_database.py": {
-    "mtime": 1792584184.6056266,
-    "seen": 1792584710.0107203,
-    "ast_hash": "e04c50008c420226a5d3701970be60d5",
+    "mtime": 1792766762.821432,
+    "seen": 1792766973.506963,
+    "ast_hash": "5566009633de3bd3494aadb9385c00c0",
     "semantic_hash": ""
   },
   "apps/api/tests/integration/test_health_ready.py": {
@@ -852,9 +852,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/modules/identity/presentation/router.py": {
-    "mtime": 1792644037.6715832,
-    "seen": 1792644125.870213,
-    "ast_hash": "ea4d562f11e5ed20c396f41710f80944",
+    "mtime": 1792766681.5574594,
+    "seen": 1792766973.5014312,
+    "ast_hash": "03e921d60c02b560ff14e4ca2f9889ed",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/modules/identity/presentation/schemas.py": {
@@ -1716,9 +1716,9 @@
     "semantic_hash": ""
   },
   "docs/deploy/DEPLOY.md": {
-    "mtime": 1792763707.6000586,
-    "seen": 1792763726.497685,
-    "ast_hash": "f83c58a3ec6b5dde7d7b1feb9be6d6e1",
+    "mtime": 1792766755.7980046,
+    "seen": 1792766973.5342114,
+    "ast_hash": "8db398fc8bcab9b757301fa241786b4d",
     "semantic_hash": ""
   },
   "docs/perf/RESULTS.md": {
@@ -1767,6 +1767,12 @@
     "mtime": 1792720660.2065823,
     "seen": 1792721611.016835,
     "ast_hash": "1ba2285a16aabb8a5534e193fd8e06cc",
+    "semantic_hash": ""
+  },
+  "apps/api/tests/unit/test_database_ready.py": {
+    "mtime": 1792766999.3718762,
+    "seen": 1792767032.146691,
+    "ast_hash": "a263b5e8c8b93876fc8597d82747f712",
     "semantic_hash": ""
   }
 }

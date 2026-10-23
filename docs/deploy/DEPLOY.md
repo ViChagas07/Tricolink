@@ -157,6 +157,14 @@ responde `302` para a URL original. O rewrite externo é suportado pela Vercel; 
    deploy do Render e `curl https://<api>/health/live`; como o rewrite é congelado no
    build, altere a variável e faça um novo deploy da Vercel. O formulário aborta após
    20 s e oferece **Cancelar**.
+   **Se o Google voltar para `?error=google`:** confirme `GET /health/ready` (ele agora
+   valida as tabelas `users`, `links` e `refresh_tokens`, não só a conexão), a versão do
+   Alembic (`SELECT version_num FROM alembic_version` deve ser a head) e os logs
+   `google_oauth_failed` (incluem `error_type` e a mensagem). O callback usa
+   `GOOGLE_REDIRECT_URI` exatamente como cadastrado no Google Cloud Console; um banco
+   sem migrations faz o callback falhar mesmo com as credenciais corretas. Neste deploy
+   o serviço ativo é `https://tricolink-0gzp.onrender.com`; o host
+   `tricolink-api.onrender.com` responde 404 e não deve ir para `API_INTERNAL_URL`.
 7. Domínio custom: aponte `www`/apex na Vercel e atualize `FRONTEND_ORIGIN`,
    `SHORT_BASE_URL`, `NEXT_PUBLIC_SITE_URL` e `GOOGLE_REDIRECT_URI` no Render.
 

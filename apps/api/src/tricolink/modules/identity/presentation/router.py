@@ -252,6 +252,7 @@ async def google_callback(
         logger.warning(
             "google_oauth_failed",
             error_type=type(exc).__name__,
+            error=str(exc)[:300],
         )
         return _google_error_redirect(settings)
 
