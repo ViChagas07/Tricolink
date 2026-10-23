@@ -77,9 +77,9 @@ def _asyncpg_url(value: str) -> str:
     normalized_scheme = scheme.lower()
     if not separator:
         return cleaned
-    if normalized_scheme in {"postgres", "postgresql"} or normalized_scheme.startswith(
-        "postgresql+"
-    ):
+    # Any PostgreSQL-looking scheme is accepted (including provider typos such
+    # as "postgresq+asyncpg") because the app only speaks asyncpg.
+    if normalized_scheme.startswith("postgres"):
         return f"postgresql+asyncpg://{rest}"
     return cleaned
 

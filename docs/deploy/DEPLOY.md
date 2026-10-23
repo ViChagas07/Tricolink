@@ -44,7 +44,8 @@ responde `302` para a URL original. O rewrite externo é suportado pela Vercel; 
 
 1. Render Dashboard → **New** → **Blueprint** → selecione o repositório.
    O Render lê `render.yaml` e cria:
-   - `tricolink-api` (Docker, `apps/api/Dockerfile`, target `runtime`);
+   - `tricolink-api` (Docker, `apps/api/Dockerfile`; o Render builda o último
+     estágio, que é `runtime` — nunca deixe `dev` por último);
    - `tricolink-db` (Postgres);
    - `tricolink-redis` (Key Value, rede privada);
    - `tricolink-cleanup` (cron diário, `03:00` UTC).
@@ -67,8 +68,8 @@ responde `302` para a URL original. O rewrite externo é suportado pela Vercel; 
    `NOSUPERUSER NOBYPASSRLS`, sem ownership das tabelas. Depois configure
    `DATABASE_URL=postgresql+asyncpg://tricolink_app:<senha>@<host>:5432/tricolink`
    (o `Settings` também aceita `postgresql://`, `postgres://`, `jdbc:postgresql://`,
-   `postgresql+psycopg://` e valores entre aspas, normalizando todos para `+asyncpg`;
-   cole o valor **sem aspas**).
+   `postgresql+psycopg://`, esquemas com typo como `postgresq+asyncpg://` e valores
+   entre aspas, normalizando todos para `+asyncpg`; cole o valor **sem aspas**).
    - Se as tabelas ainda não existem, rode o SQL antes do primeiro deploy; os
      `ALTER DEFAULT PRIVILEGES` cobrem as tabelas que as migrations criarem.
    - Se preferir criar o role depois do primeiro deploy, use o Shell do Render e
@@ -79,6 +80,8 @@ responde `302` para a URL original. O rewrite externo é suportado pela Vercel; 
 5. O cron usa o mesmo `MIGRATION_DATABASE_URL` para apagar links expirados e
    `click_events` além de `CLICK_RETENTION_DAYS` (padrão 365). O job é idempotente.
 6. Health check do Render: `GET /health/ready`. Logs: Render → serviço → Logs.
+   O container escuta em `$PORT` (injetado pelo Render, padrão 10000) e cai para
+   8000 se a variável não existir. `WEB_CONCURRENCY` ajusta o número de workers.
 7. Para deploy manual sem GitHub Actions: Render Dashboard → serviço → **Manual Deploy**
    → **Deploy latest commit**. As migrations rodam no pre-deploy.
 

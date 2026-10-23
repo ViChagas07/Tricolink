@@ -21,27 +21,8 @@ RUN poetry install --only main --no-root --no-ansi
 COPY src ./src
 RUN poetry install --only main --no-ansi
 
-FROM python:3.11-slim AS runtime
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PATH="/app/.venv/bin:${PATH}"
-
-RUN groupadd --system app && useradd --system --gid app --home-dir /app app
-
-WORKDIR /app
-
-COPY --from=builder --chown=app:app /app/.venv /app/.venv
-COPY --from=builder --chown=app:app /app/src /app/src
-COPY --chown=app:app alembic.ini /app/alembic.ini
-COPY --chown=app:app alembic /app/alembic
-
-USER app
-
-EXPOSE 8000
-
-CMD ["gunicorn", "tricolink.main:app", "--worker-class", "uvicorn.workers.UvicornWorker", "--workers", "2", "--bind", "0.0.0.0:8000"]
-
+# Keep this stage before `runtime`: Docker builds the last stage by default and
+# Render must never build the dev image (uvicorn --reload).
 FROM base AS dev
 
 ENV PATH="/app/.venv/bin:${PATH}"
@@ -59,3 +40,26 @@ USER app
 EXPOSE 8000
 
 CMD ["uvicorn", "tricolink.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--limit-concurrency", "200"]
+
+FROM python:3.11-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PORT=8000 \
+    PATH="/app/.venv/bin:${PATH}"
+
+RUN groupadd --system app && useradd --system --gid app --home-dir /app app
+
+WORKDIR /app
+
+COPY --from=builder --chown=app:app /app/.venv /app/.venv
+COPY --from=builder --chown=app:app /app/src /app/src
+COPY --chown=app:app alembic.ini /app/alembic.ini
+COPY --chown=app:app alembic /app/alembic
+
+USER app
+
+EXPOSE 8000
+
+# Render injects PORT (default 10000); bind to it instead of the hardcoded 8000.
+CMD ["sh", "-c", "exec gunicorn tricolink.main:app --worker-class uvicorn.workers.UvicornWorker --workers ${WEB_CONCURRENCY:-2} --bind 0.0.0.0:${PORT:-8000} --access-logfile - --error-logfile -"]
