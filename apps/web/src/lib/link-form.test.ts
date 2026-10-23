@@ -31,6 +31,19 @@ describe("validateShortenUrl", () => {
     }
   });
 
+  it("rejects links to the app's own host", () => {
+    expect(validateShortenUrl("https://tricolink.vercel.app/pt-BR", "tricolink.vercel.app")).toBe(
+      "own_host",
+    );
+    expect(validateShortenUrl("https://app.tricolink.vercel.app/x", "tricolink.vercel.app")).toBe(
+      "own_host",
+    );
+    expect(validateShortenUrl("https://example.com", "tricolink.vercel.app")).toBeNull();
+    expect(
+      validateShortenUrl("https://tricolink.vercel.app.evil.com", "tricolink.vercel.app"),
+    ).toBeNull();
+  });
+
   it("rejects URLs longer than 2048 characters", () => {
     const tooLong = `https://example.com/${"a".repeat(2048)}`;
     expect(validateShortenUrl(tooLong)).toBe("too_long");

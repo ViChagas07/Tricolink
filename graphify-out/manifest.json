@@ -24,9 +24,9 @@
     "semantic_hash": "aa05b3b82c1a22e91f8cec76cf9be242"
   },
   "docs/agent/PROGRESS.md": {
-    "mtime": 1792728165.9623642,
-    "seen": 1792728236.274245,
-    "ast_hash": "f94417e8ddb194c2f926fde0cc16fcb3",
+    "mtime": 1792758492.9108803,
+    "seen": 1792758535.0664816,
+    "ast_hash": "4238a9859ed0336e59453ebba4066d13",
     "semantic_hash": ""
   },
   "docs/agent/RULES.md": {
@@ -1716,9 +1716,9 @@
     "semantic_hash": ""
   },
   "docs/deploy/DEPLOY.md": {
-    "mtime": 1792728154.2680845,
-    "seen": 1792728236.2747076,
-    "ast_hash": "8a744b1306acfaf1309b0be9d5a3c442",
+    "mtime": 1792758398.3801162,
+    "seen": 1792758535.0669487,
+    "ast_hash": "38c2a06c81d8c09fd20b0b1844d7cf2f",
     "semantic_hash": ""
   },
   "docs/perf/RESULTS.md": {

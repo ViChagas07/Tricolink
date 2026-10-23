@@ -12,7 +12,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useId, useState, type FormEvent } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/navigation";
@@ -32,10 +32,12 @@ type CreateLinkResponse = {
 };
 
 type FormError =
-  | { type: "required" | "invalid" | "too_long" | "network" | "generic" }
+  | { type: "required" | "invalid" | "too_long" | "own_host" | "network" | "generic" }
   | { type: "rate_limit"; retryAt: number };
 
 type CopyState = "idle" | "copied" | "error";
+
+const REQUEST_TIMEOUT_MS = 20_000;
 
 const ERROR_KEYS = {
   required: "urlRequired",
@@ -58,6 +60,9 @@ export function ShortenForm() {
   const [error, setError] = useState<FormError | null>(null);
   const [result, setResult] = useState<CreateLinkResponse | null>(null);
   const [copyState, setCopyState] = useState<CopyState>("idle");
+  const [cancelled, setCancelled] = useState(false);
+  const requestRef = useRef<AbortController | null>(null);
+  const timeoutRef = useRef<number | null>(null);
 
   const secondsLeft = useRetryCountdown(error?.type === "rate_limit" ? error.retryAt : null);
   const authenticated = status === "authenticated" && user !== null;
@@ -72,30 +77,62 @@ export function ShortenForm() {
     return () => window.clearTimeout(timer);
   }, [copyState]);
 
+  useEffect(() => {
+    return () => {
+      requestRef.current?.abort("unmount");
+      if (timeoutRef.current !== null) {
+        window.clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  function cancelRequest() {
+    requestRef.current?.abort("cancel");
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const validation = validateShortenUrl(url);
+    const ownHost = typeof window === "undefined" ? "" : window.location.hostname;
+    const validation = validateShortenUrl(url, ownHost);
     if (validation) {
       setError({ type: validation });
       setResult(null);
+      setCancelled(false);
       return;
     }
 
     setSubmitting(true);
+    setCancelled(false);
     setError(null);
     setResult(null);
     setCopyState("idle");
+
+    const controller = new AbortController();
+    requestRef.current = controller;
+    timeoutRef.current = window.setTimeout(() => controller.abort("timeout"), REQUEST_TIMEOUT_MS);
 
     try {
       const response = await api.post<CreateLinkResponse>(
         "/links",
         { url: normalizeShortenUrl(url) },
-        { csrf: status === "anonymous" ? "skip" : "auto" },
+        {
+          csrf: status === "anonymous" ? "skip" : "auto",
+          signal: controller.signal,
+        },
       );
       setResult(response);
       setUrl("");
     } catch (requestError) {
+      if (controller.signal.aborted) {
+        if (controller.signal.reason === "cancel") {
+          setCancelled(true);
+        } else if (controller.signal.reason === "timeout") {
+          setError({ type: "network" });
+        }
+        return;
+      }
+
       if (isApiError(requestError)) {
         if (requestError.status === 429) {
           const retryAfter = Math.max(1, requestError.retryAfter ?? 60);
@@ -111,6 +148,11 @@ export function ShortenForm() {
         setError({ type: "generic" });
       }
     } finally {
+      if (timeoutRef.current !== null) {
+        window.clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+      requestRef.current = null;
       setSubmitting(false);
     }
   }
@@ -146,7 +188,7 @@ export function ShortenForm() {
         onSubmit={handleSubmit}
         className="rounded-2xl border border-border/80 bg-card p-2 shadow-[0_24px_60px_-32px_rgba(7,26,77,0.55)] sm:p-2.5"
       >
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
           <div className="relative min-w-0 flex-1">
             <label htmlFor={inputId} className="sr-only">
               {t("inputLabel")}
@@ -166,7 +208,10 @@ export function ShortenForm() {
               value={url}
               aria-invalid={inputInvalid}
               aria-describedby={inputInvalid ? errorId : undefined}
-              onChange={(event) => setUrl(event.target.value)}
+              onChange={(event) => {
+                setUrl(event.target.value);
+                setCancelled(false);
+              }}
               className={cn(
                 "h-12 w-full rounded-xl border border-transparent bg-transparent pe-4 ps-12 text-base text-foreground outline-none transition-colors",
                 "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30",
@@ -174,15 +219,27 @@ export function ShortenForm() {
               )}
             />
           </div>
-          <Button
-            type="submit"
-            variant="brand"
-            disabled={submitting || secondsLeft > 0}
-            className="h-12 shrink-0 rounded-xl px-7 text-base font-semibold"
-          >
-            {submitting ? <Loader2 aria-hidden="true" className="size-5 animate-spin" /> : null}
-            {submitting ? t("submitting") : t("submit")}
-          </Button>
+          <div className="flex shrink-0 flex-col gap-2">
+            <Button
+              type="submit"
+              variant="brand"
+              disabled={submitting || secondsLeft > 0}
+              className="h-12 w-full rounded-xl px-7 text-base font-semibold"
+            >
+              {submitting ? <Loader2 aria-hidden="true" className="size-5 animate-spin" /> : null}
+              {submitting ? t("submitting") : t("submit")}
+            </Button>
+            {submitting ? (
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={cancelRequest}
+                className="h-9 w-full rounded-xl"
+              >
+                {t("cancel")}
+              </Button>
+            ) : null}
+          </div>
         </div>
       </form>
 
@@ -208,11 +265,19 @@ export function ShortenForm() {
                   <ArrowRight aria-hidden="true" className="size-4 rtl:rotate-180" />
                 </Link>
               </>
+            ) : error.type === "own_host" ? (
+              <p>{t("ownUrl")}</p>
             ) : (
               <p>{errors(ERROR_KEYS[error.type])}</p>
             )}
           </div>
         </div>
+      ) : null}
+
+      {cancelled ? (
+        <p role="status" className="mt-3 text-center text-sm text-muted-foreground">
+          {t("cancelled")}
+        </p>
       ) : null}
 
       {result ? (

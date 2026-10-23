@@ -43,7 +43,10 @@
     "limitTitle": "Limite diário atingido",
     "limitBody": "Tente novamente em {seconds} segundos ou crie uma conta gratuita para um limite maior.",
     "limitReady": "Você já pode tentar de novo ou criar uma conta gratuita para um limite maior.",
-    "limitCta": "Criar conta gratuita"
+    "limitCta": "Criar conta gratuita",
+    "cancel": "Cancelar",
+    "cancelled": "Encurtamento cancelado.",
+    "ownUrl": "Não é possível encurtar um link do próprio Tricolink."
   },
   "demo": {
     "label": "Exemplo ilustrativo",

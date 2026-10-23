@@ -43,7 +43,10 @@
     "limitTitle": "已达到每日限额",
     "limitBody": "请在 {seconds} 秒后重试，或创建免费账户以获得更高限额。",
     "limitReady": "你现在可以重试，或创建免费账户以获得更高限额。",
-    "limitCta": "创建免费账户"
+    "limitCta": "创建免费账户",
+    "cancel": "取消",
+    "cancelled": "缩短已取消。",
+    "ownUrl": "无法缩短指向 Tricolink 本身的链接。"
   },
   "demo": {
     "label": "示例展示",

@@ -104,7 +104,7 @@ describe("ShortenForm", () => {
     expect(api.post).toHaveBeenCalledWith(
       "/links",
       { url: "https://example.com/" },
-      { csrf: "skip" },
+      expect.objectContaining({ csrf: "skip", signal: expect.any(AbortSignal) }),
     );
 
     await user.click(screen.getByRole("button", { name: "Copy" }));
@@ -113,6 +113,45 @@ describe("ShortenForm", () => {
     await expect(navigator.clipboard.readText()).resolves.toBe("https://tricolink.test/abc1234");
     expect(screen.getByRole("status")).toHaveTextContent("Copied!");
     expect(screen.queryByRole("link", { name: "View statistics" })).not.toBeInTheDocument();
+  });
+
+  it("rejects a link to the app's own host before calling the API", async () => {
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.type(screen.getByLabelText("Long URL"), "http://localhost/own");
+    await user.click(screen.getByRole("button", { name: "Shorten" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "You can't shorten a link that points to Tricolink itself.",
+    );
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it("shows a cancel button while shortening and cancels the request", async () => {
+    const user = userEvent.setup();
+    let signal: AbortSignal | undefined;
+    vi.spyOn(api, "post").mockImplementationOnce(
+      (_path, _body, options) =>
+        new Promise<never>((_, reject) => {
+          signal = options?.signal ?? undefined;
+          signal?.addEventListener("abort", () =>
+            reject(new DOMException("Aborted", "AbortError")),
+          );
+        }),
+    );
+    renderForm();
+
+    await user.type(screen.getByLabelText("Long URL"), "https://example.com");
+    await user.click(screen.getByRole("button", { name: "Shorten" }));
+
+    const cancel = await screen.findByRole("button", { name: "Cancel" });
+    expect(screen.getByRole("button", { name: "Shortening…" })).toBeDisabled();
+    await user.click(cancel);
+
+    expect(await screen.findByText("Shortening cancelled.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Shorten" })).toBeEnabled();
+    expect(signal?.aborted).toBe(true);
   });
 
   it("offers the statistics page to signed-in users", async () => {

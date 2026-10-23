@@ -1,7 +1,7 @@
 # Graph Report - Tricolink  (2026-10-23)
 
 ## Corpus Check
-- 285 files · ~140,924 words
+- 285 files · ~141,302 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 15 file(s) not represented in the graph (top: (none) 10, .toml 1, .ini 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `51de9ab8`
+- Built from commit: `0955d5dd`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -542,7 +542,7 @@ Nodes (3): alt, contentType, size
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Settings` connect `config.py` to `test_real_integrity_error_triggers_code_retry`, `test_click_pipeline.py`, `database.py`, `CircuitBreaker`, `stats_cache.py`, `http.py`, `ShortCode`, `create_link`, `links/adapters/repository.py`, `test_rls.py`, `identity/presentation/router.py`, `dataclasses`, `build_services`, `create_link_rate_limit`, `create_app`, `adapters/tokens.py`, `google_callback`, `config.py`, `logging.py`, `BucketPolicy`, `RedisAuthThrottle`, `test_links_api.py`, `test_redirect_click_failure.py`, `security.py`, `deps.py`, `config.py`, `test_stats_api.py`, `Auditoria item a item — SECURITY.md`, `Database`, `Bulkhead`, `Deploy — Vercel (web) + Render (API/Postgres/Redis)`, `Settings`, `test_identity_adapters.py`, `sentry.py`, `db/models.py`, `test_sentry.py`, `Auditoria de segurança — P09`, `.__init__`?**
-  _High betweenness centrality (0.254) - this node is a cross-community bridge._
+  _High betweenness centrality (0.255) - this node is a cross-community bridge._
 - **Are the 106 inferred relationships involving `Settings` (e.g. with `settings_dependency()` and `configure_logging()`) actually correct?**
   _`Settings` has 106 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `tricolink-api`, `Non-Goals`, `Stale-While-Revalidate Caching` to the rest of the system?**
@@ -550,7 +550,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `cn` be split into smaller, more focused modules?**
   _Cohesion score 0.11742424242424243 - nodes in this community are weakly interconnected._
 - **Why does `securityHeaders()` connect `proxy.ts` to `Auditoria item a item — SECURITY.md`?**
-  _High betweenness centrality (0.147) - this node is a cross-community bridge._
+  _High betweenness centrality (0.146) - this node is a cross-community bridge._
 - **Are the 42 inferred relationships involving `ShortCode` (e.g. with `GetLinkStats` and `RedisLinkCache`) actually correct?**
   _`ShortCode` has 42 INFERRED edges - model-reasoned connections that need verification._
 - **Should `test_real_ip.py` be split into smaller, more focused modules?**

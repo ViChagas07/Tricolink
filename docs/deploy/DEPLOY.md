@@ -138,7 +138,8 @@ responde `302` para a URL original. O rewrite externo é suportado pela Vercel; 
 5. Deploy e confirme:
    - `curl -I https://<web>/<code>` retorna `302` com `Location` da URL original
      (rewrite externo do link curto).
-   - `curl -I https://<web>/api/v1/health`/`/health/ready` chega ao Render.
+   - `curl -I https://<api>/health/live` retorna 200 e `curl -I https://<api>/health/ready`
+     retorna 200 (esses endpoints ficam na raiz da API, não sob `/api/v1`).
    - Login grava cookies `__Host-tl_access`/`__Secure-tl_refresh` no domínio do web.
    - `curl -sI https://<web>/en | grep -i content-security-policy` mostra nonce e
      nenhum `unsafe-inline`/`unsafe-eval` em `script-src`.
@@ -148,6 +149,11 @@ responde `302` para a URL original. O rewrite externo é suportado pela Vercel; 
    `afterFiles`; não crie um arquivo `app/[code]/page.tsx` que capture o código.
    O comportamento foi validado localmente com `next build` + `next start`; a
    confirmação final é o `curl` acima no deployment real.
+   **Se o formulário de encurtar ficar carregando:** o rewrite `/api/v1/:path*` está
+   apontando para um host que não responde. Confira `API_INTERNAL_URL` na Vercel, o
+   deploy do Render e `curl https://<api>/health/live`; como o rewrite é congelado no
+   build, altere a variável e faça um novo deploy da Vercel. O formulário aborta após
+   20 s e oferece **Cancelar**.
 7. Domínio custom: aponte `www`/apex na Vercel e atualize `FRONTEND_ORIGIN`,
    `SHORT_BASE_URL`, `NEXT_PUBLIC_SITE_URL` e `GOOGLE_REDIRECT_URI` no Render.
 

@@ -43,7 +43,10 @@
     "limitTitle": "Limite giornaliero raggiunto",
     "limitBody": "Riprova tra {seconds} secondi oppure crea un account gratuito per un limite più alto.",
     "limitReady": "Puoi riprovare ora oppure creare un account gratuito per un limite più alto.",
-    "limitCta": "Crea un account gratuito"
+    "limitCta": "Crea un account gratuito",
+    "cancel": "Annulla",
+    "cancelled": "Accorciamento annullato.",
+    "ownUrl": "Non puoi accorciare un link che punta a Tricolink stesso."
   },
   "demo": {
     "label": "Esempio illustrativo",

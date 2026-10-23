@@ -43,7 +43,10 @@
     "limitTitle": "일일 한도에 도달했습니다",
     "limitBody": "{seconds}초 후에 다시 시도하거나 무료 계정을 만들면 한도가 높아집니다.",
     "limitReady": "지금 다시 시도하거나 무료 계정을 만들어 한도를 높일 수 있습니다.",
-    "limitCta": "무료 계정 만들기"
+    "limitCta": "무료 계정 만들기",
+    "cancel": "취소",
+    "cancelled": "줄이기가 취소되었습니다.",
+    "ownUrl": "Tricolink 자체를 가리키는 링크는 줄일 수 없습니다."
   },
   "demo": {
     "label": "예시 화면",

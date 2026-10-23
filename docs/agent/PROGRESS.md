@@ -115,6 +115,7 @@
 - Rodapé: a coluna "Conta" (login/conta) foi removida; o grid ficou com três colunas (marca, produto, recursos) e o copyright ocupa a linha inteira. Login e conta continuam no navbar.
 - Login: o botão "Entrar" do navbar é ocultado na própria página de login (desktop e menu mobile) e o link "Voltar ao início" saiu do fim do formulário para o canto superior esquerdo da página, acima do card.
 - Deploy Render: `_asyncpg_url` agora normaliza URLs Postgres com aspas, prefixo `jdbc:` e drivers alternativos (`postgresql+psycopg`) para `postgresql+asyncpg://`, evitando o `SettingsError` no boot. O `DATABASE_URL` continua sendo a Internal Database URL do Postgres do Render, sem aspas.
+- Encurtador: o formulário rejeita localmente URLs do próprio host (evita round-trip desnecessário), aborta a requisição após 20 s, passa `AbortSignal` ao `fetch` e exibe um botão **Cancelar** cinza logo abaixo de **Encurtando…**. O cancelamento mostra "Encurtamento cancelado." e devolve o formulário ao estado normal.
 - Menu mobile: o seletor de idiomas e o alternador de tema saíram do rodapé do sheet e ficaram logo abaixo de "Links"; o botão "Entrar" saiu do menu e passou para o navbar, imediatamente à esquerda do hambúrguer (o avatar ocupa o mesmo lugar quando logado). O botão continua oculto na própria página de login.
 
 ## Validação P00
@@ -242,12 +243,13 @@
 
 ## Validação (ajustes de UI e deploy 2026-10-23)
 - API: **283 testes unitários passando** (13 em `test_config.py`, incluindo URLs entre aspas e com driver alternativo); `ruff check`, `ruff format --check` e `mypy` limpos no arquivo alterado.
-- `pnpm test`: **93 testes Vitest passando** (2 novos para o botão de voltar ao topo); `pnpm lint`, `pnpm typecheck`, `pnpm i18n:check` (**11 locales, 235 chaves**) e `pnpm build` limpos. `pnpm format:check` continua apontando 4 arquivos anteriores não tocados (`e2e/auth-links.spec.ts`, `e2e/security.spec.ts`, `links-view.test.tsx`, `bundle-safety.test.ts`).
+- `pnpm test`: **98 testes Vitest passando** (novos casos para voltar ao topo, login, cancelamento e rejeição do próprio host); `pnpm lint`, `pnpm typecheck`, `pnpm i18n:check` (**11 locales, 238 chaves**) e `pnpm build` limpos. `pnpm format:check` continua apontando 4 arquivos anteriores não tocados (`e2e/auth-links.spec.ts`, `e2e/security.spec.ts`, `links-view.test.tsx`, `bundle-safety.test.ts`).
 - Inspeção com Playwright no build de produção: logo nova no `header` e no `footer`, rodapé sem "Language"/seletor e sem a coluna "Conta", três blocos de recursos com "Estatísticas claras" na segunda posição, botão oculto antes do título da demonstração, visível depois, com `cursor: pointer`, e `window.scrollTo({ top: 0 })` ao clicar. Em `/pt-BR/login`, o navbar não exibe "Entrar" e o link "Voltar ao início" fica no topo esquerdo, acima do card.
+- Encurtador no build de produção: com a rota de `/api/v1/links` pendurada, **Cancelar** aparece abaixo de **Encurtando…**, aborta e mostra "Encurtamento cancelado."; após 20 s sem resposta, o alerta de rede aparece. URL do próprio host (ex.: `localhost`) é rejeitada antes de chamar a API.
 - Menu mobile (ajuste de 2026-10-23): `pnpm test` com **95 testes Vitest** (novo caso do navbar para o menu), `pnpm lint`, `pnpm typecheck` e `pnpm i18n:check` (11 locales, 238 chaves) limpos. Inspeção no dev server em 390px e 320px (`en`/`ar`) confirmou idioma/tema abaixo de "Links", "Entrar" à esquerda do hambúrguer, avatar no mesmo lugar quando logado, sem overflow horizontal; o desktop em 1440px permaneceu inalterado. O E2E do layout RTL **não foi executado** porque o working tree recebeu, durante a sessão, mudanças não commitadas de outro fluxo (`shorten-form`/`link-form`) que quebram o typecheck do `next build`; a validação visual foi feita no dev server.
 
 ## Bloqueios
-(nenhum)
+- **Produção (2026-10-23):** o web na Vercel respondeu 200 em ~2,4 s, mas `POST /api/v1/links` via Vercel ficou >20 s sem resposta e `https://tricolink-api.onrender.com/health/live` retornou 404. O formulário já tem timeout/cancelar, mas a geração do link só volta a funcionar quando `API_INTERNAL_URL` apontar para o host real do serviço Render ativo e a Vercel for redeployada.
 
 ## Não validado
 - O custo de tokens do Graphify ficou registrado como 0 porque o subagente de extração não retornou `usage`; não é possível afirmar o custo real desta execução.
