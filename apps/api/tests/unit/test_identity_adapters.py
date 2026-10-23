@@ -152,6 +152,21 @@ def test_cookies_are_httponly_except_csrf_and_samesite_lax() -> None:
     assert "Path=/api/v1/auth" in refresh
 
 
+def test_session_defaults_are_persistent() -> None:
+    settings = Settings(cookie_secure=False)
+    assert settings.access_token_ttl_min == 5_256_000
+    assert settings.refresh_token_ttl_days == 3_650
+
+    response = Response()
+    set_session_cookies(response, build_session(), settings)
+    cookies = response.headers.getlist("set-cookie")
+    access = next(cookie for cookie in cookies if cookie.startswith("tl_access="))
+    refresh = next(cookie for cookie in cookies if cookie.startswith("tl_refresh="))
+
+    assert "Max-Age=315360000" in access
+    assert "Max-Age=315360000" in refresh
+
+
 def test_production_cookies_use_host_prefix_and_secure() -> None:
     settings = Settings(
         app_env="production",

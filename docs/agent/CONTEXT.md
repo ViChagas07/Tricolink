@@ -69,6 +69,7 @@ Links:
 Auth: `POST /auth/register` · `POST /auth/login` · `POST /auth/refresh` · `POST /auth/logout` · `GET /auth/me` · `PATCH /auth/me` · `GET /auth/me/avatar` · `PUT /auth/me/avatar` · `DELETE /auth/me/avatar` · `GET /auth/google/login` · `GET /auth/google/callback`
 - `GET /auth/me/avatar` — bytes do avatar personalizado do usuário logado (`image/jpeg|png|webp`, 8 KB máx.), `Cache-Control: private, immutable` com versão na URL. `PUT /auth/me/avatar` — body `{ content_type, data }` (base64), valida assinatura/tamanho e devolve `UserResponse`. `DELETE /auth/me/avatar` — remove o avatar personalizado; a resposta volta para a foto do Google ou iniciais.
 - `UserResponse` inclui `avatar_url` e `avatar_source` (`google` | `custom` | null); o login Google atualiza `google_avatar_url` a cada OAuth e usa a foto do Gmail por padrão.
+- Sessão **persistente por padrão** (decisão de produto 2026-10-23): `ACCESS_TOKEN_TTL_MIN=5256000` e `REFRESH_TOKEN_TTL_DAYS=3650`, para o login durar até logout/limpeza de cookies; refresh rotativo com detecção de reuso e cookies httpOnly/Secure/SameSite=Lax. TTLs configuráveis por env.
 Ops: `GET /health/live` · `GET /health/ready` · `GET /metrics` (token)
 Redirect (público): `GET /r/{code}` → 302 `Location: <original_url>`; 404 (inexistente) / 410 (expirado/inativo) com HTML estático mínimo, `X-Robots-Tag: noindex`.
 

@@ -120,8 +120,8 @@ class Settings:
 
     jwt_secret: str = DEV_JWT_SECRET
     jwt_algorithm: str = "HS256"
-    access_token_ttl_min: int = 15
-    refresh_token_ttl_days: int = 30
+    access_token_ttl_min: int = 5_256_000
+    refresh_token_ttl_days: int = 3_650
     csrf_secret: str = DEV_CSRF_SECRET
     session_secret: str = DEV_SESSION_SECRET
     cookie_secure: bool = False
@@ -403,8 +403,8 @@ class Settings:
             or "http://localhost:8000",
             jwt_secret=_text_or_empty("JWT_SECRET", DEV_JWT_SECRET),
             jwt_algorithm=_text("JWT_ALGORITHM", "HS256") or "HS256",
-            access_token_ttl_min=_integer("ACCESS_TOKEN_TTL_MIN", 15),
-            refresh_token_ttl_days=_integer("REFRESH_TOKEN_TTL_DAYS", 30),
+            access_token_ttl_min=_integer("ACCESS_TOKEN_TTL_MIN", 5_256_000),
+            refresh_token_ttl_days=_integer("REFRESH_TOKEN_TTL_DAYS", 3_650),
             csrf_secret=_text_or_empty("CSRF_SECRET", DEV_CSRF_SECRET),
             session_secret=_text_or_empty("SESSION_SECRET", DEV_SESSION_SECRET),
             cookie_secure=_boolean("COOKIE_SECURE", False),

@@ -98,6 +98,8 @@ Time-based payload `'; SELECT pg_sleep(2);--` respondeu em < 1,5 s (sem execuç�
 
 ### §5 Autenticação, sessão e força bruta
 
+> **Atualização 2026-10-23:** por decisão de produto, os TTLs padrão de sessão passaram a ser persistentes — access e refresh de 10 anos (`ACCESS_TOKEN_TTL_MIN=5256000`, `REFRESH_TOKEN_TTL_DAYS=3650`), para o login durar até logout/limpeza de cookies. A linha "Access 15 min" abaixo descreve a auditoria original; rotação, detecção de reuso e cookies `HttpOnly`/`Secure`/`SameSite=Lax` continuam. Ver `docs/agent/SECURITY.md §5`.
+
 | Item | Status | Evidência | Risco residual |
 |---|---|---|---|
 | Argon2id OWASP, comparação, mensagens genéricas | OK | `adapters/password.py`; `tests/unit/test_identity_application.py` (hash dummy, mesmo 401) | Nenhum. |

@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "docs/agent/CONTEXT.md": {
-    "mtime": 1792776807.3295825,
-    "seen": 1792776843.8308718,
-    "ast_hash": "d28def3a762c92bb09aa7fb17589dc3a",
+    "mtime": 1792788900.3039207,
+    "seen": 1792789049.6919475,
+    "ast_hash": "34d3e89d5ccfae404a801069c137c9e2",
     "semantic_hash": ""
   },
   "docs/agent/GRAPHIFY.md": {
@@ -24,9 +24,9 @@
     "semantic_hash": "aa05b3b82c1a22e91f8cec76cf9be242"
   },
   "docs/agent/PROGRESS.md": {
-    "mtime": 1792776829.2690623,
-    "seen": 1792776843.8311245,
-    "ast_hash": "fde399fed7bc2fb155fde9b5355b92c0",
+    "mtime": 1792788922.4415848,
+    "seen": 1792789049.6921937,
+    "ast_hash": "333c89717d3e276ccef29d0a5797f672",
     "semantic_hash": ""
   },
   "docs/agent/RULES.md": {
@@ -36,9 +36,9 @@
     "semantic_hash": "dc374e7dd5254f5c1fb64adf039bffce"
   },
   "docs/agent/SECURITY.md": {
-    "mtime": 1792639860.1301382,
-    "seen": 1792639908.134003,
-    "ast_hash": "1a4bd23026a3f8c1e67381512bef31ef",
+    "mtime": 1792788886.8577461,
+    "seen": 1792789049.6924016,
+    "ast_hash": "5ce442b0f08834e854d69f330a1f3bba",
     "semantic_hash": ""
   },
   "docs/agent/UI_SPEC.md": {
@@ -60,9 +60,9 @@
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/core/config.py": {
-    "mtime": 1792768663.5586922,
-    "seen": 1792770314.945602,
-    "ast_hash": "f0e21ed724296d5623bedd2b55689cf5",
+    "mtime": 1792788799.6610234,
+    "seen": 1792789049.6390991,
+    "ast_hash": "124051b4aa65f37ee91767327706034c",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/main.py": {
@@ -882,9 +882,9 @@
     "semantic_hash": ""
   },
   "apps/api/tests/unit/test_identity_adapters.py": {
-    "mtime": 1792771364.8293846,
-    "seen": 1792771837.0599778,
-    "ast_hash": "6e85da14cb2fdc473dfe1c5112a32a39",
+    "mtime": 1792788832.4830005,
+    "seen": 1792789049.6691322,
+    "ast_hash": "63b5c811e86f3d45350f900b9578295d",
     "semantic_hash": ""
   },
   "apps/api/tests/unit/test_identity_application.py": {
@@ -1146,9 +1146,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/proxy.ts": {
-    "mtime": 1792681014.7324436,
-    "seen": 1792681808.1593657,
-    "ast_hash": "37cbed602278fd73c409ca0a2e1c20b5",
+    "mtime": 1792788819.1134005,
+    "seen": 1792789049.689527,
+    "ast_hash": "fee11f250cabbc0be32f8fb559b67cb4",
     "semantic_hash": ""
   },
   "apps/web/src/stores/auth-store.test.ts": {
@@ -1656,9 +1656,9 @@
     "semantic_hash": ""
   },
   "docs/security/AUDIT.md": {
-    "mtime": 1792707778.8347495,
-    "seen": 1792707979.9214716,
-    "ast_hash": "9bf117c392afb1c653bd6342c7cfef0c",
+    "mtime": 1792788893.5980265,
+    "seen": 1792789049.692953,
+    "ast_hash": "09755ca9dd85e93301a35f680d36bbbb",
     "semantic_hash": ""
   },
   "apps/api/src/tricolink/infra/observability/sentry.py": {

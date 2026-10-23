@@ -44,7 +44,7 @@ export default function proxy(request: NextRequest) {
     httpOnly: false,
     sameSite: "lax",
     secure: !isDev,
-    maxAge: hasSession ? 60 * 60 * 24 * 30 : 0,
+    maxAge: hasSession ? 60 * 60 * 24 * 3650 : 0,
   });
 
   for (const [name, value] of Object.entries(securityHeaders({ isProduction: !isDev }))) {
