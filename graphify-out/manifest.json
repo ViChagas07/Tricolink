@@ -6,9 +6,9 @@
     "semantic_hash": "6f27004b18a897c49bec3f0cf62ce2d1"
   },
   "README.md": {
-    "mtime": 1792707216.1784654,
-    "seen": 1792707979.9203546,
-    "ast_hash": "fcf1f8090431fc4854fa292b7670ee7f",
+    "mtime": 1792794241.4258401,
+    "seen": 1792794585.1919777,
+    "ast_hash": "836664c93b4c9d147ac5510c0ee75d71",
     "semantic_hash": ""
   },
   "docs/agent/CONTEXT.md": {
@@ -24,9 +24,9 @@
     "semantic_hash": "aa05b3b82c1a22e91f8cec76cf9be242"
   },
   "docs/agent/PROGRESS.md": {
-    "mtime": 1792788922.4415848,
-    "seen": 1792789049.6921937,
-    "ast_hash": "333c89717d3e276ccef29d0a5797f672",
+    "mtime": 1792794539.2987182,
+    "seen": 1792794585.1929424,
+    "ast_hash": "b79638b27641354985feef7ffcb61717",
     "semantic_hash": ""
   },
   "docs/agent/RULES.md": {
@@ -1821,6 +1821,60 @@
     "mtime": 1792776633.7648714,
     "seen": 1792776843.8228123,
     "ast_hash": "baa1f5a87ed9fad0a0d52df2b311cdae",
+    "semantic_hash": ""
+  },
+  "CONTRIBUTING.md": {
+    "mtime": 1792794442.8867955,
+    "seen": 1792794585.1919725,
+    "ast_hash": "e700d9d5856f07e0519da2fbe6e0d478",
+    "semantic_hash": ""
+  },
+  "README.pt-BR.md": {
+    "mtime": 1792794317.6943657,
+    "seen": 1792794585.1919804,
+    "ast_hash": "8119c2e64310d4730e732ce76f5e0fe0",
+    "semantic_hash": ""
+  },
+  "docs/ADR/001-modular-monolith-clean-architecture.md": {
+    "mtime": 1792794383.3359618,
+    "seen": 1792794585.1924217,
+    "ast_hash": "503a19ea9949fa4bf742718759e54cf1",
+    "semantic_hash": ""
+  },
+  "docs/ADR/002-302-redirect-for-click-counting.md": {
+    "mtime": 1792794386.4669168,
+    "seen": 1792794585.1924243,
+    "ast_hash": "81e49025153ef0e11aecdd06676898ea",
+    "semantic_hash": ""
+  },
+  "docs/ADR/003-swr-jitter-single-flight-negative-cache.md": {
+    "mtime": 1792794391.108663,
+    "seen": 1792794585.1924264,
+    "ast_hash": "9376c6082744c75f5528d3289db539dc",
+    "semantic_hash": ""
+  },
+  "docs/ADR/004-async-click-pipeline-redis-stream.md": {
+    "mtime": 1792794395.5366142,
+    "seen": 1792794585.192429,
+    "ast_hash": "f2ba861486aef5cf32c8da9a6adff947",
+    "semantic_hash": ""
+  },
+  "docs/ADR/005-lua-token-bucket-rate-limiting.md": {
+    "mtime": 1792794401.8955688,
+    "seen": 1792794585.1924312,
+    "ast_hash": "18a2c420737e170106f52ab8d4986961",
+    "semantic_hash": ""
+  },
+  "docs/ADR/006-circuit-breaker-bulkhead-resilience.md": {
+    "mtime": 1792794407.451018,
+    "seen": 1792794585.192433,
+    "ast_hash": "1fe6a9b032b46aaf95dbad435d9a074c",
+    "semantic_hash": ""
+  },
+  "docs/ADR/007-rls-defense-in-depth.md": {
+    "mtime": 1792794411.9601378,
+    "seen": 1792794585.1924353,
+    "ast_hash": "d50fef1e3aa4745b7ad2735c0d7b255b",
     "semantic_hash": ""
   }
 }

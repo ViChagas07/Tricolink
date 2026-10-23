@@ -12,7 +12,7 @@
 - [x] P08 Estatísticas (backend + página de detalhe)
 - [x] P09 Hardening de segurança + auditoria
 - [x] P10 Testes E2E/carga, CI/CD e deploy
-- [ ] P11 README final e documentação
+- [x] P11 README final e documentação
 
 ## Decisões
 - Graphify 0.9.91 já estava instalado via `uv tool`; usei a integração nativa do Kilo (`graphify kilo install`) em vez de `graphify opencode install`, porque este é o agente atual. Isso instalou skill/command globais e registrou `.kilo/plugins/graphify.js` + seção always-on em `AGENTS.md`, sem alterar a ordem de leitura original.
@@ -338,6 +338,24 @@
 - P10: a observabilidade foi validada apenas no Docker Desktop; Prometheus/Grafana não foram executados em produção, e o dashboard não foi inspecionado visualmente.
 - P10: o `render.yaml` foi validado contra o schema, mas o Render Blueprint real (planos free, Key Value `connectionString`, `preDeployCommand`, cron Python) não foi aplicado nem testado.
 
+
+## Validação P11
+- `README.md` (inglês) e `README.pt-BR.md` (português) criados com todas as seções obrigatórias:
+  - Pitch em 3 linhas, demo/link placeholder, screenshots placeholders com instruções
+  - Diagrama Mermaid do fluxo criar → redirecionar → contar
+  - Stack completa, arquitetura monolito modular + Clean Architecture com diagrama Mermaid
+  - Como rodar (Docker e local), variáveis de ambiente (tabela completa)
+  - API reference (tabela de endpoints)
+  - i18n (11 idiomas), testes, deploy
+  - Seção "Decisões de engenharia": 302 vs 301, geração de código/colisões, SWR+jitter+single-flight+cache negativo, pipeline assíncrono de cliques, token bucket em Lua, circuit breaker/bulkhead, servidor nunca busca URL, privacidade (sem IP), RLS
+  - Seção Segurança resumindo `docs/security/AUDIT.md` (sem expor detalhes de ataque)
+  - Seção Performance resumindo `docs/perf/RESULTS.md` com números reais
+  - Roadmap honesto e Limitações conhecidas (tudo de `PROGRESS.md > Não validado` + traduções pendentes)
+- `docs/ADR/` com 7 ADRs: 001 modular monolith, 002 302 redirect, 003 SWR+jitter+single-flight+negative cache, 004 async click pipeline, 005 Lua token bucket, 006 circuit breaker+bulkhead, 007 RLS defense in depth
+- `CONTRIBUTING.md` curto (conventional commits, TDD, lint gates, ADR process)
+- `LICENSE` MIT
+- Comandos do README validados via `make lint`, `make test-api`, `make test-web` nas fases anteriores (P01–P10); Docker daemon não disponível nesta sessão para re-execução, mas validações históricas em `PROGRESS.md` confirmam funcionamento
+- `graphify update .` executado para atualizar grafo
 
 ## Revisão humana pendente
 - Traduções geradas por IA: `es`, `fr`, `de`, `it`, `ja`, `ko`, `zh-CN`, `ru` e `ar` (pt-BR e en são as referências). A P06 adicionou 53 chaves, a P07 outras 69, a P08 outras 16, os ajustes de UI seguintes mais `nav.backToTop`/chaves de menu e o avatar mais 6 (`account.photo`, `photoHint`, `changePhoto`, `uploadingPhoto`, `removePhoto`, `avatarError`; **244 no total**); revisar especialmente mensagens de erro de auth/limite, estados da lista, diálogos de edição/exclusão, rótulos de conta, os textos de avatar e os textos de período/estatísticas/vazio (incluindo "bot" e "desconhecido").
