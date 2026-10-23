@@ -62,4 +62,6 @@ USER app
 EXPOSE 8000
 
 # Render injects PORT (default 10000); bind to it instead of the hardcoded 8000.
-CMD ["sh", "-c", "exec gunicorn tricolink.main:app --worker-class uvicorn.workers.UvicornWorker --workers ${WEB_CONCURRENCY:-2} --bind 0.0.0.0:${PORT:-8000} --access-logfile - --error-logfile -"]
+# Gunicorn 26 defaults its control socket to $HOME/.gunicorn, which the
+# unprivileged `app` user cannot create under /app; we do not use it.
+CMD ["sh", "-c", "exec gunicorn tricolink.main:app --worker-class uvicorn.workers.UvicornWorker --workers ${WEB_CONCURRENCY:-2} --bind 0.0.0.0:${PORT:-8000} --no-control-socket --access-logfile - --error-logfile -"]
