@@ -10,6 +10,7 @@
 - Uso: **azul** = cor primária (links, títulos de destaque, foco); **vermelho** = ação principal ("Encurtar" / CTA) e erros; **branco** domina os fundos. Contraste mínimo AA.
 - Faixa tricolor sutil (azul | branco | vermelho) de 3–4px no topo da página ou do hero como detalhe de marca.
 - Bordas arredondadas (`rounded-xl`), sombras suaves, espaçamento generoso, animações discretas respeitando `prefers-reduced-motion`.
+- Tema claro/escuro é preferência local (`localStorage`, chave `tricolink-theme`) e **só muda pelo toggle**. Trocar de idioma não pode alterar o tema; `ThemeSync` reaplica `dark`/`color-scheme` após navegações de locale, porque o React re-renderiza o `<html>` e removeria a classe aplicada imperativamente.
 
 ## Navbar (replicar a do AImaginator)
 > **Anexo obrigatório do dono do projeto:** o componente da navbar do AImaginator (ex.: `Navbar.tsx`) será anexado ao prompt P05. **Se o anexo existir, siga-o à risca** (estrutura, espaçamento, comportamento, mobile). Se não existir, use esta especificação:

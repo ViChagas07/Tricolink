@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
+import { ThemeSync } from "@/components/theme-sync";
 import { defaultLocale, getDirection, isLocale } from "@/i18n/locales";
 import { routing } from "@/i18n/routing";
 import { isProtectedPath, siteUrl } from "@/lib/seo";
@@ -105,6 +106,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
           {nav("skipToContent")}
         </a>
         <NextIntlClientProvider locale={locale} messages={messages} timeZone="UTC">
+          <ThemeSync />
           <Navbar />
           <main id="main" tabIndex={-1}>
             {children}

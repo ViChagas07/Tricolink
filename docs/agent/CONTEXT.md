@@ -103,7 +103,7 @@ Rotas de `/links*` e `/account` exigem login (redirecionar para `/login?next=...
 - Datas/números com `Intl` via next-intl. Metadados (title/description/OG), `hreflang` e sitemap por idioma.
 
 ## 9. UI/UX (resumo — detalhes em UI_SPEC.md)
-Navbar: igual à do AImaginator (logo no canto superior esquerdo, seletor de idiomas ao lado, itens à direita), **sem a rota Galeria** e com **"Links"** no lugar de "Estúdio". O avatar do usuário logado mostra a foto do Google (ou o avatar personalizado) e cai para as iniciais se a imagem falhar. Landing: navbar → hero com barra de URL → demonstração do painel → blocos de recursos → FAQ → CTA → rodapé. Login e Account semelhantes aos do Bitly; a rota Account tem a seção de foto de perfil (alterar/remover, JPG/PNG/WebP até 5 MB).
+Navbar: igual à do AImaginator (logo no canto superior esquerdo, seletor de idiomas ao lado, itens à direita), **sem a rota Galeria** e com **"Links"** no lugar de "Estúdio". O avatar do usuário logado mostra a foto do Google (ou o avatar personalizado) e cai para as iniciais se a imagem falhar. O tema claro/escuro é preferência local e só muda pelo toggle: trocar de idioma não altera o tema (`ThemeSync` reaplica a classe após navegações). Landing: navbar → hero com barra de URL → demonstração do painel → blocos de recursos → FAQ → CTA → rodapé. Login e Account semelhantes aos do Bitly; a rota Account tem a seção de foto de perfil (alterar/remover, JPG/PNG/WebP até 5 MB).
 
 ## 10. Não-objetivos (não implementar)
 QR Code, Pages/link-na-bio, UTM, domínios customizados, planos pagos, IA, extensão de navegador, app mobile, equipes/workspaces.

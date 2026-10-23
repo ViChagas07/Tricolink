@@ -12,9 +12,9 @@
     "semantic_hash": ""
   },
   "docs/agent/CONTEXT.md": {
-    "mtime": 1792771663.4361968,
-    "seen": 1792771837.0810566,
-    "ast_hash": "00f31f6e06c1b261771be94ee0fbd5bc",
+    "mtime": 1792776807.3295825,
+    "seen": 1792776843.8308718,
+    "ast_hash": "d28def3a762c92bb09aa7fb17589dc3a",
     "semantic_hash": ""
   },
   "docs/agent/GRAPHIFY.md": {
@@ -24,9 +24,9 @@
     "semantic_hash": "aa05b3b82c1a22e91f8cec76cf9be242"
   },
   "docs/agent/PROGRESS.md": {
-    "mtime": 1792771819.495872,
-    "seen": 1792771837.081216,
-    "ast_hash": "eccf7efed25fbf6fe57d75e033ae617f",
+    "mtime": 1792776829.2690623,
+    "seen": 1792776843.8311245,
+    "ast_hash": "fde399fed7bc2fb155fde9b5355b92c0",
     "semantic_hash": ""
   },
   "docs/agent/RULES.md": {
@@ -42,9 +42,9 @@
     "semantic_hash": ""
   },
   "docs/agent/UI_SPEC.md": {
-    "mtime": 1792771671.4059114,
-    "seen": 1792771837.081523,
-    "ast_hash": "bede787e81c8e79a40fb371d8b30cd7a",
+    "mtime": 1792776798.6394925,
+    "seen": 1792776843.831424,
+    "ast_hash": "288798f70ba3d3e09cc3ef2f72e995d8",
     "semantic_hash": ""
   },
   "apps/api/alembic/env.py": {
@@ -984,9 +984,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/app/[locale]/layout.tsx": {
-    "mtime": 1792638967.3329666,
-    "seen": 1792639908.118113,
-    "ast_hash": "f5dd086838edafc9ba4058633a35b720",
+    "mtime": 1792776646.6584518,
+    "seen": 1792776843.8154325,
+    "ast_hash": "dcce1774abe42fa98a4ec90cfba7b390",
     "semantic_hash": ""
   },
   "apps/web/src/app/[locale]/not-found.tsx": {
@@ -1809,6 +1809,18 @@
     "mtime": 1792769144.806517,
     "seen": 1792770314.9789348,
     "ast_hash": "809288e0eb0f4235f5e7c05061ab114b",
+    "semantic_hash": ""
+  },
+  "apps/web/src/components/theme-sync.test.tsx": {
+    "mtime": 1792776659.0716214,
+    "seen": 1792776843.8228102,
+    "ast_hash": "4b8a173a96b27f7469ebc3093e2d4840",
+    "semantic_hash": ""
+  },
+  "apps/web/src/components/theme-sync.tsx": {
+    "mtime": 1792776633.7648714,
+    "seen": 1792776843.8228123,
+    "ast_hash": "baa1f5a87ed9fad0a0d52df2b311cdae",
     "semantic_hash": ""
   }
 }
