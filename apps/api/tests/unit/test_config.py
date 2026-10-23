@@ -108,6 +108,23 @@ def test_production_accepts_strong_secrets(monkeypatch: pytest.MonkeyPatch) -> N
 
     assert settings.app_env == "production"
     assert settings.docs_enabled is False
+    assert settings.metrics_enabled is True
+
+
+def test_production_disables_metrics_without_a_strong_token(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.setenv("COOKIE_SECURE", "true")
+    monkeypatch.setenv("JWT_SECRET", "j" * 48)
+    monkeypatch.setenv("CSRF_SECRET", "c" * 48)
+    monkeypatch.setenv("SESSION_SECRET", "s" * 48)
+    monkeypatch.setenv("METRICS_TOKEN", "change-me")
+
+    settings = Settings.from_env()
+
+    assert settings.app_env == "production"
+    assert settings.metrics_enabled is False
 
 
 def test_development_enables_docs() -> None:

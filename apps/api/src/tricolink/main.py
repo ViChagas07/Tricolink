@@ -8,7 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from tricolink.core.config import Settings, get_settings
 from tricolink.core.error_handlers import install_error_handlers
-from tricolink.core.logging import configure_logging
+from tricolink.core.logging import configure_logging, get_logger
 from tricolink.core.middleware import (
     BodyLimitMiddleware,
     GlobalRateLimitMiddleware,
@@ -33,6 +33,11 @@ def create_app(
     current = settings or get_settings()
     current_services = services or build_services(current)
     configure_logging(current)
+    if current.is_production and not current.metrics_enabled:
+        get_logger("tricolink.app").warning(
+            "metrics_endpoint_disabled",
+            reason="METRICS_TOKEN is missing or still a development placeholder",
+        )
     init_sentry(current)
 
     @asynccontextmanager

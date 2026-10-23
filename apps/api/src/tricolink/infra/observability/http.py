@@ -50,6 +50,8 @@ async def health_ready(request: Request) -> JSONResponse:
 @router.get("/metrics")
 async def metrics(request: Request) -> Response:
     services: Services = request.app.state.services
+    if not services.settings.metrics_enabled:
+        return Response(status_code=404)
     expected_token = services.settings.metrics_token
     if not _authorized(request, expected_token):
         raise MetricsAuthenticationError()

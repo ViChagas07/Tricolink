@@ -19,8 +19,17 @@ DEV_SESSION_SECRET = "dev-insecure-session-secret-change-before-production-0003"
 DEV_METRICS_TOKEN = "dev-insecure-metrics-token-change-before-production-0004"
 
 _VALID_ENVIRONMENTS = frozenset({"development", "test", "staging", "production"})
-_SECRET_FIELDS = ("jwt_secret", "csrf_secret", "session_secret", "metrics_token")
+_REQUIRED_SECRET_FIELDS = ("jwt_secret", "csrf_secret", "session_secret")
 _MIN_SECRET_LENGTH = 32
+
+
+def _is_strong_secret(value: str) -> bool:
+    return (
+        bool(value)
+        and len(value) >= _MIN_SECRET_LENGTH
+        and not value.startswith("dev-insecure-")
+        and "change-me" not in value
+    )
 
 
 class SettingsError(RuntimeError):
@@ -345,8 +354,16 @@ class Settings:
     def is_production(self) -> bool:
         return self.app_env == "production"
 
+    @property
+    def metrics_enabled(self) -> bool:
+        # Without a strong token production serves 404 on /metrics instead of
+        # refusing to boot over an optional observability credential.
+        if self.is_production:
+            return _is_strong_secret(self.metrics_token)
+        return bool(self.metrics_token)
+
     def _validate_production(self) -> None:
-        for field in _SECRET_FIELDS:
+        for field in _REQUIRED_SECRET_FIELDS:
             value: str = getattr(self, field)
             if not value or len(value) < _MIN_SECRET_LENGTH:
                 raise SettingsError(

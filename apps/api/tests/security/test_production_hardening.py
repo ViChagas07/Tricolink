@@ -39,6 +39,18 @@ def production_settings(**overrides: object) -> Settings:
     return replace(Settings.from_env(), **values)
 
 
+def test_metrics_is_not_exposed_with_a_development_token() -> None:
+    settings = production_settings(metrics_token="change-me")
+    app: FastAPI = create_app(settings)
+    client = make_client(app, forwarded_for=unique_ip())
+
+    with client:
+        response = client.get("/metrics", headers={"Authorization": "Bearer change-me"})
+
+    assert response.status_code == 404
+    assert "tricolink_http_requests_total" not in response.text
+
+
 def test_docs_openapi_metrics_and_security_headers_in_production() -> None:
     settings = production_settings()
     app: FastAPI = create_app(settings)

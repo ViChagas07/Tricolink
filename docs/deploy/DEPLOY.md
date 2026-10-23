@@ -102,7 +102,7 @@ responde `302` para a URL original. O rewrite externo é suportado pela Vercel; 
 | `JWT_SECRET` | `generateValue` | sim | ≥32 chars |
 | `CSRF_SECRET` | `generateValue` | sim | ≥32 chars |
 | `SESSION_SECRET` | `generateValue` | sim | OAuth state/session |
-| `METRICS_TOKEN` | `generateValue` | sim | `/metrics` Bearer |
+| `METRICS_TOKEN` | `generateValue` | não | `/metrics` Bearer; sem token forte o endpoint responde 404 |
 | `GOOGLE_CLIENT_ID` | OAuth Client | não | ausente = botão Google desabilitado |
 | `GOOGLE_CLIENT_SECRET` | OAuth Client | não | par com o ID |
 | `GOOGLE_REDIRECT_URI` | `https://<web>/api/v1/auth/google/callback` | não | callback via Vercel |
