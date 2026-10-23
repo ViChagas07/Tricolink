@@ -222,7 +222,7 @@ export function Navbar() {
               >
                 {t("links")}
               </Link>
-              <div className="mt-1 flex items-center justify-between gap-2 border-b border-border pb-3">
+              <div className="mt-2 flex items-center justify-between gap-2 border-y border-border py-3">
                 <LanguageSwitcher />
                 <ThemeToggle />
               </div>

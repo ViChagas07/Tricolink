@@ -1050,9 +1050,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/navbar.tsx": {
-    "mtime": 1792769136.3383098,
-    "seen": 1792770314.977372,
-    "ast_hash": "5b3849cd317430483d81c572857b291d",
+    "mtime": 1792773260.5794258,
+    "seen": 1792773277.3248737,
+    "ast_hash": "45a7be94951fd3c3f9e5d2d7f8374050",
     "semantic_hash": ""
   },
   "apps/web/src/components/theme-toggle.tsx": {
