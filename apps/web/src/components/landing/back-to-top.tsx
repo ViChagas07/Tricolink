@@ -41,7 +41,7 @@ export function BackToTop() {
       type="button"
       aria-label={t("backToTop")}
       onClick={scrollToTop}
-      className="fixed right-4 bottom-4 z-40 inline-flex size-11 items-center justify-center rounded-full border border-border bg-background/95 text-foreground shadow-lg backdrop-blur transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:right-6 sm:bottom-6"
+      className="fixed right-4 bottom-4 z-40 inline-flex size-11 cursor-pointer items-center justify-center rounded-full border border-border bg-background/95 text-foreground shadow-lg backdrop-blur transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring sm:right-6 sm:bottom-6"
     >
       <ChevronUp aria-hidden="true" className="size-5" />
     </button>

@@ -24,9 +24,9 @@
     "semantic_hash": "aa05b3b82c1a22e91f8cec76cf9be242"
   },
   "docs/agent/PROGRESS.md": {
-    "mtime": 1792714815.2157183,
-    "seen": 1792714853.9802854,
-    "ast_hash": "55a7942b2266adfb1c55562f267d2893",
+    "mtime": 1792715850.509559,
+    "seen": 1792715997.8650076,
+    "ast_hash": "b95b463fcba3df577252796892a918f4",
     "semantic_hash": ""
   },
   "docs/agent/RULES.md": {
@@ -42,9 +42,9 @@
     "semantic_hash": ""
   },
   "docs/agent/UI_SPEC.md": {
-    "mtime": 1792714772.7055771,
-    "seen": 1792714853.9806395,
-    "ast_hash": "89c59366a8ae6b247a59d15fe1a8fc53",
+    "mtime": 1792715836.5228436,
+    "seen": 1792715997.8653753,
+    "ast_hash": "8c7a4f0c8562090a7e69cf4c6078f833",
     "semantic_hash": ""
   },
   "apps/api/alembic/env.py": {
@@ -1230,9 +1230,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/landing/feature-blocks.tsx": {
-    "mtime": 1792714094.7876363,
-    "seen": 1792714853.9686122,
-    "ast_hash": "f4773ab12762bca544995e67b33ad9b0",
+    "mtime": 1792715702.9127574,
+    "seen": 1792715997.8513849,
+    "ast_hash": "38d79f69271a72dcb709155fcfc99846",
     "semantic_hash": ""
   },
   "apps/web/src/components/landing/final-cta.tsx": {
@@ -1758,9 +1758,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/landing/back-to-top.tsx": {
-    "mtime": 1792714522.3320549,
-    "seen": 1792714853.9680648,
-    "ast_hash": "bb6e46e28f8f0cfc143d6412eea4bf79",
+    "mtime": 1792715688.1067939,
+    "seen": 1792715997.85103,
+    "ast_hash": "637cacec39f90ecefb6e937b8d7ee4ad",
     "semantic_hash": ""
   },
   "apps/web/public/brand/tricolink-transparente.png": {

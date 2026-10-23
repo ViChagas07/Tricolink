@@ -1,7 +1,9 @@
-import { CalendarClock, Check, Copy, Link2, SlidersHorizontal } from "lucide-react";
+import { BarChart3, CalendarClock, Check, Copy, Link2, SlidersHorizontal } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { cn } from "@/lib/utils";
+
+const WEEKDAY_BARS = [38, 56, 44, 72, 61, 84, 68];
 
 function ShortLinkVisual({ title, copyLabel }: { title: string; copyLabel: string }) {
   return (
@@ -33,6 +35,48 @@ function ShortLinkVisual({ title, copyLabel }: { title: string; copyLabel: strin
           <Copy aria-hidden="true" className="size-3.5" />
           {copyLabel}
         </span>
+      </div>
+    </div>
+  );
+}
+
+function StatsVisual({
+  title,
+  totalLabel,
+  total,
+}: {
+  title: string;
+  totalLabel: string;
+  total: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-lg sm:p-6">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+            {title}
+          </p>
+          <p className="mt-1 font-heading text-3xl font-bold tabular-nums text-tc-blue-950 dark:text-tc-white">
+            {total}
+          </p>
+          <p className="text-xs text-muted-foreground">{totalLabel}</p>
+        </div>
+        <span className="grid size-10 place-items-center rounded-xl bg-tc-blue-100 text-tc-blue-700 dark:bg-tc-blue-600/20 dark:text-tc-blue-100">
+          <BarChart3 aria-hidden="true" className="size-5" />
+        </span>
+      </div>
+
+      <div aria-hidden="true" className="mt-5 flex h-32 items-end gap-2">
+        {WEEKDAY_BARS.map((height, index) => (
+          <span
+            key={index}
+            className={cn(
+              "flex-1 rounded-t-lg",
+              index === WEEKDAY_BARS.length - 2 ? "bg-tc-red-600" : "bg-tc-blue-600/75",
+            )}
+            style={{ height: `${height}%` }}
+          />
+        ))}
       </div>
     </div>
   );
@@ -81,6 +125,7 @@ function ControlVisual({
 
 export async function FeatureBlocks() {
   const t = await getTranslations("features");
+  const demo = await getTranslations("demo");
   const hero = await getTranslations("hero");
   const locale = await getLocale();
   const expiry = new Intl.DateTimeFormat(locale, {
@@ -89,6 +134,7 @@ export async function FeatureBlocks() {
     year: "numeric",
     timeZone: "UTC",
   }).format(new Date("2026-11-18T12:00:00Z"));
+  const total = new Intl.NumberFormat(locale).format(1063);
 
   const features = [
     {
@@ -96,6 +142,14 @@ export async function FeatureBlocks() {
       title: t("shortTitle"),
       body: t("shortBody"),
       visual: <ShortLinkVisual title={t("shortMockTitle")} copyLabel={hero("copy")} />,
+    },
+    {
+      icon: BarChart3,
+      title: t("statsTitle"),
+      body: t("statsBody"),
+      visual: (
+        <StatsVisual title={t("statsMockTitle")} totalLabel={demo("totalClicks")} total={total} />
+      ),
     },
     {
       icon: SlidersHorizontal,

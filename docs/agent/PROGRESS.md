@@ -111,7 +111,7 @@
 - P10: observabilidade local opcional em `docker-compose.yml` (`profiles: ["observability"]`, portas 9091/3002), Prometheus com Bearer token e dashboard Grafana `Tricolink` (RPS, p50/p95, 429 por bucket, cache hit ratio, circuit breaker, 5xx). `SENTRY_DSN` ativa o SDK com `send_default_pii=False` e scrub de headers/cookies/body; testado.
 - P10: job de limpeza `python -m tricolink.jobs.cleanup` apaga `click_events` além de `CLICK_RETENTION_DAYS` (365) em lotes e links expirados; é idempotente e coberto por `test_cleanup.py`. O cron do Render usa `MIGRATION_DATABASE_URL` e os secrets da API por `fromService` para satisfazer a validação de produção.
 - P10: as imagens Docker `runtime` (API) e `runner` (web standalone) foram construídas localmente com sucesso; o aviso de `next start` vs standalone continua no E2E, mas a imagem runner agora foi validada.
-- Ajuste de UI (pedido do dono): navbar e rodapé passaram a usar `public/brand/tricolink-transparente.png`; o rodapé perdeu o rótulo "Language" e o seletor de idiomas; o bloco de recursos "Estatísticas claras" foi removido (restam link curto e controle); o botão flutuante de voltar ao topo aparece depois que o título da demonstração sai da viewport, usa `IntersectionObserver` e respeita `prefers-reduced-motion`. A chave `nav.backToTop` foi adicionada aos 11 idiomas e a UI_SPEC foi atualizada.
+- Ajuste de UI (pedido do dono): navbar e rodapé passaram a usar `public/brand/tricolink-transparente.png`; o rodapé perdeu o rótulo "Language" e o seletor de idiomas; os três blocos de recursos foram mantidos, com "Estatísticas claras" na segunda posição; o botão flutuante de voltar ao topo tem cursor de mão, aparece depois que o título da demonstração sai da viewport, usa `IntersectionObserver` e respeita `prefers-reduced-motion`. A chave `nav.backToTop` foi adicionada aos 11 idiomas e a UI_SPEC foi atualizada.
 
 ## Validação P00
 - Consultas de fumaça executadas no grafo final: fluxo de redirect; baldes de rate limit (`redirect`, `create`, `auth`, `global`, `stats/list`); rotas do frontend. Os nós e trechos retornados batem com `CONTEXT.md` e `SECURITY.md`.
@@ -238,7 +238,7 @@
 
 ## Validação (ajustes de UI 2026-10-23)
 - `pnpm test`: **93 testes Vitest passando** (2 novos para o botão de voltar ao topo); `pnpm lint`, `pnpm typecheck`, `pnpm i18n:check` (**11 locales, 235 chaves**) e `pnpm build` limpos. `pnpm format:check` continua apontando 4 arquivos anteriores não tocados (`e2e/auth-links.spec.ts`, `e2e/security.spec.ts`, `links-view.test.tsx`, `bundle-safety.test.ts`).
-- Inspeção com Playwright no build de produção: logo nova no `header` e no `footer`, rodapé sem "Language"/seletor, seção de recursos só com link curto e controle, botão oculto antes do título da demonstração, visível depois e `window.scrollTo({ top: 0 })` ao clicar.
+- Inspeção com Playwright no build de produção: logo nova no `header` e no `footer`, rodapé sem "Language"/seletor, três blocos de recursos com "Estatísticas claras" na segunda posição, botão oculto antes do título da demonstração, visível depois, com `cursor: pointer`, e `window.scrollTo({ top: 0 })` ao clicar.
 
 ## Bloqueios
 (nenhum)
