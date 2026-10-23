@@ -208,6 +208,13 @@
   contain-intrinsic-size: auto 2000px;
 }
 
+/* Mantém o PNG transparente no dark mode, com um contorno branco fino para
+   a wordmark azul-escura não sumir no fundo; não adiciona tile/fundo. */
+.dark .tc-brand-logo {
+  filter: drop-shadow(1px 0 0 rgb(255 255 255 / 0.85)) drop-shadow(-1px 0 0 rgb(255 255 255 / 0.85))
+    drop-shadow(0 1px 0 rgb(255 255 255 / 0.85)) drop-shadow(0 -1px 0 rgb(255 255 255 / 0.85));
+}
+
 .tc-hero-glow {
   background-image:
     radial-gradient(55% 55% at 50% 0%, rgb(20 80 200 / 0.14), transparent 72%),

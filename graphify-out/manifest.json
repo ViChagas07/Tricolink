@@ -24,9 +24,9 @@
     "semantic_hash": "aa05b3b82c1a22e91f8cec76cf9be242"
   },
   "docs/agent/PROGRESS.md": {
-    "mtime": 1792770259.329768,
-    "seen": 1792770314.9848316,
-    "ast_hash": "ac94f504c4892891be942683e42ef832",
+    "mtime": 1792770622.6746674,
+    "seen": 1792770639.402521,
+    "ast_hash": "d53a8d3f44f4c4d32761abc6134dd34a",
     "semantic_hash": ""
   },
   "docs/agent/RULES.md": {
@@ -1014,9 +1014,9 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/brand-logo.tsx": {
-    "mtime": 1792769952.5642955,
-    "seen": 1792770314.973248,
-    "ast_hash": "bb3b164fed996490c2b15089ce299e42",
+    "mtime": 1792770375.1266804,
+    "seen": 1792770639.3894324,
+    "ast_hash": "027fd4eead05e4bc79804b51be321a86",
     "semantic_hash": ""
   },
   "apps/web/src/components/external-link.test.tsx": {
@@ -1809,60 +1809,6 @@
     "mtime": 1792769144.806517,
     "seen": 1792770314.9789348,
     "ast_hash": "809288e0eb0f4235f5e7c05061ab114b",
-    "semantic_hash": ""
-  },
-  "logo-filter-tests-2.png": {
-    "mtime": 1792769840.209095,
-    "seen": 1792770314.9870796,
-    "ast_hash": "51f84dd530961dee69c3fb3020a551c0",
-    "semantic_hash": ""
-  },
-  "logo-filter-tests-3.png": {
-    "mtime": 1792769913.0291705,
-    "seen": 1792770314.9870818,
-    "ast_hash": "af2e567beeae1073eef9dcdde18db4d3",
-    "semantic_hash": ""
-  },
-  "logo-filter-tests.png": {
-    "mtime": 1792769728.5435035,
-    "seen": 1792770314.9870832,
-    "ast_hash": "20ce1fe51701737b033b3aa02e8fdc9a",
-    "semantic_hash": ""
-  },
-  "logo-local-dark.png": {
-    "mtime": 1792770089.2371058,
-    "seen": 1792770314.9870849,
-    "ast_hash": "ed4eb35b28741a451aef2d25d5513a0e",
-    "semantic_hash": ""
-  },
-  "logo-local-footer-dark-2.png": {
-    "mtime": 1792770187.7161028,
-    "seen": 1792770314.9870863,
-    "ast_hash": "91ec3139f1fe6a90e70f148c83c9bf83",
-    "semantic_hash": ""
-  },
-  "logo-local-footer-dark-3.png": {
-    "mtime": 1792770260.6189375,
-    "seen": 1792770314.9870882,
-    "ast_hash": "8529026ae7b2beeb6db2a8f9fe9490e3",
-    "semantic_hash": ""
-  },
-  "logo-local-footer-dark.png": {
-    "mtime": 1792770112.63187,
-    "seen": 1792770314.9870896,
-    "ast_hash": "a95fc09217c2b23df8a3cbd5a3a5799b",
-    "semantic_hash": ""
-  },
-  "logo-local-header-1x.png": {
-    "mtime": 1792770279.952961,
-    "seen": 1792770314.9870913,
-    "ast_hash": "c1e96527643101b348b8ec7f239727fd",
-    "semantic_hash": ""
-  },
-  "logo-local-header-outline4.png": {
-    "mtime": 1792770304.1665187,
-    "seen": 1792770314.987093,
-    "ast_hash": "c7d85315df28cd481258c6660e638837",
     "semantic_hash": ""
   }
 }
