@@ -1044,15 +1044,15 @@
     "semantic_hash": ""
   },
   "apps/web/src/components/navbar.test.tsx": {
-    "mtime": 1792757829.3165371,
-    "seen": 1792758190.5726502,
-    "ast_hash": "3c25a14cb74d6f4c9b98151e841b7a7d",
+    "mtime": 1792760240.0924947,
+    "seen": 1792760354.4372709,
+    "ast_hash": "03310f40b77dfab8ed62eb1b447b9edb",
     "semantic_hash": ""
   },
   "apps/web/src/components/navbar.tsx": {
-    "mtime": 1792757764.3015828,
-    "seen": 1792758190.5726526,
-    "ast_hash": "d003bca0f012d14488965c4214be7401",
+    "mtime": 1792760233.4710314,
+    "seen": 1792760354.4372735,
+    "ast_hash": "2580956e94a4ace22d4a5c1eff0bda3f",
     "semantic_hash": ""
   },
   "apps/web/src/components/theme-toggle.tsx": {

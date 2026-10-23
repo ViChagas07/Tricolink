@@ -1,7 +1,7 @@
 # Graph Report - Tricolink  (2026-10-23)
 
 ## Corpus Check
-- 285 files · ~141,550 words
+- 285 files · ~141,563 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 15 file(s) not represented in the graph (top: (none) 10, .toml 1, .ini 1)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `36142739`
+- Built from commit: `e23c17f2`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -546,7 +546,7 @@ Nodes (4): DownRedis, test_global_bucket_is_shared_across_clients(), DownRedis, 
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `Settings` connect `config.py` to `test_link_cache.py`, `SqlAlchemyLinkRepository`, `test_real_integrity_error_triggers_code_retry`, `ClickFlusher`, `database.py`, `CircuitBreaker`, `stats_cache.py`, `http.py`, `RedisLinkCache`, `click.py`, `create_link`, `test_links_repository.py`, `identity/adapters/repository.py`, `identity/presentation/router.py`, `build_services`, `create_link_rate_limit`, `create_app`, `adapters/tokens.py`, `google_callback`, `config.py`, `logging.py`, `BucketPolicy`, `test_links_api.py`, `test_redirect_click_failure.py`, `security.py`, `get_services`, `config.py`, `redis_client`, `Database`, `Bulkhead`, `Deploy — Vercel (web) + Render (API/Postgres/Redis)`, `Settings`, `main.py`, `db/models.py`, `test_sentry.py`, `Auditoria de segurança — P09`, `test_redirect_stampede.py`?**
-  _High betweenness centrality (0.263) - this node is a cross-community bridge._
+  _High betweenness centrality (0.264) - this node is a cross-community bridge._
 - **Are the 106 inferred relationships involving `Settings` (e.g. with `settings_dependency()` and `configure_logging()`) actually correct?**
   _`Settings` has 106 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `tricolink-api`, `Non-Goals`, `Stale-While-Revalidate Caching` to the rest of the system?**

@@ -159,9 +159,7 @@ export function Navbar() {
         </div>
 
         <div className="ms-auto flex items-center gap-1 md:ms-1">
-          {isLoginPage ? null : status === "loading" ? (
-            <span aria-hidden="true" className="size-9 animate-pulse rounded-full bg-muted" />
-          ) : isAuthenticated && user ? (
+          {isLoginPage ? null : isAuthenticated && user ? (
             <AccountMenu user={user} />
           ) : (
             <Link

@@ -91,6 +91,14 @@ describe("Navbar", () => {
     expect(screen.getByRole("link", { name: "Links" })).toBeInTheDocument();
   });
 
+  it("keeps the sign-in action visible while the session is loading", () => {
+    authState.current.status = "loading";
+    renderNavbar("en", enMessages);
+
+    expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/login");
+    expect(screen.getByRole("banner").querySelector(".animate-pulse")).not.toBeInTheDocument();
+  });
+
   it("renders the Arabic navigation in RTL", () => {
     renderNavbar("ar", arMessages);
 
