@@ -22,9 +22,10 @@
 ## Landing (`/[locale]`)
 1. **Hero**: título forte, subtítulo, **barra de inserção de URL** com botão vermelho "Encurtar". Resultado aparece abaixo: link curto + botão **Copiar** (feedback "Copiado!") + link "Ver estatísticas" (logado). Erros inline (URL inválida, cota excedida com contagem regressiva a partir de `Retry-After`).
 2. **Demonstração**: mock do painel (dados fictícios fixos), inspirado no Bitly: cartão do link (curto, destino, criado em), gráfico de cliques (Recharts), tabelas de **países**, **origens** e **dispositivos**. Rótulo "Exemplo ilustrativo".
-3. **Três blocos de recursos** (texto + visual, alternando lados): link curto rápido, estatísticas claras, controle (editar destino e expirar).
+3. **Dois blocos de recursos** (texto + visual, alternando lados): link curto rápido e controle (editar destino e expirar).
 4. **FAQ** em sanfona acessível (8 perguntas): o que é e como funciona; é grátis; por que encurtar; é seguro; como encurtar; posso personalizar o código; o link expira; vocês guardam meu IP (não).
-5. **CTA final** ("Crie sua conta grátis") e **rodapé** (links, idioma, copyright).
+5. **CTA final** ("Crie sua conta grátis") e **rodapé** (links, copyright, sem seletor de idioma).
+6. **Voltar ao topo**: botão flutuante no canto inferior direito, exibido depois que o título da demonstração ("Seus links em um só lugar") sai da viewport.
 Anônimo pode encurtar (com cota menor); ao exceder ou querer histórico → convite para criar conta.
 
 ## Login (`/[locale]/login`)

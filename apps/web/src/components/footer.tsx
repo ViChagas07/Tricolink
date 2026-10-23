@@ -2,7 +2,6 @@ import { FileText, HelpCircle } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
 import { BrandLogo } from "@/components/brand-logo";
-import { LanguageSwitcher } from "@/components/language-switcher";
 import { Link } from "@/i18n/navigation";
 
 export async function Footer() {
@@ -88,12 +87,8 @@ export async function Footer() {
           </ul>
         </nav>
 
-        <div className="flex flex-col gap-3 border-t border-border/70 pt-6 text-sm text-muted-foreground md:col-span-4 md:flex-row md:items-center md:justify-between">
+        <div className="border-t border-border/70 pt-6 text-sm text-muted-foreground md:col-span-4">
           <p>{t("copyright", { year })}</p>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium uppercase tracking-wide">{t("language")}</span>
-            <LanguageSwitcher />
-          </div>
         </div>
       </div>
     </footer>

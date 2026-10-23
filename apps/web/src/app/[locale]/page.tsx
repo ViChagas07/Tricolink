@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { DemoDashboard } from "@/components/dashboard/demo-dashboard";
+import { BackToTop } from "@/components/landing/back-to-top";
 import { Faq, type FaqEntry } from "@/components/landing/faq";
 import { FeatureBlocks } from "@/components/landing/feature-blocks";
 import { FinalCta } from "@/components/landing/final-cta";
@@ -95,6 +96,7 @@ export default async function HomePage({ params }: HomePageProps) {
       <FeatureBlocks />
       <Faq title={faq("title")} subtitle={faq("subtitle")} items={faqItems} />
       <FinalCta />
+      <BackToTop />
     </>
   );
 }

@@ -98,7 +98,10 @@ export async function DemoDashboard() {
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
         <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-end">
           <div className="max-w-2xl">
-            <h2 className="text-balance font-heading text-3xl font-bold tracking-tight text-tc-blue-950 sm:text-4xl dark:text-tc-white">
+            <h2
+              id="demo-title"
+              className="text-balance font-heading text-3xl font-bold tracking-tight text-tc-blue-950 sm:text-4xl dark:text-tc-white"
+            >
               {t("title")}
             </h2>
             <p className="mt-3 text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
