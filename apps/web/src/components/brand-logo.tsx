@@ -11,10 +11,10 @@ export function BrandLogo({ label }: { label: string }) {
     >
       <span className="inline-flex items-center justify-center rounded-xl dark:bg-white dark:p-1 dark:shadow-sm dark:ring-1 dark:ring-white/20">
         <Image
-          src="/brand/tricolink-transparente.png"
+          src="/brand/tricolink-transparente-removebg.png"
           alt=""
-          width={1254}
-          height={1254}
+          width={500}
+          height={500}
           sizes="(min-width: 640px) 56px, 48px"
           loading="eager"
           className="h-12 w-auto sm:h-14"
