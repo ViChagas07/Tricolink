@@ -46,7 +46,7 @@
     "limitCta": "创建免费账户",
     "cancel": "取消",
     "cancelled": "缩短已取消。",
-    "ownUrl": "无法缩短指向 Tricolink 本身的链接。"
+    "ownUrl": "出于安全原因，无法缩短 Tricolink 本身的 URL。"
   },
   "demo": {
     "label": "示例展示",

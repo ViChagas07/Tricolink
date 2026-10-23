@@ -46,7 +46,7 @@
     "limitCta": "無料アカウントを作成",
     "cancel": "キャンセル",
     "cancelled": "短縮をキャンセルしました。",
-    "ownUrl": "Tricolink 自体へのリンクは短縮できません。"
+    "ownUrl": "セキュリティ上の理由により、Tricolink 自体の URL は短縮できません。"
   },
   "demo": {
     "label": "イメージ例",

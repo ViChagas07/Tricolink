@@ -46,7 +46,7 @@
     "limitCta": "Create a free account",
     "cancel": "Cancel",
     "cancelled": "Shortening cancelled.",
-    "ownUrl": "You can't shorten a link that points to Tricolink itself."
+    "ownUrl": "For security reasons, you can't shorten a URL from Tricolink itself."
   },
   "demo": {
     "label": "Illustrative example",

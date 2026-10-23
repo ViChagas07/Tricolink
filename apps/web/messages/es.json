@@ -46,7 +46,7 @@
     "limitCta": "Crear una cuenta gratis",
     "cancel": "Cancelar",
     "cancelled": "Acortado cancelado.",
-    "ownUrl": "No puedes acortar un enlace que apunta al propio Tricolink."
+    "ownUrl": "Por motivos de seguridad, no puedes acortar una URL del propio Tricolink."
   },
   "demo": {
     "label": "Ejemplo ilustrativo",

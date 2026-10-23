@@ -40,6 +40,12 @@ describe("validateShortenUrl", () => {
     );
     expect(validateShortenUrl("https://example.com", "tricolink.vercel.app")).toBeNull();
     expect(
+      validateShortenUrl("https://app.tricolink.vercel.app/x", [
+        "tricolink.vercel.app",
+        "tricolink.test",
+      ]),
+    ).toBe("own_host");
+    expect(
       validateShortenUrl("https://tricolink.vercel.app.evil.com", "tricolink.vercel.app"),
     ).toBeNull();
   });

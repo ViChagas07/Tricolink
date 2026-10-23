@@ -4,8 +4,14 @@ const CONTROL_OR_SPACE = /[\u0000-\u0020\u007f]/;
 export type ShortenUrlError = "required" | "invalid" | "too_long" | "own_host";
 
 export function validateShortenUrl(value: string): Exclude<ShortenUrlError, "own_host"> | null;
-export function validateShortenUrl(value: string, ownHost: string | null): ShortenUrlError | null;
-export function validateShortenUrl(value: string, ownHost?: string | null): ShortenUrlError | null {
+export function validateShortenUrl(
+  value: string,
+  ownHost: string | readonly string[] | null,
+): ShortenUrlError | null;
+export function validateShortenUrl(
+  value: string,
+  ownHost?: string | readonly string[] | null,
+): ShortenUrlError | null {
   const trimmed = value.trim();
   if (!trimmed) {
     return "required";
@@ -32,11 +38,16 @@ export function validateShortenUrl(value: string, ownHost?: string | null): Shor
   }
 
   const host = parsed.hostname.toLowerCase();
-  const normalizedOwnHost = ownHost
-    ?.trim()
-    .toLowerCase()
-    .replace(/^\.+|\.+$/g, "");
-  if (normalizedOwnHost && (host === normalizedOwnHost || host.endsWith(`.${normalizedOwnHost}`))) {
+  const ownHosts = typeof ownHost === "string" ? [ownHost] : (ownHost ?? []);
+  const normalizedOwnHosts = ownHosts
+    .map((value) =>
+      value
+        .trim()
+        .toLowerCase()
+        .replace(/^\.+|\.+$/g, ""),
+    )
+    .filter(Boolean);
+  if (normalizedOwnHosts.some((own) => host === own || host.endsWith(`.${own}`))) {
     return "own_host";
   }
 

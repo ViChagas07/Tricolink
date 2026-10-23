@@ -20,7 +20,7 @@
 - Sticky no topo, fundo translúcido com blur, item ativo destacado, `aria-current="page"`.
 
 ## Landing (`/[locale]`)
-1. **Hero**: título forte, subtítulo, **barra de inserção de URL** com botão vermelho "Encurtar". Resultado aparece abaixo: link curto + botão **Copiar** (feedback "Copiado!") + link "Ver estatísticas" (logado). Erros inline (URL inválida, cota excedida com contagem regressiva a partir de `Retry-After`).
+1. **Hero**: título forte, subtítulo, **barra de inserção de URL** com botão vermelho "Encurtar". Resultado aparece abaixo: link curto + botão **Copiar** (feedback "Copiado!") + link "Ver estatísticas" (logado). Erros inline (URL inválida, cota excedida com contagem regressiva a partir de `Retry-After`). URL do próprio domínio é detectada enquanto o usuário digita/cola, cancela qualquer requisição em andamento e mostra aviso vermelho "por questões de segurança"; o botão de encurtar fica desabilitado.
 2. **Demonstração**: mock do painel (dados fictícios fixos), inspirado no Bitly: cartão do link (curto, destino, criado em), gráfico de cliques (Recharts), tabelas de **países**, **origens** e **dispositivos**. Rótulo "Exemplo ilustrativo".
 3. **Três blocos de recursos** (texto + visual, alternando lados): link curto rápido, estatísticas claras e controle (editar destino e expirar).
 4. **FAQ** em sanfona acessível (8 perguntas): o que é e como funciona; é grátis; por que encurtar; é seguro; como encurtar; posso personalizar o código; o link expira; vocês guardam meu IP (não).

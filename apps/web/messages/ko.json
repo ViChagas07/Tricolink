@@ -46,7 +46,7 @@
     "limitCta": "무료 계정 만들기",
     "cancel": "취소",
     "cancelled": "줄이기가 취소되었습니다.",
-    "ownUrl": "Tricolink 자체를 가리키는 링크는 줄일 수 없습니다."
+    "ownUrl": "보안상의 이유로 Tricolink 자체의 URL은 줄일 수 없습니다."
   },
   "demo": {
     "label": "예시 화면",

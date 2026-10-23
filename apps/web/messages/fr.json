@@ -46,7 +46,7 @@
     "limitCta": "Créer un compte gratuit",
     "cancel": "Annuler",
     "cancelled": "Raccourcissement annulé.",
-    "ownUrl": "Vous ne pouvez pas raccourcir un lien qui pointe vers Tricolink lui-même."
+    "ownUrl": "Pour des raisons de sécurité, vous ne pouvez pas raccourcir une URL de Tricolink lui-même."
   },
   "demo": {
     "label": "Exemple illustratif",

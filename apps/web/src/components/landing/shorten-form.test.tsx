@@ -77,6 +77,7 @@ describe("ShortenForm", () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllEnvs();
   });
 
   it("shows a translated validation error without calling the API", async () => {
@@ -115,16 +116,30 @@ describe("ShortenForm", () => {
     expect(screen.queryByRole("link", { name: "View statistics" })).not.toBeInTheDocument();
   });
 
-  it("rejects a link to the app's own host before calling the API", async () => {
+  it("warns immediately and disables submit for the app's own host", async () => {
     const user = userEvent.setup();
     renderForm();
 
     await user.type(screen.getByLabelText("Long URL"), "http://localhost/own");
-    await user.click(screen.getByRole("button", { name: "Shorten" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "You can't shorten a link that points to Tricolink itself.",
+      "For security reasons, you can't shorten a URL from Tricolink itself.",
     );
+    expect(screen.getByRole("button", { name: "Shorten" })).toBeDisabled();
+    expect(api.post).not.toHaveBeenCalled();
+  });
+
+  it("detects the configured public site host", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://tricolink.vercel.app");
+    const user = userEvent.setup();
+    renderForm();
+
+    await user.type(screen.getByLabelText("Long URL"), "https://tricolink.vercel.app/pt-BR");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "For security reasons, you can't shorten a URL from Tricolink itself.",
+    );
+    expect(screen.getByRole("button", { name: "Shorten" })).toBeDisabled();
     expect(api.post).not.toHaveBeenCalled();
   });
 

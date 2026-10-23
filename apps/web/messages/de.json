@@ -46,7 +46,7 @@
     "limitCta": "Kostenloses Konto erstellen",
     "cancel": "Abbrechen",
     "cancelled": "Kürzen abgebrochen.",
-    "ownUrl": "Du kannst keinen Link kürzen, der auf Tricolink selbst verweist."
+    "ownUrl": "Aus Sicherheitsgründen kannst du keine URL von Tricolink selbst kürzen."
   },
   "demo": {
     "label": "Beispielhafte Darstellung",

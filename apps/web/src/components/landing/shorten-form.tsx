@@ -39,6 +39,24 @@ type CopyState = "idle" | "copied" | "error";
 
 const REQUEST_TIMEOUT_MS = 20_000;
 
+function getOwnHosts(): string[] {
+  const hosts = new Set<string>();
+  if (typeof window !== "undefined" && window.location.hostname) {
+    hosts.add(window.location.hostname.toLowerCase());
+  }
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+  if (siteUrl) {
+    try {
+      hosts.add(new URL(siteUrl).hostname.toLowerCase());
+    } catch {
+      // Ignore a malformed public URL; the current host still protects the app.
+    }
+  }
+
+  return [...hosts];
+}
+
 const ERROR_KEYS = {
   required: "urlRequired",
   invalid: "invalidUrl",
@@ -90,12 +108,33 @@ export function ShortenForm() {
     requestRef.current?.abort("cancel");
   }
 
+  function handleUrlChange(nextUrl: string) {
+    setUrl(nextUrl);
+    setCancelled(false);
+
+    const isOwnHost = getOwnHosts().some(
+      (host) => validateShortenUrl(nextUrl, host) === "own_host",
+    );
+    if (isOwnHost) {
+      requestRef.current?.abort("own_host");
+      setResult(null);
+      setError({ type: "own_host" });
+      return;
+    }
+
+    if (error?.type === "own_host") {
+      setError(null);
+    }
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const ownHost = typeof window === "undefined" ? "" : window.location.hostname;
-    const validation = validateShortenUrl(url, ownHost);
+    const validation = validateShortenUrl(url, getOwnHosts());
     if (validation) {
+      if (validation === "own_host") {
+        requestRef.current?.abort("own_host");
+      }
       setError({ type: validation });
       setResult(null);
       setCancelled(false);
@@ -208,10 +247,7 @@ export function ShortenForm() {
               value={url}
               aria-invalid={inputInvalid}
               aria-describedby={inputInvalid ? errorId : undefined}
-              onChange={(event) => {
-                setUrl(event.target.value);
-                setCancelled(false);
-              }}
+              onChange={(event) => handleUrlChange(event.target.value)}
               className={cn(
                 "h-12 w-full rounded-xl border border-transparent bg-transparent pe-4 ps-12 text-base text-foreground outline-none transition-colors",
                 "placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30",
@@ -223,7 +259,7 @@ export function ShortenForm() {
             <Button
               type="submit"
               variant="brand"
-              disabled={submitting || secondsLeft > 0}
+              disabled={submitting || secondsLeft > 0 || error?.type === "own_host"}
               className="h-12 w-full rounded-xl px-7 text-base font-semibold"
             >
               {submitting ? <Loader2 aria-hidden="true" className="size-5 animate-spin" /> : null}
@@ -266,7 +302,7 @@ export function ShortenForm() {
                 </Link>
               </>
             ) : error.type === "own_host" ? (
-              <p>{t("ownUrl")}</p>
+              <p className="font-semibold">{t("ownUrl")}</p>
             ) : (
               <p>{errors(ERROR_KEYS[error.type])}</p>
             )}
