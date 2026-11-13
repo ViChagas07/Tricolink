@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM python:3.11-slim AS base
+FROM python:3.15-slim AS base
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -41,7 +41,7 @@ EXPOSE 8000
 
 CMD ["uvicorn", "tricolink.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--limit-concurrency", "200"]
 
-FROM python:3.11-slim AS runtime
+FROM python:3.15-slim AS runtime
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
